@@ -1,0 +1,96 @@
+.lista-areas,
+.lista-subareas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cartao-area-principal,
+.cartao-subarea-principal {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.cartao-area,
+.cartao-subarea {
+  width: 150px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  box-sizing: border-box;
+  border-radius: 8px;
+  clip-path: polygon(
+    20% 0%,
+    80% 0%,
+    100% 50%,
+    80% 100%,
+    20% 100%,
+    0% 50%
+  ); 
+}
+
+.nome-area,
+.nome-subarea {
+  text-align: center;
+  word-wrap: break-word;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.botoes-area,
+.botoes-subarea {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.botoes-area button,
+.botoes-subarea button {
+  /*background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin: 5px;*/
+}
+
+.botoes-area button:hover,
+.botoes-subarea button:hover {
+  text-decoration: underline;
+}
+
+.pentagono {
+  /*width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 30px 10px 0;
+  border-color: #ffffff transparent transparent;
+  position: relative;
+  top: -5px;*/
+  width: 25px;
+  height: 25px;
+  
+  padding: 10px;
+  
+  box-sizing: border-box;
+  
+  clip-path: polygon(
+    50% 0%,
+    100% 40%,
+    80% 100%,
+    20% 100%,
+    0% 40%
+  );
+}
+
+.projeto {
+  display: flex;
+}
