@@ -68,13 +68,7 @@
 }
 
 .pentagono {
-  /*width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 30px 10px 0;
-  border-color: #ffffff transparent transparent;
-  position: relative;
-  top: -5px;*/
+  
   width: 25px;
   height: 25px;
   
@@ -93,4 +87,10 @@
 
 .projeto {
   display: flex;
+}
+
+.link-projeto {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
 }
