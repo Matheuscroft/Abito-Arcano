@@ -6,8 +6,6 @@ import Projeto from './components/Projeto';
 import './App.css';
 
 function App() {
-  const [componenteAtivo, setComponenteAtivo] = useState('tarefas');
-
   return (
     <Router>
       <div className="App">

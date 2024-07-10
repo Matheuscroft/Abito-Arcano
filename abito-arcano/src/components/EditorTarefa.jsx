@@ -1,10 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function EditorTarefa({ tarefa, onSave }) {
-  const [categoria, setCategoria] = useState(tarefa.categoria);
+  const [nome, setNome] = useState(tarefa.nome);
+  const [numero, setNumero] = useState(tarefa.numero);
+  const [area, setArea] = useState(tarefa.area);
+  const [subarea, setSubarea] = useState(tarefa.subarea);
+  const [areas, setAreas] = useState([]);
+  const [subareas, setSubareas] = useState([]);
+
+  useEffect(() => {
+    const storedAreas = JSON.parse(localStorage.getItem('areas')) || [];
+    setAreas(storedAreas);
+  }, []);
+
+  useEffect(() => {
+    if (area) {
+      const areaEncontrada = areas.find(a => a.nome === area);
+      setSubareas(areaEncontrada ? areaEncontrada.subareas : []);
+    }
+  }, [area, areas]);
 
   const handleSave = () => {
-    onSave(categoria);
+    onSave(nome, numero, area, subarea);
   };
 
   return (
@@ -12,10 +29,28 @@ function EditorTarefa({ tarefa, onSave }) {
       <h2>Editar Tarefa</h2>
       <input
         type="text"
-        value={categoria}
-        onChange={(e) => setCategoria(e.target.value)}
-        placeholder="Digite a categoria"
+        value={nome}
+        onChange={(e) => setNome(e.target.value)}
+        placeholder="Digite o nome da tarefa"
       />
+      <input
+        type="number"
+        value={numero}
+        onChange={(e) => setNumero(Number(e.target.value))}
+        placeholder="Digite um número"
+      />
+      <select value={area} onChange={(e) => setArea(e.target.value)}>
+        <option value="">Selecione uma área</option>
+        {areas.map((a, index) => (
+          <option key={index} value={a.nome}>{a.nome}</option>
+        ))}
+      </select>
+      <select value={subarea} onChange={(e) => setSubarea(e.target.value)}>
+        <option value="">Selecione uma subárea</option>
+        {subareas.map((s, index) => (
+          <option key={index} value={s.nome}>{s.nome}</option>
+        ))}
+      </select>
       <button onClick={handleSave}>Salvar</button>
     </div>
   );
