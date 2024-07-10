@@ -100,11 +100,27 @@ export const addSubarea = async (areaId, subarea) => {
 };
 
 export const updateSubarea = async (areaId, subareaId, subarea) => {
-    const areaRef = doc(db, "areas", areaId);
-    const areaSnapshot = await getDoc(areaRef);
-    const areaData = areaSnapshot.data();
-    const subareas = areaData.subareas.map(sa => sa.id === subareaId ? subarea : sa);
-    await updateDoc(areaRef, { subareas });
+    try {
+        const areaRef = doc(db, "areas", areaId);
+        const areaSnapshot = await getDoc(areaRef);
+        
+        if (!areaSnapshot.exists()) {
+            throw new Error(`Document with ID ${areaId} does not exist.`);
+        }
+
+        const areaData = areaSnapshot.data();
+        
+        // Atualiza a subárea específica dentro das subáreas da área
+        const updatedSubareas = areaData.subareas.map(sa =>
+            sa.id === subareaId ? { ...sa, ...subarea } : sa
+        );
+
+        await updateDoc(areaRef, { subareas: updatedSubareas });
+        
+    } catch (error) {
+        console.error("Erro ao atualizar subárea:", error);
+        throw error;
+    }
 };
 
 export const deleteSubarea = async (areaId, subareaId) => {

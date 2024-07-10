@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-    addSubarea,
-    updateSubarea,
-    deleteSubarea,
-    addProjeto,
-    updateProjeto,
-    deleteProjeto
+  addSubarea,
+  updateSubarea,
+  deleteSubarea,
+  addProjeto,
+  updateProjeto,
+  deleteProjeto
 } from '../auth/firebaseService';
 
 function Subareas({ area, voltar, atualizarArea }) {
   const [subareas, setSubareas] = useState([]);
   const [subareaSelecionada, setSubareaSelecionada] = useState(null);
   const [novoProjeto, setNovoProjeto] = useState('');
+  const [novoNomeSubarea, setNovoNomeSubarea] = useState('');
 
   useEffect(() => {
     setSubareas(area.subareas || []);
@@ -38,6 +39,7 @@ function Subareas({ area, voltar, atualizarArea }) {
       i === index ? subareaAtualizada : subarea
     );
     atualizarSubareas(subareasAtualizadas);
+    setSubareaSelecionada(null); // Fechar o campo de edição após salvar
   };
 
   const excluirSubarea = async (index) => {
@@ -139,6 +141,10 @@ function Subareas({ area, voltar, atualizarArea }) {
                 ))}
               </div>
             )}
+            <div>
+              <button onClick={() => editarSubarea(index)}>Editar</button>
+              <button onClick={() => excluirSubarea(index)}>Excluir</button>
+            </div>
           </div>
         ))}
       </div>
