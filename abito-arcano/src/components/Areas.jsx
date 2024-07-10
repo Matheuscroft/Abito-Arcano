@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Subareas from './Subareas';
+import {
+    getAreas,
+    addArea,
+    updateArea,
+    deleteArea
+} from '../auth/firebaseService';
 
 function Areas() {
     const [areas, setAreas] = useState([]);
@@ -12,19 +18,18 @@ function Areas() {
     const [novaCorArea, setNovaCorArea] = useState('#ffffff');
 
     useEffect(() => {
-        const storedAreas = JSON.parse(localStorage.getItem('areas')) || [];
-        setAreas(storedAreas);
+        const fetchAreas = async () => {
+            const fetchedAreas = await getAreas();
+            setAreas(fetchedAreas);
+        };
+        fetchAreas();
     }, []);
 
-    const salvarAreas = (novasAreas) => {
-        localStorage.setItem('areas', JSON.stringify(novasAreas));
-        setAreas(novasAreas);
-    };
-
-    const adicionarArea = () => {
+    const adicionarArea = async () => {
         if (nomeArea.trim() === '') return;
-        const novasAreas = [...areas, { nome: nomeArea.toUpperCase(), cor: corArea, subareas: [] }];
-        salvarAreas(novasAreas);
+        const novaArea = { nome: nomeArea.toUpperCase(), cor: corArea, subareas: [] };
+        const areaAdicionada = await addArea(novaArea);
+        setAreas([...areas, areaAdicionada]);
         setNomeArea('');
         setCorArea('#ffffff');
     };
@@ -41,34 +46,39 @@ function Areas() {
         setModalAberto(false);
     };
 
-    const editarArea = () => {
+    const editarArea = async () => {
+        const areaAtualizada = { ...areas[areaSelecionada], nome: novoNomeArea.toUpperCase(), cor: novaCorArea };
+        await updateArea(areaAtualizada.id, areaAtualizada);
         const areasAtualizadas = areas.map((area, index) =>
-            index === areaSelecionada ? { ...area, nome: novoNomeArea.toUpperCase(), cor: novaCorArea } : area
+            index === areaSelecionada ? areaAtualizada : area
         );
-        salvarAreas(areasAtualizadas);
+        setAreas(areasAtualizadas);
         fecharModalEdicao();
     };
 
-    const excluirArea = (index) => {
+    const excluirArea = async (index) => {
+        await deleteArea(areas[index].id);
         const areasAtualizadas = areas.filter((_, i) => i !== index);
-        salvarAreas(areasAtualizadas);
+        setAreas(areasAtualizadas);
     };
 
     const abrirSubareas = (index) => {
         const elementClicked = document.activeElement.tagName.toLowerCase();
         if (elementClicked === "button") {
-
             return;
         }
         setAreaSelecionada(index);
-        setEntrarSubArea(true)
+        setEntrarSubArea(true);
     };
 
     if (entrarSubArea !== false) {
         return <Subareas
             area={areas[areaSelecionada]}
             voltar={() => setEntrarSubArea(false)}
-            salvarAreas={salvarAreas}
+            atualizarArea={(areaAtualizada) => {
+                const novasAreas = areas.map(a => a.id === areaAtualizada.id ? areaAtualizada : a);
+                setAreas(novasAreas);
+            }}
         />;
     }
 
@@ -89,15 +99,13 @@ function Areas() {
             <button onClick={adicionarArea}>Adicionar Área</button>
             <div className="lista-areas">
                 {areas.map((area, index) => (
-                    <div className="cartao-area-principal">
+                    <div className="cartao-area-principal" key={index}>
                         <div
-                            key={index}
                             className="cartao-area"
                             style={{ backgroundColor: area.cor }}
                             onClick={() => abrirSubareas(index)}
                         >
                             <div className="nome-area">{area.nome}</div>
-
                         </div>
                         <div>
                             <button onClick={() => excluirArea(index)}>Excluir</button>

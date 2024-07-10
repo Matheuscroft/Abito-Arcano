@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getCorArea } from '../auth/firebaseService';
 
 function Tarefa({ tarefa, onEdit, onDelete, onToggle }) {
-  const corArea = getCorArea(tarefa.area);
+  const [corArea, setCorArea] = useState('#000');
+
+  useEffect(() => {
+    const fetchCorArea = async () => {
+      const cor = await getCorArea(tarefa.area);
+      setCorArea(cor);
+    };
+    fetchCorArea();
+  }, [tarefa.area]);
 
   return (
     <div>
@@ -16,11 +25,5 @@ function Tarefa({ tarefa, onEdit, onDelete, onToggle }) {
     </div>
   );
 }
-
-const getCorArea = (area) => {
-  const areas = JSON.parse(localStorage.getItem('areas')) || [];
-  const areaEncontrada = areas.find(a => a.nome === area);
-  return areaEncontrada ? areaEncontrada.cor : '#000';
-};
 
 export default Tarefa;

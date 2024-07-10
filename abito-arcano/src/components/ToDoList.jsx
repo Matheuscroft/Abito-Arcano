@@ -1,36 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import Tarefa from './Tarefa';
 import EditorTarefa from './EditorTarefa';
+import {
+  getListaTarefas,
+  addTarefa as addTarefaFirebase,
+  updateTarefa as updateTarefaFirebase,
+  deleteTarefa as deleteTarefaFirebase,
+  getPontuacoes,
+  updatePontuacao,
+  getAreas
+} from '../auth/firebaseService';
+import { db } from '../auth/firebase';
 
 function ToDoList() {
   const [tarefas, setTarefas] = useState([]);
   const [novaTarefa, setNovaTarefa] = useState('');
   const [tarefaEditando, setTarefaEditando] = useState(null);
   const [pontuacoes, setPontuacoes] = useState({});
+  const [areas, setAreas] = useState([]);
 
   useEffect(() => {
-    const storedTarefas = JSON.parse(localStorage.getItem('tarefas')) || [];
-    const storedPontuacoes = JSON.parse(localStorage.getItem('pontuacoes')) || {};
-    setTarefas(storedTarefas);
-    setPontuacoes(storedPontuacoes);
+    const fetchData = async () => {
+      const tarefas = await getListaTarefas();
+      const pontuacoes = await getPontuacoes();
+      const areas = await getAreas();
+      setTarefas(tarefas);
+      setPontuacoes(pontuacoes);
+      setAreas(areas);
+    };
+    fetchData();
   }, []);
+  
 
-  useEffect(() => {
-    localStorage.setItem('tarefas', JSON.stringify(tarefas));
-    localStorage.setItem('pontuacoes', JSON.stringify(pontuacoes));
-  }, [tarefas, pontuacoes]);
-
-  const addTarefa = () => {
+  const addTarefa = async () => {
     if (novaTarefa.trim() === '') return;
-    const nova = { id: Date.now(), nome: novaTarefa, numero: 0, area: '', subarea: '', finalizada: false };
-    setTarefas([...tarefas, nova]);
+    const nova = { nome: novaTarefa, numero: 0, area: '', subarea: '', finalizada: false };
+    const tarefaAdicionada = await addTarefaFirebase(nova);
+    setTarefas([...tarefas, tarefaAdicionada]);
     setNovaTarefa('');
   };
 
-  const updateTarefa = (id, nome, numero, area, subarea) => {
+  const updateTarefa = async (id, nome, numero, area, subarea) => {
+    const tarefaAtualizada = await updateTarefaFirebase(id, { nome, numero, area, subarea });
     const tarefasAtualizadas = tarefas.map((tarefa) => {
       if (tarefa.id === id) {
-        return { ...tarefa, nome, numero, area, subarea };
+        return tarefaAtualizada;
       }
       return tarefa;
     });
@@ -38,33 +52,35 @@ function ToDoList() {
     setTarefaEditando(null);
   };
 
-  const toggleFinalizada = (id) => {
-    const tarefasAtualizadas = tarefas.map((tarefa) => {
-      if (tarefa.id === id) {
-        const finalizada = !tarefa.finalizada;
-        const atualizacaoPontuacao = finalizada ? tarefa.numero : -tarefa.numero;
-        atualizarPontuacao(tarefa.area, atualizacaoPontuacao);
-        return { ...tarefa, finalizada };
-      }
-      return tarefa;
-    });
-    setTarefas(tarefasAtualizadas);
+  const toggleFinalizada = async (id) => {
+    const tarefa = tarefas.find(t => t.id === id);
+    if (tarefa) {
+      const finalizada = !tarefa.finalizada;
+      const atualizacaoPontuacao = finalizada ? tarefa.numero : -tarefa.numero;
+      await updateTarefaFirebase(id, { ...tarefa, finalizada });
+      await updatePontuacao(tarefa.area, atualizacaoPontuacao);
+      const tarefasAtualizadas = tarefas.map((t) => {
+        if (t.id === id) {
+          return { ...t, finalizada };
+        }
+        return t;
+      });
+      setTarefas(tarefasAtualizadas);
+      setPontuacoes((prevPontuacoes) => ({
+        ...prevPontuacoes,
+        [tarefa.area]: (prevPontuacoes[tarefa.area] || 0) + atualizacaoPontuacao,
+      }));
+    }
   };
 
-  const deleteTarefa = (id) => {
+  const deleteTarefa = async (id) => {
     const tarefa = tarefas.find(t => t.id === id);
     if (tarefa && tarefa.finalizada) {
-      atualizarPontuacao(tarefa.area, -tarefa.numero);
+      await updatePontuacao(tarefa.area, -tarefa.numero);
     }
+    await deleteTarefaFirebase(id);
     const tarefasAtualizadas = tarefas.filter((tarefa) => tarefa.id !== id);
     setTarefas(tarefasAtualizadas);
-  };
-
-  const atualizarPontuacao = (area, pontos) => {
-    setPontuacoes((prevPontuacoes) => ({
-      ...prevPontuacoes,
-      [area]: (prevPontuacoes[area] || 0) + pontos,
-    }));
   };
 
   return (
@@ -79,7 +95,7 @@ function ToDoList() {
       <button onClick={addTarefa}>Adicionar Tarefa</button>
 
       <div className="barra-pontuacoes">
-        {JSON.parse(localStorage.getItem('areas')).map((area) => (
+        {areas.map((area) => (
           <div key={area.nome} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
             <div>{area.nome}</div>
             <div>{pontuacoes[area.nome] || 0}</div>
@@ -121,11 +137,5 @@ function ToDoList() {
     </div>
   );
 }
-
-const getCorArea = (area) => {
-  const areas = JSON.parse(localStorage.getItem('areas')) || [];
-  const areaEncontrada = areas.find(a => a.nome === area);
-  return areaEncontrada ? areaEncontrada.cor : '#000';
-};
 
 export default ToDoList;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getAreas } from '../auth/firebaseService';
 
 function EditorTarefa({ tarefa, onSave }) {
   const [nome, setNome] = useState(tarefa.nome);
@@ -9,8 +10,11 @@ function EditorTarefa({ tarefa, onSave }) {
   const [subareas, setSubareas] = useState([]);
 
   useEffect(() => {
-    const storedAreas = JSON.parse(localStorage.getItem('areas')) || [];
-    setAreas(storedAreas);
+    const fetchAreas = async () => {
+      const fetchedAreas = await getAreas();
+      setAreas(fetchedAreas);
+    };
+    fetchAreas();
   }, []);
 
   useEffect(() => {
@@ -42,7 +46,7 @@ function EditorTarefa({ tarefa, onSave }) {
       <select value={area} onChange={(e) => setArea(e.target.value)}>
         <option value="">Selecione uma área</option>
         {areas.map((a, index) => (
-          <option key={index} value={a.nome}>{a.nome}</option>
+          <option key={index} value={a.nome} style={{ backgroundColor: a.cor }}>{a.nome}</option>
         ))}
       </select>
       <select value={subarea} onChange={(e) => setSubarea(e.target.value)}>

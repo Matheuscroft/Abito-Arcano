@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import {
+    addSubarea,
+    updateSubarea,
+    deleteSubarea,
+    addProjeto,
+    updateProjeto,
+    deleteProjeto
+} from '../auth/firebaseService';
 
-function Subareas({ area, voltar, salvarAreas }) {
+function Subareas({ area, voltar, atualizarArea }) {
   const [subareas, setSubareas] = useState([]);
   const [subareaSelecionada, setSubareaSelecionada] = useState(null);
   const [novoProjeto, setNovoProjeto] = useState('');
@@ -10,28 +18,30 @@ function Subareas({ area, voltar, salvarAreas }) {
     setSubareas(area.subareas || []);
   }, [area]);
 
-  const adicionarSubarea = (nomeSubarea) => {
+  const adicionarSubarea = async (nomeSubarea) => {
     if (nomeSubarea.trim() === '') return;
-    const novasSubareas = [...subareas, { nome: nomeSubarea }];
+    const novaSubarea = { nome: nomeSubarea };
+    const subareaAdicionada = await addSubarea(area.id, novaSubarea);
+    const novasSubareas = [...subareas, subareaAdicionada];
     atualizarSubareas(novasSubareas);
   };
 
   const atualizarSubareas = (novasSubareas) => {
-    const novasAreas = JSON.parse(localStorage.getItem('areas')).map((a) =>
-      a.nome === area.nome ? { ...a, subareas: novasSubareas } : a
-    );
-    salvarAreas(novasAreas);
-    setSubareas(novasSubareas);
+    const areaAtualizada = { ...area, subareas: novasSubareas };
+    atualizarArea(areaAtualizada);
   };
 
-  const editarSubarea = (index, novoNome) => {
+  const editarSubarea = async (index, novoNome) => {
+    const subareaAtualizada = { ...subareas[index], nome: novoNome };
+    await updateSubarea(area.id, subareas[index].id, subareaAtualizada);
     const subareasAtualizadas = subareas.map((subarea, i) =>
-      i === index ? { ...subarea, nome: novoNome } : subarea
+      i === index ? subareaAtualizada : subarea
     );
     atualizarSubareas(subareasAtualizadas);
   };
 
-  const excluirSubarea = (index) => {
+  const excluirSubarea = async (index) => {
+    await deleteSubarea(area.id, subareas[index].id);
     const subareasAtualizadas = subareas.filter((_, i) => i !== index);
     atualizarSubareas(subareasAtualizadas);
   };
@@ -44,28 +54,33 @@ function Subareas({ area, voltar, salvarAreas }) {
     setSubareaSelecionada(null);
   };
 
-  const adicionarProjeto = () => {
+  const adicionarProjeto = async () => {
     if (novoProjeto.trim() === '') return;
+    const novoProjetoObj = { nome: novoProjeto };
+    const projetoAdicionado = await addProjeto(area.id, subareas[subareaSelecionada].id, novoProjetoObj);
     const subareasAtualizadas = subareas.map((subarea, index) =>
-      index === subareaSelecionada ? { ...subarea, projetos: [...(subarea.projetos || []), { nome: novoProjeto }] } : subarea
+      index === subareaSelecionada ? { ...subarea, projetos: [...(subarea.projetos || []), projetoAdicionado] } : subarea
     );
     atualizarSubareas(subareasAtualizadas);
     setNovoProjeto('');
   };
 
-  const excluirProjeto = (subareaIndex, projetoIndex) => {
+  const excluirProjeto = async (subareaIndex, projetoIndex) => {
+    await deleteProjeto(area.id, subareas[subareaIndex].id, subareas[subareaIndex].projetos[projetoIndex].id);
     const subareasAtualizadas = subareas.map((subarea, index) =>
       index === subareaIndex ? { ...subarea, projetos: subarea.projetos.filter((_, i) => i !== projetoIndex) } : subarea
     );
     atualizarSubareas(subareasAtualizadas);
   };
 
-  const editarProjeto = (subareaIndex, projetoIndex, novoNome) => {
+  const editarProjeto = async (subareaIndex, projetoIndex, novoNome) => {
+    const projetoAtualizado = { ...subareas[subareaIndex].projetos[projetoIndex], nome: novoNome };
+    await updateProjeto(area.id, subareas[subareaIndex].id, projetoAtualizado.id, projetoAtualizado);
     const subareasAtualizadas = subareas.map((subarea, index) =>
       index === subareaIndex ? {
         ...subarea,
         projetos: subarea.projetos.map((projeto, idx) =>
-          idx === projetoIndex ? { ...projeto, nome: novoNome } : projeto
+          idx === projetoIndex ? projetoAtualizado : projeto
         )
       } : subarea
     );
