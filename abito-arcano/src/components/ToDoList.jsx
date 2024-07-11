@@ -1,139 +1,264 @@
 import React, { useState, useEffect } from 'react';
 import Tarefa from './Tarefa';
-import EditorTarefa from './EditorTarefa';
+import Atividade from './Atividade';
+import EditorItem from './EditorItem';
 import {
   getListaTarefas,
   addTarefa as addTarefaFirebase,
   updateTarefa as updateTarefaFirebase,
   deleteTarefa as deleteTarefaFirebase,
+  getListaAtividades,
+  addAtividade as addAtividadeFirebase,
+  updateAtividade as updateAtividadeFirebase,
+  deleteAtividade as deleteAtividadeFirebase,
   getPontuacoes,
   updatePontuacao,
   getAreas
 } from '../auth/firebaseService';
-import { db } from '../auth/firebase';
 
 function ToDoList() {
   const [tarefas, setTarefas] = useState([]);
+  const [atividades, setAtividades] = useState([]);
   const [novaTarefa, setNovaTarefa] = useState('');
-  const [tarefaEditando, setTarefaEditando] = useState(null);
+  const [novaAtividade, setNovaAtividade] = useState('');
+  const [itemEditando, setItemEditando] = useState(null);
+  const [tipoEditando, setTipoEditando] = useState(null);
   const [pontuacoes, setPontuacoes] = useState({});
   const [areas, setAreas] = useState([]);
+  const [subAreas, setSubAreas] = useState([]);
+  const [mostrarSubareas, setMostrarSubareas] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       const tarefas = await getListaTarefas();
+      const atividades = await getListaAtividades();
       const pontuacoes = await getPontuacoes();
-      const areas = await getAreas();
+      const areas = await getAreas(); 
+      
+      const areasComSubareas = areas.map(area => ({
+        ...area,
+        subareas: area.subareas || [] 
+      }));
+
+      const todasSubareas = areas.reduce((acc, area) => {
+
+        if (area.subareas) {
+          acc.push(...area.subareas);
+        }
+
+        return acc;
+      }, []);
+
       setTarefas(tarefas);
+      setAtividades(atividades);
       setPontuacoes(pontuacoes);
-      setAreas(areas);
+      setAreas(areasComSubareas);
+      setSubAreas(todasSubareas);
     };
     fetchData();
   }, []);
-  
 
-  const addTarefa = async () => {
-    if (novaTarefa.trim() === '') return;
-    const nova = { nome: novaTarefa, numero: 0, area: '', subarea: '', finalizada: false };
-    const tarefaAdicionada = await addTarefaFirebase(nova);
-    setTarefas([...tarefas, tarefaAdicionada]);
-    setNovaTarefa('');
+  const addItem = async (nome, tipo) => {
+    if (nome.trim() === '') return;
+
+    const novoItem = { nome, numero: 0, area: '', subarea: '', finalizada: false };
+    if (tipo === 'tarefa') {
+      const tarefaAdicionada = await addTarefaFirebase(novoItem);
+      setTarefas([...tarefas, tarefaAdicionada]);
+    } else {
+      const atividadeAdicionada = await addAtividadeFirebase(novoItem);
+      setAtividades([...atividades, atividadeAdicionada]);
+    }
   };
 
-  const updateTarefa = async (id, nome, numero, area, subarea) => {
-    const tarefaAtualizada = await updateTarefaFirebase(id, { nome, numero, area, subarea });
-    const tarefasAtualizadas = tarefas.map((tarefa) => {
-      if (tarefa.id === id) {
-        return tarefaAtualizada;
+  const updateItem = async (id, nome, numero, area, subarea, tipo) => {
+    const itemAtualizado = tipo === 'tarefa'
+      ? await updateTarefaFirebase(id, { nome, numero, area, subarea })
+      : await updateAtividadeFirebase(id, { nome, numero, area, subarea });
+
+    const itensAtualizados = tipo === 'tarefa'
+      ? tarefas.map(tarefa => tarefa.id === id ? itemAtualizado : tarefa)
+      : atividades.map(atividade => atividade.id === id ? itemAtualizado : atividade);
+
+    if (tipo === 'tarefa') setTarefas(itensAtualizados);
+    else setAtividades(itensAtualizados);
+    setItemEditando(null);
+    setTipoEditando(null);
+  };
+
+  const toggleFinalizada = async (id, tipo) => {
+    const item = tipo === 'tarefa' ? tarefas.find(t => t.id === id) : atividades.find(a => a.id === id);
+    if (item) {
+      const finalizada = !item.finalizada;
+      const atualizacaoPontuacao = finalizada ? item.numero : -item.numero;
+      if (tipo === 'tarefa') {
+        await updateTarefaFirebase(id, { ...item, finalizada });
+      } else {
+        await updateAtividadeFirebase(id, { ...item, finalizada });
       }
-      return tarefa;
-    });
-    setTarefas(tarefasAtualizadas);
-    setTarefaEditando(null);
-  };
-
-  const toggleFinalizada = async (id) => {
-    const tarefa = tarefas.find(t => t.id === id);
-    if (tarefa) {
-      const finalizada = !tarefa.finalizada;
-      const atualizacaoPontuacao = finalizada ? tarefa.numero : -tarefa.numero;
-      await updateTarefaFirebase(id, { ...tarefa, finalizada });
-      await updatePontuacao(tarefa.area, atualizacaoPontuacao);
-      const tarefasAtualizadas = tarefas.map((t) => {
-        if (t.id === id) {
-          return { ...t, finalizada };
-        }
-        return t;
-      });
-      setTarefas(tarefasAtualizadas);
-      setPontuacoes((prevPontuacoes) => ({
-        ...prevPontuacoes,
-        [tarefa.area]: (prevPontuacoes[tarefa.area] || 0) + atualizacaoPontuacao,
+      await updatePontuacao(item.area, atualizacaoPontuacao);
+      const itensAtualizados = tipo === 'tarefa'
+        ? tarefas.map(t => t.id === id ? { ...t, finalizada } : t)
+        : atividades.map(a => a.id === id ? { ...a, finalizada } : a);
+      if (tipo === 'tarefa') setTarefas(itensAtualizados);
+      else setAtividades(itensAtualizados);
+      setPontuacoes(prev => ({
+        ...prev,
+        [item.area]: (prev[item.area] || 0) + atualizacaoPontuacao,
       }));
     }
   };
 
-  const deleteTarefa = async (id) => {
-    const tarefa = tarefas.find(t => t.id === id);
-    if (tarefa && tarefa.finalizada) {
-      await updatePontuacao(tarefa.area, -tarefa.numero);
+  const deleteItem = async (id, tipo) => {
+    const item = tipo === 'tarefa' ? tarefas.find(t => t.id === id) : atividades.find(a => a.id === id);
+    if (item && item.finalizada) {
+      await updatePontuacao(item.area, -item.numero);
     }
-    await deleteTarefaFirebase(id);
-    const tarefasAtualizadas = tarefas.filter((tarefa) => tarefa.id !== id);
-    setTarefas(tarefasAtualizadas);
+    if (tipo === 'tarefa') {
+      await deleteTarefaFirebase(id);
+      setTarefas(tarefas.filter(tarefa => tarefa.id !== id));
+    } else {
+      await deleteAtividadeFirebase(id);
+      setAtividades(atividades.filter(atividade => atividade.id !== id));
+    }
   };
+
+  const calcularPontuacoesSubareas = (itens) => {
+    const pontuacoesSubareas = {};
+    itens.forEach(item => {
+      if (item.subarea) {
+        if (!pontuacoesSubareas[item.subarea]) {
+          pontuacoesSubareas[item.subarea] = 0;
+        }
+        pontuacoesSubareas[item.subarea] += item.numero;
+      }
+    });
+    return pontuacoesSubareas;
+  };
+
+  const pontuacoesSubareas = calcularPontuacoesSubareas([...tarefas, ...atividades]);
 
   return (
     <div>
       <h1>To-Do List</h1>
-      <input
-        type="text"
-        value={novaTarefa}
-        onChange={(e) => setNovaTarefa(e.target.value)}
-        placeholder="Digite o nome da tarefa"
-      />
-      <button onClick={addTarefa}>Adicionar Tarefa</button>
-
       <div className="barra-pontuacoes">
         {areas.map((area) => (
-          <div key={area.nome} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
+          <div key={area.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
             <div>{area.nome}</div>
             <div>{pontuacoes[area.nome] || 0}</div>
           </div>
         ))}
       </div>
 
-      <ul>
-        {tarefas.filter(tarefa => !tarefa.finalizada).map((tarefa) => (
-          <li key={tarefa.id}>
-            <Tarefa
-              tarefa={tarefa}
-              onEdit={() => setTarefaEditando(tarefa)}
-              onDelete={() => deleteTarefa(tarefa.id)}
-              onToggle={() => toggleFinalizada(tarefa.id)}
-            />
-          </li>
-        ))}
-      </ul>
-      {tarefaEditando && (
-        <EditorTarefa
-          tarefa={tarefaEditando}
-          onSave={(nome, numero, area, subarea) => updateTarefa(tarefaEditando.id, nome, numero, area, subarea)}
-        />
+      <button onClick={() => setMostrarSubareas(!mostrarSubareas)}>
+        {mostrarSubareas ? 'Esconder Subáreas' : 'Mostrar Subáreas'}
+      </button>
+
+      {mostrarSubareas && (
+        <div className="barra-pontuacoes">
+          {areas.map((area) => (
+            <div key={area.id} style={{ marginBottom: '10px', display: "flex" }}>
+              {area.subareas.map((subarea) => (
+                <div key={subarea.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
+                  <div>{subarea.nome}</div>
+                  <div>{pontuacoesSubareas[subarea] || 0}</div>
+                </div>
+              ))}
+              
+            </div>
+          ))}
+        </div>
       )}
-      <h2>Finalizadas</h2>
-      <ul>
-        {tarefas.filter(tarefa => tarefa.finalizada).map((tarefa) => (
-          <li key={tarefa.id} style={{ textDecoration: 'line-through' }}>
-            <Tarefa
-              tarefa={tarefa}
-              onEdit={() => setTarefaEditando(tarefa)}
-              onDelete={() => deleteTarefa(tarefa.id)}
-              onToggle={() => toggleFinalizada(tarefa.id)}
+
+      <div style={{ display: 'flex' }}>
+        <div style={{ flex: 1 }}>
+          <h1>Tarefas</h1>
+          <input
+            type="text"
+            value={novaTarefa}
+            onChange={(e) => setNovaTarefa(e.target.value)}
+            placeholder="Digite o nome da tarefa"
+          />
+          <button onClick={() => addItem(novaTarefa, 'tarefa')}>Adicionar Tarefa</button>
+
+          <ul>
+            {tarefas.filter(tarefa => !tarefa.finalizada).map((tarefa) => (
+              <li key={tarefa.id}>
+                <Tarefa
+                  tarefa={tarefa}
+                  onEdit={() => { setItemEditando(tarefa); setTipoEditando('tarefa'); }}
+                  onDelete={() => deleteItem(tarefa.id, 'tarefa')}
+                  onToggle={() => toggleFinalizada(tarefa.id, 'tarefa')}
+                />
+              </li>
+            ))}
+          </ul>
+          {itemEditando && tipoEditando === 'tarefa' && (
+            <EditorItem
+              item={itemEditando}
+              onSave={(nome, numero, area, subarea) => updateItem(itemEditando.id, nome, numero, area, subarea, 'tarefa')}
+              tipo="tarefa"
             />
-          </li>
-        ))}
-      </ul>
+          )}
+          <h2>Finalizadas</h2>
+          <ul>
+            {tarefas.filter(tarefa => tarefa.finalizada).map((tarefa) => (
+              <li key={tarefa.id} style={{ textDecoration: 'line-through' }}>
+                <Tarefa
+                  tarefa={tarefa}
+                  onEdit={() => { setItemEditando(tarefa); setTipoEditando('tarefa'); }}
+                  onDelete={() => deleteItem(tarefa.id, 'tarefa')}
+                  onToggle={() => toggleFinalizada(tarefa.id, 'tarefa')}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div style={{ flex: 1 }}>
+          <h1>Atividades</h1>
+          <input
+            type="text"
+            value={novaAtividade}
+            onChange={(e) => setNovaAtividade(e.target.value)}
+            placeholder="Digite o nome da atividade"
+          />
+          <button onClick={() => addItem(novaAtividade, 'atividade')}>Adicionar Atividade</button>
+
+          <ul>
+            {atividades.filter(atividade => !atividade.finalizada).map((atividade) => (
+              <li key={atividade.id}>
+                <Atividade
+                  atividade={atividade}
+                  onEdit={() => { setItemEditando(atividade); setTipoEditando('atividade'); }}
+                  onDelete={() => deleteItem(atividade.id, 'atividade')}
+                  onToggle={() => toggleFinalizada(atividade.id, 'atividade')}
+                />
+              </li>
+            ))}
+          </ul>
+          {itemEditando && tipoEditando === 'atividade' && (
+            <EditorItem
+              item={itemEditando}
+              onSave={(nome, numero, area, subarea) => updateItem(itemEditando.id, nome, numero, area, subarea, 'atividade')}
+              tipo="atividade"
+            />
+          )}
+          <h2>Finalizadas</h2>
+          <ul>
+            {atividades.filter(atividade => atividade.finalizada).map((atividade) => (
+              <li key={atividade.id} style={{ textDecoration: 'line-through' }}>
+                <Atividade
+                  atividade={atividade}
+                  onEdit={() => { setItemEditando(atividade); setTipoEditando('atividade'); }}
+                  onDelete={() => deleteItem(atividade.id, 'atividade')}
+                  onToggle={() => toggleFinalizada(atividade.id, 'atividade')}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }

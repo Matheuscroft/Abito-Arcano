@@ -103,11 +103,13 @@
 
 .barra-pontuacoes {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 20px;
 }
 
 .card-pontuacao {
+  /*flex: 0 1 150px;*/
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -116,5 +118,6 @@
   border-radius: 8px;
   color: white;
   font-weight: bold;
+  box-sizing: border-box;
 }
 

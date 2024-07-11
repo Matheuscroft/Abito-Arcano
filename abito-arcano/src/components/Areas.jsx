@@ -21,8 +21,16 @@ function Areas() {
         const fetchAreas = async () => {
             const fetchedAreas = await getAreas();
             setAreas(fetchedAreas);
+            console.log("fetchedAreas:")
+            console.log(fetchedAreas)
         };
         fetchAreas();
+
+
+
+        console.log("areas:")
+        console.log(areas)
+
     }, []);
 
     const adicionarArea = async () => {
