@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAreas } from '../auth/firebaseService';
 
-function EditorItem({ item, onSave, tipo }) {
+function EditorItem({ item, onSave, tipo, setItemEditando }) {
   const [nome, setNome] = useState(item.nome);
   const [numero, setNumero] = useState(item.numero);
   const [area, setArea] = useState(item.area);
@@ -25,6 +25,7 @@ function EditorItem({ item, onSave, tipo }) {
   }, [area, areas]);
 
   const handleSave = () => {
+    setItemEditando(false)
     onSave(nome, numero, area, subarea);
   };
 
