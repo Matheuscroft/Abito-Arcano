@@ -39,7 +39,7 @@ function ToDoList() {
         subareas: area.subareas || []
       }));
 
-     
+
 
       setTarefas(tarefas);
       setAtividades(atividades);
@@ -113,7 +113,7 @@ function ToDoList() {
 
   const deleteItem = async (id, tipo) => {
     const item = tipo === 'tarefa' ? tarefas.find(t => t.id === id) : atividades.find(a => a.id === id);
-    
+
     if (tipo === 'tarefa') {
       await deleteTarefaFirebase(id);
       setTarefas(tarefas.filter(tarefa => tarefa.id !== id));
@@ -123,9 +123,62 @@ function ToDoList() {
     }
   };
 
+  const resetPontuacaoAreas = async () => {
+    const updatedAreas = areas.map(area => ({
+      ...area,
+      pontuacao: 0
+    }));
+  
+    for (const area of updatedAreas) {
+      await updatePontuacao(area.nome, 0, true);
+    }
+  
+    setPontuacoes(prev => {
+      const newPontuacoes = { ...prev };
+      updatedAreas.forEach(area => {
+        newPontuacoes[area.nome] = 0;
+      });
+      return newPontuacoes;
+    });
+    setAreas(updatedAreas);
+  };
+  
+  const resetPontuacaoSubareas = async () => {
+    const updatedAreas = areas.map(area => ({
+      ...area,
+      subareas: area.subareas.map(subarea => ({
+        ...subarea,
+        pontuacao: 0
+      }))
+    }));
+  
+    for (const area of updatedAreas) {
+      for (const subarea of area.subareas) {
+        await updatePontuacao(subarea.nome, 0, true); 
+      }
+    }
+  
+    setPontuacoes(prev => {
+      const newPontuacoes = { ...prev };
+      updatedAreas.forEach(area => {
+        area.subareas.forEach(subarea => {
+          newPontuacoes[subarea.nome] = 0;
+        });
+      });
+      return newPontuacoes;
+    });
+    setAreas(updatedAreas);
+  };
+  
+
+
   return (
     <div>
       <h1>To-Do List</h1>
+      <div>
+        <button onClick={resetPontuacaoAreas}>Resetar Pontuação das Áreas</button>
+        <button onClick={resetPontuacaoSubareas}>Resetar Pontuação das Subáreas</button>
+      </div>
       <div className="barra-pontuacoes">
         {areas.map((area) => (
           <div key={area.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>

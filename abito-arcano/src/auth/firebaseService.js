@@ -47,16 +47,22 @@ export const getPontuacoes = async () => {
     return pontuacoesList;
 };
 
-
-export const updatePontuacao = async (area, pontos) => {
+export const updatePontuacao = async (area, pontos, reset = false) => {
+    
     const pontuacaoRef = doc(db, "pontuacoes", area);
-    const pontuacaoDoc = await getDoc(pontuacaoRef);
-    if (pontuacaoDoc.exists()) {
-        await updateDoc(pontuacaoRef, { pontos: pontuacaoDoc.data().pontos + pontos });
+   
+    if (reset) {
+      await setDoc(pontuacaoRef, { pontos: 0 });
     } else {
+      const pontuacaoDoc = await getDoc(pontuacaoRef);
+      if (pontuacaoDoc.exists()) {
+        await updateDoc(pontuacaoRef, { pontos: pontuacaoDoc.data().pontos + pontos });
+      } else {
         await setDoc(pontuacaoRef, { pontos });
+      }
     }
-};
+  };
+  
 
 export const getAreas = async () => {
     const querySnapshot = await getDocs(collection(db, "areas"));
@@ -92,15 +98,32 @@ export const deleteArea = async (id) => {
 };
 
 export const addSubarea = async (areaId, subarea) => {
+  try {
     const areaRef = doc(db, "areas", areaId);
     const areaSnapshot = await getDoc(areaRef);
-    const areaData = areaSnapshot.data();
-    const subareas = areaData.subareas || [];
-    subareas.push(subarea);
-    await updateDoc(areaRef, { subareas });
-    return subarea;
+    
+    if (!areaSnapshot.exists()) {
+      throw new Error(`Document with ID ${areaId} does not exist.`);
+    }
+
+    const subareaDocRef = await addDoc(collection(areaRef, "subareas"), subarea);
+    const subareaId = subareaDocRef.id;
+
+    // Atualiza a área para incluir a nova subárea
+    const updatedArea = {
+      ...areaSnapshot.data(),
+      subareas: [...(areaSnapshot.data().subareas || []), { id: subareaId, ...subarea }]
+    };
+    await updateDoc(areaRef, updatedArea);
+
+    return { id: subareaId, ...subarea }; // Retorna o objeto com o ID gerado
+  } catch (error) {
+    console.error("Erro ao adicionar subárea:", error);
+    throw error;
+  }
 };
 
+  
 export const updateSubarea = async (areaId, subareaId, subarea) => {
     try {
       const areaRef = doc(db, "areas", areaId);
@@ -110,36 +133,48 @@ export const updateSubarea = async (areaId, subareaId, subarea) => {
         throw new Error(`Document with ID ${areaId} does not exist.`);
       }
   
-      const areaData = areaSnapshot.data();
-      const updatedSubareas = areaData.subareas.map(sa =>
+      const subareaRef = doc(collection(areaRef, "subareas"), subareaId);
+      await updateDoc(subareaRef, subarea);
+  
+      // Atualiza a área para refletir a subárea atualizada
+      const updatedSubareas = areaSnapshot.data().subareas.map(sa =>
         sa.id === subareaId ? { ...sa, ...subarea } : sa
       );
+      const updatedArea = { ...areaSnapshot.data(), subareas: updatedSubareas };
+      await updateDoc(areaRef, updatedArea);
   
-      await updateDoc(areaRef, { subareas: updatedSubareas });
+      return { id: subareaId, ...subarea }; // Retorna o objeto atualizado
     } catch (error) {
       console.error("Erro ao atualizar subárea:", error);
       throw error;
     }
   };
   
+  
   export const deleteSubarea = async (areaId, subareaId) => {
     try {
       const areaRef = doc(db, "areas", areaId);
       const areaSnapshot = await getDoc(areaRef);
-  
+      
       if (!areaSnapshot.exists()) {
         throw new Error(`Document with ID ${areaId} does not exist.`);
       }
   
-      const areaData = areaSnapshot.data();
-      const updatedSubareas = areaData.subareas.filter(sa => sa.id !== subareaId);
+      const subareaRef = doc(collection(areaRef, "subareas"), subareaId);
+      await deleteDoc(subareaRef);
   
-      await updateDoc(areaRef, { subareas: updatedSubareas });
+      // Remove a subárea da lista de subáreas da área
+      const updatedSubareas = areaSnapshot.data().subareas.filter(sa => sa.id !== subareaId);
+      const updatedArea = { ...areaSnapshot.data(), subareas: updatedSubareas };
+      await updateDoc(areaRef, updatedArea);
+  
+      return subareaId;
     } catch (error) {
       console.error("Erro ao excluir subárea:", error);
       throw error;
     }
   };
+  
   
 
 export const addProjeto = async (areaId, subareaId, projeto) => {
