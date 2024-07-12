@@ -25,7 +25,6 @@ function ToDoList() {
   const [tipoEditando, setTipoEditando] = useState(null);
   const [pontuacoes, setPontuacoes] = useState({});
   const [areas, setAreas] = useState([]);
-  const [subAreas, setSubAreas] = useState([]);
   const [mostrarSubareas, setMostrarSubareas] = useState(false);
 
   useEffect(() => {
@@ -33,27 +32,19 @@ function ToDoList() {
       const tarefas = await getListaTarefas();
       const atividades = await getListaAtividades();
       const pontuacoes = await getPontuacoes();
-      const areas = await getAreas(); 
-      
+      const areas = await getAreas();
+
       const areasComSubareas = areas.map(area => ({
         ...area,
-        subareas: area.subareas || [] 
+        subareas: area.subareas || []
       }));
 
-      const todasSubareas = areas.reduce((acc, area) => {
-
-        if (area.subareas) {
-          acc.push(...area.subareas);
-        }
-
-        return acc;
-      }, []);
+     
 
       setTarefas(tarefas);
       setAtividades(atividades);
       setPontuacoes(pontuacoes);
       setAreas(areasComSubareas);
-      setSubAreas(todasSubareas);
     };
     fetchData();
   }, []);
@@ -96,7 +87,17 @@ function ToDoList() {
       } else {
         await updateAtividadeFirebase(id, { ...item, finalizada });
       }
-      await updatePontuacao(item.area, atualizacaoPontuacao);
+      if (finalizada) {
+        await updatePontuacao(item.area, atualizacaoPontuacao);
+        if (item.subarea) {
+          await updatePontuacao(item.subarea, atualizacaoPontuacao);
+        }
+      } else {
+        await updatePontuacao(item.area, atualizacaoPontuacao);
+        if (item.subarea) {
+          await updatePontuacao(item.subarea, atualizacaoPontuacao);
+        }
+      }
       const itensAtualizados = tipo === 'tarefa'
         ? tarefas.map(t => t.id === id ? { ...t, finalizada } : t)
         : atividades.map(a => a.id === id ? { ...a, finalizada } : a);
@@ -105,15 +106,14 @@ function ToDoList() {
       setPontuacoes(prev => ({
         ...prev,
         [item.area]: (prev[item.area] || 0) + atualizacaoPontuacao,
+        ...(item.subarea && { [item.subarea]: (prev[item.subarea] || 0) + atualizacaoPontuacao }),
       }));
     }
   };
 
   const deleteItem = async (id, tipo) => {
     const item = tipo === 'tarefa' ? tarefas.find(t => t.id === id) : atividades.find(a => a.id === id);
-    if (item && item.finalizada) {
-      await updatePontuacao(item.area, -item.numero);
-    }
+    
     if (tipo === 'tarefa') {
       await deleteTarefaFirebase(id);
       setTarefas(tarefas.filter(tarefa => tarefa.id !== id));
@@ -122,21 +122,6 @@ function ToDoList() {
       setAtividades(atividades.filter(atividade => atividade.id !== id));
     }
   };
-
-  const calcularPontuacoesSubareas = (itens) => {
-    const pontuacoesSubareas = {};
-    itens.forEach(item => {
-      if (item.subarea) {
-        if (!pontuacoesSubareas[item.subarea]) {
-          pontuacoesSubareas[item.subarea] = 0;
-        }
-        pontuacoesSubareas[item.subarea] += item.numero;
-      }
-    });
-    return pontuacoesSubareas;
-  };
-
-  const pontuacoesSubareas = calcularPontuacoesSubareas([...tarefas, ...atividades]);
 
   return (
     <div>
@@ -161,14 +146,15 @@ function ToDoList() {
               {area.subareas.map((subarea) => (
                 <div key={subarea.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
                   <div>{subarea.nome}</div>
-                  <div>{pontuacoesSubareas[subarea] || 0}</div>
+                  <div>{pontuacoes[subarea.nome] || 0}</div>
                 </div>
               ))}
-              
             </div>
           ))}
         </div>
       )}
+
+
 
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1 }}>

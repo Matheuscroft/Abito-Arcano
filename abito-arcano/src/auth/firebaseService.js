@@ -68,12 +68,13 @@ export const getCorArea = async (nomeArea) => {
     try {
       const areas = await getAreas();
       const areaEncontrada = areas.find(a => a.nome === nomeArea);
-      return areaEncontrada ? areaEncontrada.cor : '#000'; // Retorna a cor da área encontrada ou uma cor padrão
+      return areaEncontrada ? areaEncontrada.cor : '#000'; 
     } catch (error) {
       console.error('Erro ao buscar cor da área:', error);
-      return '#000'; // Retorna uma cor padrão em caso de erro
+      return '#000'; 
     }
   };
+
 
 export const addArea = async (area) => {
     const docRef = await addDoc(collection(db, "areas"), area);
@@ -102,35 +103,44 @@ export const addSubarea = async (areaId, subarea) => {
 
 export const updateSubarea = async (areaId, subareaId, subarea) => {
     try {
-        const areaRef = doc(db, "areas", areaId);
-        const areaSnapshot = await getDoc(areaRef);
-        
-        if (!areaSnapshot.exists()) {
-            throw new Error(`Document with ID ${areaId} does not exist.`);
-        }
-
-        const areaData = areaSnapshot.data();
-        
-        
-        const updatedSubareas = areaData.subareas.map(sa =>
-            sa.id === subareaId ? { ...sa, ...subarea } : sa
-        );
-
-        await updateDoc(areaRef, { subareas: updatedSubareas });
-        
+      const areaRef = doc(db, "areas", areaId);
+      const areaSnapshot = await getDoc(areaRef);
+      
+      if (!areaSnapshot.exists()) {
+        throw new Error(`Document with ID ${areaId} does not exist.`);
+      }
+  
+      const areaData = areaSnapshot.data();
+      const updatedSubareas = areaData.subareas.map(sa =>
+        sa.id === subareaId ? { ...sa, ...subarea } : sa
+      );
+  
+      await updateDoc(areaRef, { subareas: updatedSubareas });
     } catch (error) {
-        console.error("Erro ao atualizar subárea:", error);
-        throw error;
+      console.error("Erro ao atualizar subárea:", error);
+      throw error;
     }
-};
-
-export const deleteSubarea = async (areaId, subareaId) => {
-    const areaRef = doc(db, "areas", areaId);
-    const areaSnapshot = await getDoc(areaRef);
-    const areaData = areaSnapshot.data();
-    const subareas = areaData.subareas.filter(sa => sa.id !== subareaId);
-    await updateDoc(areaRef, { subareas });
-};
+  };
+  
+  export const deleteSubarea = async (areaId, subareaId) => {
+    try {
+      const areaRef = doc(db, "areas", areaId);
+      const areaSnapshot = await getDoc(areaRef);
+  
+      if (!areaSnapshot.exists()) {
+        throw new Error(`Document with ID ${areaId} does not exist.`);
+      }
+  
+      const areaData = areaSnapshot.data();
+      const updatedSubareas = areaData.subareas.filter(sa => sa.id !== subareaId);
+  
+      await updateDoc(areaRef, { subareas: updatedSubareas });
+    } catch (error) {
+      console.error("Erro ao excluir subárea:", error);
+      throw error;
+    }
+  };
+  
 
 export const addProjeto = async (areaId, subareaId, projeto) => {
     const areaRef = doc(db, "areas", areaId);

@@ -14,6 +14,7 @@ function Subareas({ area, voltar, atualizarArea }) {
   const [subareaSelecionada, setSubareaSelecionada] = useState(null);
   const [novoProjeto, setNovoProjeto] = useState('');
   const [novoNomeSubarea, setNovoNomeSubarea] = useState('');
+  const [modalAberto, setModalAberto] = useState(false);
 
   useEffect(() => {
     setSubareas(area.subareas || []);
@@ -30,16 +31,28 @@ function Subareas({ area, voltar, atualizarArea }) {
   const atualizarSubareas = (novasSubareas) => {
     const areaAtualizada = { ...area, subareas: novasSubareas };
     atualizarArea(areaAtualizada);
+    setSubareas(novasSubareas);
   };
 
-  const editarSubarea = async (index, novoNome) => {
-    const subareaAtualizada = { ...subareas[index], nome: novoNome };
-    await updateSubarea(area.id, subareas[index].id, subareaAtualizada);
-    const subareasAtualizadas = subareas.map((subarea, i) =>
-      i === index ? subareaAtualizada : subarea
+  const abrirModalEdicao = (index) => {
+    setSubareaSelecionada(index);
+    setNovoNomeSubarea(subareas[index].nome);
+    setModalAberto(true);
+  };
+
+  const fecharModalEdicao = () => {
+    setSubareaSelecionada(null);
+    setModalAberto(false);
+  };
+
+  const editarSubarea = async () => {
+    const subareaAtualizada = { ...subareas[subareaSelecionada], nome: novoNomeSubarea };
+    await updateSubarea(area.id, subareas[subareaSelecionada].id, subareaAtualizada);
+    const subareasAtualizadas = subareas.map((subarea, index) =>
+      index === subareaSelecionada ? subareaAtualizada : subarea
     );
     atualizarSubareas(subareasAtualizadas);
-    setSubareaSelecionada(null); // Fechar o campo de edição após salvar
+    fecharModalEdicao();
   };
 
   const excluirSubarea = async (index) => {
@@ -50,10 +63,6 @@ function Subareas({ area, voltar, atualizarArea }) {
 
   const abrirSubarea = (index) => {
     setSubareaSelecionada(index);
-  };
-
-  const fecharSubarea = () => {
-    setSubareaSelecionada(null);
   };
 
   const adicionarProjeto = async () => {
@@ -68,25 +77,33 @@ function Subareas({ area, voltar, atualizarArea }) {
   };
 
   const excluirProjeto = async (subareaIndex, projetoIndex) => {
-    await deleteProjeto(area.id, subareas[subareaIndex].id, subareas[subareaIndex].projetos[projetoIndex].id);
-    const subareasAtualizadas = subareas.map((subarea, index) =>
-      index === subareaIndex ? { ...subarea, projetos: subarea.projetos.filter((_, i) => i !== projetoIndex) } : subarea
-    );
-    atualizarSubareas(subareasAtualizadas);
+    try {
+      await deleteProjeto(area.id, subareas[subareaIndex].id, subareas[subareaIndex].projetos[projetoIndex].id);
+      const subareasAtualizadas = subareas.map((subarea, index) =>
+        index === subareaIndex ? { ...subarea, projetos: subarea.projetos.filter((_, i) => i !== projetoIndex) } : subarea
+      );
+      atualizarSubareas(subareasAtualizadas);
+    } catch (error) {
+      console.error("Erro ao excluir projeto:", error);
+    }
   };
 
   const editarProjeto = async (subareaIndex, projetoIndex, novoNome) => {
     const projetoAtualizado = { ...subareas[subareaIndex].projetos[projetoIndex], nome: novoNome };
-    await updateProjeto(area.id, subareas[subareaIndex].id, projetoAtualizado.id, projetoAtualizado);
-    const subareasAtualizadas = subareas.map((subarea, index) =>
-      index === subareaIndex ? {
-        ...subarea,
-        projetos: subarea.projetos.map((projeto, idx) =>
-          idx === projetoIndex ? projetoAtualizado : projeto
-        )
-      } : subarea
-    );
-    atualizarSubareas(subareasAtualizadas);
+    try {
+      await updateProjeto(area.id, subareas[subareaIndex].id, projetoAtualizado.id, projetoAtualizado);
+      const subareasAtualizadas = subareas.map((subarea, index) =>
+        index === subareaIndex ? {
+          ...subarea,
+          projetos: subarea.projetos.map((projeto, idx) =>
+            idx === projetoIndex ? projetoAtualizado : projeto
+          )
+        } : subarea
+      );
+      atualizarSubareas(subareasAtualizadas);
+    } catch (error) {
+      console.error("Erro ao editar projeto:", error);
+    }
   };
 
   return (
@@ -142,12 +159,27 @@ function Subareas({ area, voltar, atualizarArea }) {
               </div>
             )}
             <div>
-              <button onClick={() => editarSubarea(index)}>Editar</button>
+              <button onClick={() => abrirModalEdicao(index)}>Editar</button>
               <button onClick={() => excluirSubarea(index)}>Excluir</button>
             </div>
           </div>
         ))}
       </div>
+      {modalAberto && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>Editar Subárea</h2>
+            <input
+              type="text"
+              value={novoNomeSubarea}
+              onChange={(e) => setNovoNomeSubarea(e.target.value)}
+              placeholder="Digite o novo nome da subárea"
+            />
+            <button onClick={editarSubarea}>Salvar</button>
+            <button onClick={fecharModalEdicao}>Cancelar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
