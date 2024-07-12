@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-  getPontuacoes,
-  updatePontuacao,
-  getAreas
-} from '../auth/firebaseService';
+import { updatePontuacao, getPontuacoes, getAreas } from '../auth/firebaseService';
 
-function BarraPontuacoes({ tarefas, atividades, pontuacoe }) {
-  const [pontuacoes, setPontuacoes] = useState(pontuacoe);
+function BarraPontuacoes({ pontuacoes, setPontuacoes }) {
+  
   const [areas, setAreas] = useState([]);
-  const [subAreas, setSubAreas] = useState([]);
   const [mostrarSubareas, setMostrarSubareas] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
-      const pontuacoes = await getPontuacoes();
+      
       const areas = await getAreas();
 
       const areasComSubareas = areas.map(area => ({
@@ -21,38 +16,65 @@ function BarraPontuacoes({ tarefas, atividades, pontuacoe }) {
         subareas: area.subareas || []
       }));
 
-      const todasSubareas = areas.reduce((acc, area) => {
-        if (area.subareas) {
-          acc.push(...area.subareas);
-        }
-        return acc;
-      }, []);
-
-      setPontuacoes(pontuacoes);
+      
       setAreas(areasComSubareas);
-      setSubAreas(todasSubareas);
     };
-
     fetchData();
-  }, [pontuacoe]);
+  }, []);
 
-  const calcularPontuacoesSubareas = (itens) => {
-    const pontuacoesSubareas = {};
-    itens.forEach(item => {
-      if (item.finalizada && item.subarea) {
-        if (!pontuacoesSubareas[item.subarea]) {
-          pontuacoesSubareas[item.subarea] = 0;
-        }
-        pontuacoesSubareas[item.subarea] += item.numero;
-      }
+  const resetPontuacaoAreas = async () => {
+    const updatedAreas = areas.map(area => ({
+      ...area,
+      pontuacao: 0
+    }));
+
+    for (const area of updatedAreas) {
+      await updatePontuacao(area.nome, 0, true);
+    }
+
+    setPontuacoes(prev => {
+      const newPontuacoes = { ...prev };
+      updatedAreas.forEach(area => {
+        newPontuacoes[area.nome] = 0;
+      });
+      return newPontuacoes;
     });
-    return pontuacoesSubareas;
+    setAreas(updatedAreas);
   };
 
-  const pontuacoesSubareas = calcularPontuacoesSubareas([...tarefas, ...atividades]);
+  const resetPontuacaoSubareas = async () => {
+    const updatedAreas = areas.map(area => ({
+      ...area,
+      subareas: area.subareas.map(subarea => ({
+        ...subarea,
+        pontuacao: 0
+      }))
+    }));
+
+    for (const area of updatedAreas) {
+      for (const subarea of area.subareas) {
+        await updatePontuacao(subarea.nome, 0, true); 
+      }
+    }
+
+    setPontuacoes(prev => {
+      const newPontuacoes = { ...prev };
+      updatedAreas.forEach(area => {
+        area.subareas.forEach(subarea => {
+          newPontuacoes[subarea.nome] = 0;
+        });
+      });
+      return newPontuacoes;
+    });
+    setAreas(updatedAreas);
+  };
 
   return (
     <div>
+      <div>
+        <button onClick={resetPontuacaoAreas}>Resetar Pontuação das Áreas</button>
+        <button onClick={resetPontuacaoSubareas}>Resetar Pontuação das Subáreas</button>
+      </div>
       <div className="barra-pontuacoes">
         {areas.map((area) => (
           <div key={area.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
@@ -61,11 +83,11 @@ function BarraPontuacoes({ tarefas, atividades, pontuacoe }) {
           </div>
         ))}
       </div>
-
+      
       <button onClick={() => setMostrarSubareas(!mostrarSubareas)}>
         {mostrarSubareas ? 'Esconder Subáreas' : 'Mostrar Subáreas'}
       </button>
-
+      
       {mostrarSubareas && (
         <div className="barra-pontuacoes">
           {areas.map((area) => (
@@ -73,14 +95,13 @@ function BarraPontuacoes({ tarefas, atividades, pontuacoe }) {
               {area.subareas.map((subarea) => (
                 <div key={subarea.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
                   <div>{subarea.nome}</div>
-                  <div>{pontuacoesSubareas[subarea.nome] || 0}</div>
+                  <div>{pontuacoes[subarea.nome] || 0}</div>
                 </div>
               ))}
             </div>
           ))}
         </div>
       )}
-
     </div>
   );
 }

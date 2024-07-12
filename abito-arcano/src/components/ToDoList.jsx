@@ -16,6 +16,9 @@ import {
   getAreas
 } from '../auth/firebaseService';
 
+import BarraPontuacoes from './BarraPontuacoes';
+
+
 function ToDoList() {
   const [tarefas, setTarefas] = useState([]);
   const [atividades, setAtividades] = useState([]);
@@ -23,28 +26,20 @@ function ToDoList() {
   const [novaAtividade, setNovaAtividade] = useState('');
   const [itemEditando, setItemEditando] = useState(null);
   const [tipoEditando, setTipoEditando] = useState(null);
+  
   const [pontuacoes, setPontuacoes] = useState({});
-  const [areas, setAreas] = useState([]);
-  const [mostrarSubareas, setMostrarSubareas] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       const tarefas = await getListaTarefas();
       const atividades = await getListaAtividades();
+
       const pontuacoes = await getPontuacoes();
-      const areas = await getAreas();
-
-      const areasComSubareas = areas.map(area => ({
-        ...area,
-        subareas: area.subareas || []
-      }));
-
-
-
+     
       setTarefas(tarefas);
       setAtividades(atividades);
+
       setPontuacoes(pontuacoes);
-      setAreas(areasComSubareas);
     };
     fetchData();
   }, []);
@@ -123,91 +118,11 @@ function ToDoList() {
     }
   };
 
-  const resetPontuacaoAreas = async () => {
-    const updatedAreas = areas.map(area => ({
-      ...area,
-      pontuacao: 0
-    }));
-  
-    for (const area of updatedAreas) {
-      await updatePontuacao(area.nome, 0, true);
-    }
-  
-    setPontuacoes(prev => {
-      const newPontuacoes = { ...prev };
-      updatedAreas.forEach(area => {
-        newPontuacoes[area.nome] = 0;
-      });
-      return newPontuacoes;
-    });
-    setAreas(updatedAreas);
-  };
-  
-  const resetPontuacaoSubareas = async () => {
-    const updatedAreas = areas.map(area => ({
-      ...area,
-      subareas: area.subareas.map(subarea => ({
-        ...subarea,
-        pontuacao: 0
-      }))
-    }));
-  
-    for (const area of updatedAreas) {
-      for (const subarea of area.subareas) {
-        await updatePontuacao(subarea.nome, 0, true); 
-      }
-    }
-  
-    setPontuacoes(prev => {
-      const newPontuacoes = { ...prev };
-      updatedAreas.forEach(area => {
-        area.subareas.forEach(subarea => {
-          newPontuacoes[subarea.nome] = 0;
-        });
-      });
-      return newPontuacoes;
-    });
-    setAreas(updatedAreas);
-  };
-  
-
-
   return (
     <div>
       <h1>To-Do List</h1>
-      <div>
-        <button onClick={resetPontuacaoAreas}>Resetar Pontuação das Áreas</button>
-        <button onClick={resetPontuacaoSubareas}>Resetar Pontuação das Subáreas</button>
-      </div>
-      <div className="barra-pontuacoes">
-        {areas.map((area) => (
-          <div key={area.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
-            <div>{area.nome}</div>
-            <div>{pontuacoes[area.nome] || 0}</div>
-          </div>
-        ))}
-      </div>
 
-      <button onClick={() => setMostrarSubareas(!mostrarSubareas)}>
-        {mostrarSubareas ? 'Esconder Subáreas' : 'Mostrar Subáreas'}
-      </button>
-
-      {mostrarSubareas && (
-        <div className="barra-pontuacoes">
-          {areas.map((area) => (
-            <div key={area.id} style={{ marginBottom: '10px', display: "flex" }}>
-              {area.subareas.map((subarea) => (
-                <div key={subarea.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
-                  <div>{subarea.nome}</div>
-                  <div>{pontuacoes[subarea.nome] || 0}</div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-
-
+      <BarraPontuacoes pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} />
 
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1 }}>
