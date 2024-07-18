@@ -8,17 +8,19 @@ import {
     updatePontuacao
   } from '../auth/firebaseService';
 
-  export const addItem = async (nome, tipo, setItems, items) => {
+
+  export const addItem = async (nome, tipo, setItems, items, data) => {
     if (nome.trim() === '') return;
   
     const novoItem = { nome, numero: 0, area: '', subarea: '', finalizada: false };
-    if (tipo === 'tarefa') {
-      const tarefaAdicionada = await addTarefa(novoItem);
-      setItems([...items, tarefaAdicionada]);
-    } else {
-      const atividadeAdicionada = await addAtividade(novoItem);
-      setItems([...items, atividadeAdicionada]);
-    }
+    const itemAdicionado = tipo === 'tarefa' 
+      ? await addTarefa(novoItem) 
+      : await addAtividade(novoItem);
+  
+    setItems(prevItems => ({
+      ...prevItems,
+      [data]: [...(prevItems[data] || []), itemAdicionado]
+    }));
   };
   
   export const updateItem = async (id, nome, numero, area, subarea, tipo, setItems, items) => {

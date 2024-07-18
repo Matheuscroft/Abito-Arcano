@@ -8,6 +8,7 @@ import {
     deleteDoc,
     doc,
     query,
+    where,
     getDoc,
     setDoc
 } from 'firebase/firestore';
@@ -18,6 +19,41 @@ export const getListaTarefas = async () => {
     const tarefasList = tarefasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return tarefasList;
 };
+
+/*export const getTarefasPorDia = async (data) => {
+  const tarefasSnapshot = await getDocs(collection(db, "tarefasPorDia", data));
+  const tarefasList = tarefasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return tarefasList;
+};*/
+
+export const getTarefasPorDia = async (data) => {
+  const docRef = doc(db, 'tarefasPorDia', data);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return docSnap.data().tarefas || [];
+  } else {
+    return [];
+  }
+};
+
+export const addOrUpdateTarefasPorDia = async (data, tarefas) => {
+  try {
+    
+    const q = query(collection(db, 'dias'), where("data", "==", data));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const docRef = querySnapshot.docs[0].ref;
+      await updateDoc(docRef, { tarefas });
+    } else {
+      console.error(`Nenhum documento encontrado para a data ${data}`);
+    }
+  } catch (error) {
+    console.error(`Erro ao atualizar as tarefas para o dia ${data}:`, error);
+  }
+};
+
 
 
 export const addTarefa = async (tarefa) => {
@@ -237,4 +273,91 @@ export const getListaAtividades = async () => {
     const atividadeRef = doc(db, 'atividades', id);
     await deleteDoc(atividadeRef);
   };
+
+export const addDia = async (dia) => {
+    try {
+        await addDoc(collection(db, 'dias'), { data: dia });
+    } catch (error) {
+        console.error('Erro ao adicionar dia: ', error);
+    }
+};
+
+export const getDias = async () => {
+  try {
+      const q = query(collection(db, 'dias'));
+      const querySnapshot = await getDocs(q);
+      const dias = [];
+      querySnapshot.forEach((doc) => {
+          dias.push(doc.data());
+      });
+      return dias.sort((a, b) => new Date(a.data.split('/').reverse().join('-')) - new Date(b.data.split('/').reverse().join('-')));
+  } catch (error) {
+      console.error('Erro ao buscar dias: ', error);
+      return [];
+  }
+};
+
+
+export const inserirDias = async (novosDias) => {
+  try {
+      const diasRef = collection(db, 'dias');
+
+      const querySnapshot = await getDocs(diasRef);
+      const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+
+      const addPromises = novosDias.map(dia => addDoc(diasRef, dia));
+      await Promise.all(addPromises);
+
+      console.log('Dias resetados com sucesso');
+  } catch (error) {
+      console.error('Erro ao resetar dias: ', error);
+  }
+};
+
+
+export const setarDataAtual = async (data) => {
+  try {
+      await setDoc(doc(db, 'config', 'dataAtual'), { dataAtual: data });
+  } catch (error) {
+      console.error('Erro ao definir data atual: ', error);
+  }
+};
+
+export const setarDataAtualParaDia = async (dia, valor) => {
+  try {
+      const docRef = doc(db, 'dias', dia);
+      await setDoc(docRef, { dataAtual: valor }, { merge: true });
+  } catch (error) {
+      console.error('Erro ao definir data atual para dia: ', error);
+  }
+};
+
+export const getDiaAtual = async () => {
+  try {
+      const diasSnapshot = await getDocs(collection(db, 'dias'));
+    
+      const diaAtualDoc = diasSnapshot.docs.find(doc => doc.data().dataAtual === true);
+      console.log('Dia atual encontrado:', diaAtualDoc ? diaAtualDoc.id : 'Nenhum dia atual encontrado');
+      return diaAtualDoc ? diaAtualDoc.id : null;
+  } catch (error) {
+      console.error('Erro ao buscar dia atual: ', error);
+      return null;
+  }
+};
+
+export const setHoraTrocaFirebase = async (hora) => {
+  const docRef = doc(db, 'config', 'horaTroca');
+  await setDoc(docRef, { hora });
+};
+
+export const getHoraTrocaFirebase = async () => {
+  const docRef = doc(db, 'config', 'horaTroca');
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+      return docSnap.data().hora;
+  } else {
+      return null;
+  }
+};
 

@@ -3,7 +3,7 @@ import Tarefa from './Tarefa';
 import EditorItem from './EditorItem';
 import { addItem, updateItem, toggleFinalizada, deleteItem } from './todoUtils';
 
-function ListaTarefas({ tarefas, setTarefas, pontuacoes, setPontuacoes }) {
+function ListaTarefas({ tarefas, setTarefas, setPontuacoes }) {
   const [novaTarefa, setNovaTarefa] = useState('');
   const [itemEditando, setItemEditando] = useState(null);
 

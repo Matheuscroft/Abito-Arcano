@@ -7,6 +7,7 @@ import {
 import BarraPontuacoes from './BarraPontuacoes';
 import ListaTarefas from './ListaTarefas';
 import ListaAtividades from './ListaAtividades';
+import Diarias from './Diarias';
 
 function ToDoList() {
   const [tarefas, setTarefas] = useState([]);
@@ -35,12 +36,7 @@ function ToDoList() {
 
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1 }}>
-          <ListaTarefas
-            tarefas={tarefas}
-            setTarefas={setTarefas}
-            pontuacoes={pontuacoes}
-            setPontuacoes={setPontuacoes}
-          />
+        <Diarias tarefas={tarefas} setPontuacoes={setPontuacoes}/>
         </div>
 
         <div style={{ flex: 1 }}>
