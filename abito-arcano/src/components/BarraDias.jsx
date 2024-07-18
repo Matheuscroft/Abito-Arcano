@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { inserirDias } from '../auth/firebaseService';
+import { inserirDias } from '../auth/firebaseDiasHoras';
 
 const BarraDias = ({ dias, setDias, setDiaVisualizado, resetarListaDeDias, setDataAtual, tarefasGerais, diaVisualizado }) => {
     const containerRef = useRef(null);

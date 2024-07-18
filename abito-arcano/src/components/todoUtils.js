@@ -1,12 +1,17 @@
 import {
-    addTarefa,
-    updateTarefa,
-    deleteTarefa,
+    updatePontuacao
+  } from '../auth/firebasePontuacoes';
+  import {
     addAtividade,
     updateAtividade,
-    deleteAtividade,
-    updatePontuacao
-  } from '../auth/firebaseService';
+    deleteAtividade
+  } from '../auth/firebaseAtividades';
+
+  import {
+    addTarefa,
+    updateTarefa,
+    deleteTarefa
+  } from '../auth/firebaseTarefas';
 
 
   export const addItem = async (nome, tipo, setItems, items, data) => {

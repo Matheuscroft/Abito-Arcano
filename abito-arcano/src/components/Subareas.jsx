@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  addSubarea,
-  updateSubarea,
-  deleteSubarea,
+  
   addProjeto,
   updateProjeto,
   deleteProjeto
-} from '../auth/firebaseService';
+} from '../auth/firebaseProjetos';
+import { addSubarea,
+  updateSubarea,
+  deleteSubarea } from '../auth/firebaseAreaSubarea';
 
 function Subareas({ area, voltar, atualizarArea }) {
   const [subareas, setSubareas] = useState([]);

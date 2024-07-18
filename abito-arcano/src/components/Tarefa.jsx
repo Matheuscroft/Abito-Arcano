@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCorArea } from '../auth/firebaseService';
+import { getCorArea } from '../auth/firebaseAreaSubarea';
 
 function Tarefa({ tarefa, onEdit, onDelete, onToggle }) {
   const [corArea, setCorArea] = useState('#000');

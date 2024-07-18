@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAreas } from '../auth/firebaseService';
+import { getAreas } from '../auth/firebaseAreaSubarea';
 
 function EditorItem({ item, onSave, tipo, setItemEditando }) {
   const [nome, setNome] = useState(item.nome);

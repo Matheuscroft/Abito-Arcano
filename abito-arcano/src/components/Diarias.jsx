@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import ListaTarefas from './ListaTarefas';
 
-import { getListaTarefas, addOrUpdateTarefasPorDia, getDias, setHoraTrocaFirebase, getHoraTrocaFirebase, inserirDias } from '../auth/firebaseService';
+import { getDias, inserirDias } from '../auth/firebaseDiasHoras';
+import { getListaTarefas, addOrUpdateTarefasPorDia } from '../auth/firebaseTarefas';
 import RelogioCron from './RelogioCron';
 import BarraDias from './BarraDias';
 

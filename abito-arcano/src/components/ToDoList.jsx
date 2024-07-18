@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-  getListaTarefas,
-  getListaAtividades,
   getPontuacoes,
-} from '../auth/firebaseService';
+} from '../auth/firebasePontuacoes';
+import {
+  getListaAtividades
+} from '../auth/firebaseAtividades';
+import {
+  getListaTarefas
+} from '../auth/firebaseTarefas';
 import BarraPontuacoes from './BarraPontuacoes';
-import ListaTarefas from './ListaTarefas';
 import ListaAtividades from './ListaAtividades';
 import Diarias from './Diarias';
 

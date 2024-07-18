@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { updatePontuacao, getPontuacoes, getAreas } from '../auth/firebaseService';
+import { updatePontuacao, getPontuacoes } from '../auth/firebasePontuacoes';
+import { getAreas } from '../auth/firebaseAreaSubarea';
 
 function BarraPontuacoes({ pontuacoes, setPontuacoes }) {
   

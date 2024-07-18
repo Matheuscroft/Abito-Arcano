@@ -5,7 +5,7 @@ import {
     addArea,
     updateArea,
     deleteArea
-} from '../auth/firebaseService';
+} from '../auth/firebaseAreaSubarea';
 
 function Areas() {
     const [areas, setAreas] = useState([]);
