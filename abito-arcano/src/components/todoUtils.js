@@ -15,17 +15,24 @@ import {
 
 
   export const addItem = async (nome, tipo, setItems, items, data) => {
+    console.log("foi")
     if (nome.trim() === '') return;
-  
+    console.log("foi 2")
     const novoItem = { nome, numero: 0, area: '', subarea: '', finalizada: false };
     const itemAdicionado = tipo === 'tarefa' 
       ? await addTarefa(novoItem) 
       : await addAtividade(novoItem);
-  
-    setItems(prevItems => ({
+      console.log("foi 3")
+      console.log("novoItem")
+      console.log(novoItem)
+    /*setItems(prevItems => ({
       ...prevItems,
       [data]: [...(prevItems[data] || []), itemAdicionado]
-    }));
+    }));*/
+
+    setItems([...items, itemAdicionado]);
+
+    console.log("foi 4")
   };
   
   export const updateItem = async (id, nome, numero, area, subarea, tipo, setItems, items) => {

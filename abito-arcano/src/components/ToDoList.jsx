@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  getPontuacoes,
-} from '../auth/firebasePontuacoes';
-import {
-  getListaAtividades
-} from '../auth/firebaseAtividades';
-import {
-  getListaTarefas
-} from '../auth/firebaseTarefas';
+import { getPontuacoes } from '../auth/firebasePontuacoes';
+import { getListaAtividades } from '../auth/firebaseAtividades';
+import { getListaTarefas} from '../auth/firebaseTarefas';
 import BarraPontuacoes from './BarraPontuacoes';
 import ListaAtividades from './ListaAtividades';
 import Diarias from './Diarias';
@@ -26,9 +20,16 @@ function ToDoList() {
       setTarefas(tarefas);
       setAtividades(atividades);
       setPontuacoes(pontuacoes);
+      console.log("atividades")
+      console.log(atividades)
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    console.log("Estado atualizadOOOOOO - atividades:");
+    console.log(atividades)
+}, [atividades]);
 
 
   return (
