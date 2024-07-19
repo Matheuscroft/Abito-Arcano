@@ -63,7 +63,7 @@ function App() {
             </div>
             <div className="main-content">
               <Routes>
-                <Route path="/tarefas" element={<ToDoList />} />
+                <Route path="/tarefas" element={<ToDoList user={user}/>} />
                 <Route path="/areas" element={<Areas />} />
                 <Route path="/projetos" element={<div>Componentes de Projetos</div>} />
                 <Route path="/missoes" element={<div>Componentes de Missões</div>} />

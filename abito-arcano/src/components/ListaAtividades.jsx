@@ -3,7 +3,7 @@ import Atividade from './Atividade';
 import EditorItem from './EditorItem';
 import { addItem, updateItem, toggleFinalizada, deleteItem } from './todoUtils';
 
-function ListaAtividades({ atividades, setAtividades, setPontuacoes }) {
+function ListaAtividades({ user, atividades, setAtividades, setPontuacoes }) {
   const [novaAtividade, setNovaAtividade] = useState('');
   const [itemEditando, setItemEditando] = useState(null);
 

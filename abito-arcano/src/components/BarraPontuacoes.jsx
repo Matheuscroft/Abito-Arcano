@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { updatePontuacao, getPontuacoes } from '../auth/firebasePontuacoes';
 import { getAreas } from '../auth/firebaseAreaSubarea';
 
-function BarraPontuacoes({ pontuacoes, setPontuacoes }) {
+function BarraPontuacoes({ user, pontuacoes, setPontuacoes }) {
   
   const [areas, setAreas] = useState([]);
   const [mostrarSubareas, setMostrarSubareas] = useState(false);

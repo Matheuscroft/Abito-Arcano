@@ -6,7 +6,7 @@ import { getListaTarefas, addOrUpdateTarefasPorDia } from '../auth/firebaseTaref
 import RelogioCron from './RelogioCron';
 import BarraDias from './BarraDias';
 
-const Diarias = ({ setPontuacoes }) => {
+const Diarias = ({ user, setPontuacoes }) => {
     const [tarefasPorDia, setTarefasPorDia] = useState({});
     const [dataAtual, setDataAtual] = useState('');
     const [tarefasGerais, setTarefasGerais] = useState([]);
@@ -19,7 +19,7 @@ const Diarias = ({ setPontuacoes }) => {
             //resetarListaDeDias()
             const diasSalvos = await getDias();
 
-            const tarefasGerais = await getListaTarefas();
+            const tarefasGerais = await getListaTarefas(user.uid);
             setTarefasGerais(tarefasGerais);
 
             const tarefasPorDiaTemp = {};
