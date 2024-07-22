@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { inserirDias } from '../auth/firebaseDiasHoras';
 
-const BarraDias = ({ dias, setDias, setDiaVisualizado, resetarListaDeDias, setDataAtual, tarefasGerais, diaVisualizado }) => {
+const BarraDias = ({ user, dias, setDias, setDiaVisualizado, resetarListaDeDias, setDataAtual, tarefasGerais, diaVisualizado }) => {
     const containerRef = useRef(null);
 
 
@@ -26,7 +26,7 @@ const BarraDias = ({ dias, setDias, setDiaVisualizado, resetarListaDeDias, setDa
             console.log("diasAtualizados")
             console.log(diasAtualizados)
 
-            await inserirDias(diasAtualizados);
+            await inserirDias(diasAtualizados, user.uid);
             setDias(diasAtualizados);
         } catch (error) {
             console.error("Erro ao resetar tarefas futuras:", error);
@@ -37,7 +37,7 @@ const BarraDias = ({ dias, setDias, setDiaVisualizado, resetarListaDeDias, setDa
         try {
             const hoje = new Date().toLocaleDateString('pt-BR');
             const diasSalvos = dias.map(dia => (dia.data === hoje ? { ...dia, dataAtual: true } : { ...dia, dataAtual: false }));
-            await inserirDias(diasSalvos);
+            await inserirDias(diasSalvos, user.uid);
             setDataAtual(hoje);
             setDiaVisualizado(hoje);
         } catch (error) {

@@ -24,7 +24,7 @@ function ListaAtividades({ user, atividades, setAtividades, setPontuacoes }) {
               atividade={atividade}
               onEdit={() => setItemEditando(atividade)}
               onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades)}
-              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes)}
+              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid)}
             />
           </li>
         ))}
@@ -44,7 +44,7 @@ function ListaAtividades({ user, atividades, setAtividades, setPontuacoes }) {
               atividade={atividade}
               onEdit={() => setItemEditando(atividade)}
               onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades)}
-              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes)}
+              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid)}
             />
           </li>
         ))}

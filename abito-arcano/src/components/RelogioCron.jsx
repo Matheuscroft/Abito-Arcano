@@ -48,6 +48,12 @@ const RelogioCron = ({ trocarDia }) => {
         await setHoraTrocaFirebase(novaHoraTroca);
     };
 
+    const resetHoraTroca = async () => {
+        const defaultHoraTroca = '00:00:00';
+        setHoraTroca(defaultHoraTroca);
+        await setHoraTrocaFirebase(defaultHoraTroca);
+    };
+
     return (
         <div>
             <span>Hora Atual: {horaAtual}</span>
@@ -57,6 +63,7 @@ const RelogioCron = ({ trocarDia }) => {
                 onChange={handleHoraTrocaChange}
                 step="60"
             />
+            <button onClick={resetHoraTroca}>Resetar Hora de Troca</button>
         </div>
     );
 };

@@ -1,47 +1,47 @@
 import { db } from './firebase';
 import {
-    collection,
-    getDocs,
-    addDoc,
-    deleteDoc,
     doc,
-    query,
     getDoc,
     setDoc
 } from 'firebase/firestore';
 
-export const getDias = async () => {
+export const getDias = async (userId) => {
     try {
-        const q = query(collection(db, 'dias'));
-        const querySnapshot = await getDocs(q);
-        const dias = [];
-        querySnapshot.forEach((doc) => {
-            dias.push(doc.data());
-        });
-        return dias.sort((a, b) => new Date(a.data.split('/').reverse().join('-')) - new Date(b.data.split('/').reverse().join('-')));
+        if (!userId) {
+            console.error('userId não fornecido');
+            return [];
+        }
+
+        const docRef = doc(db, 'dias', userId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const dias = data.dias || [];
+            return dias.sort((a, b) => new Date(a.data.split('/').reverse().join('-')) - new Date(b.data.split('/').reverse().join('-')));
+        } else {
+            return [];
+        }
     } catch (error) {
         console.error('Erro ao buscar dias: ', error);
         return [];
     }
-  };
+};
+
   
   
-  export const inserirDias = async (novosDias) => {
+export const inserirDias = async (diasComUsuario) => {
     try {
-        const diasRef = collection(db, 'dias');
-  
-        const querySnapshot = await getDocs(diasRef);
-        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
-        await Promise.all(deletePromises);
-  
-        const addPromises = novosDias.map(dia => addDoc(diasRef, dia));
-        await Promise.all(addPromises);
-  
+        const { userId, dias } = diasComUsuario;
+        const diasRef = doc(db, 'dias', userId);
+
+        await setDoc(diasRef, { userId, dias });
+
         console.log('Dias resetados com sucesso');
     } catch (error) {
         console.error('Erro ao resetar dias: ', error);
     }
-  };
+};
   
   
   
