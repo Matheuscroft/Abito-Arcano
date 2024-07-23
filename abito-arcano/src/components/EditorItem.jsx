@@ -25,8 +25,25 @@ function EditorItem({ item, onSave, tipo, setItemEditando }) {
   }, [area, areas]);
 
   const handleSave = () => {
-    setItemEditando(false)
-    onSave(nome, numero, area, subarea);
+    const areaEncontrada = areas.find(a => a.nome === area);
+    const subareaEncontrada = areaEncontrada?.subareas.find(s => s.nome === subarea);
+
+    console.log("handlesave")
+    console.log("areaEncontrada")
+    console.log(areaEncontrada)
+    console.log("subareaEncontrada")
+    console.log(subareaEncontrada)
+    
+    const areaId = areaEncontrada ? areaEncontrada.id : null;
+    const subareaId = subareaEncontrada ? subareaEncontrada.id : null;
+
+    console.log("areaId")
+    console.log(areaId)
+    console.log("subareaId")
+    console.log(subareaId)
+
+    setItemEditando(false);
+    onSave(nome, numero, area, subarea, areaId, subareaId);
   };
 
   return (

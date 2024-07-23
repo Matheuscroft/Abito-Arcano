@@ -8,120 +8,157 @@ import {
 } from '../auth/firebaseAtividades';
 
 import {
-  addTarefa,
   updateTarefa,
   deleteTarefa
 } from '../auth/firebaseTarefas';
 import { inserirDias } from '../auth/firebaseDiasHoras';
 import { getListaTarefas, substituirTarefasGerais } from '../auth/firebaseTarefas';
 
+const buscarIdsAreaESubarea = (areas, areaNome, subareaNome) => {
+  let areaId = null;
+  let subareaId = null;
 
-export const addItem = async (nome, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia) => {
+  console.log("areas")
+  console.log(areas)
+  console.log("areaNome")
+  console.log(areaNome)
+  console.log("subareaNome")
+  console.log(subareaNome)
+
+  const areaEncontrada = areas.find(area => area.nome === areaNome);
+  if (areaEncontrada) {
+    areaId = areaEncontrada.id;
+
+    console.log("areaEncontrada")
+    console.log(areaEncontrada)
+    console.log("areaId")
+    console.log(areaId)
+
+    const subareaEncontrada = areaEncontrada.subareas.find(subarea => subarea.nome === subareaNome);
+    console.log("subareaEncontrada")
+    console.log(subareaEncontrada)
+    if (subareaEncontrada) {
+      console.log(" if (subareaEncontrada)")
+      subareaId = subareaEncontrada.id;
+      console.log("subareaId")
+      console.log(subareaId)
+    }
+  }
+
+  return { areaId, subareaId };
+};
+
+
+export const addItem = async (nome, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, areas) => {
   if (nome.trim() === '') return;
-  const novoItem = { nome, numero: 0, area: 'Sem Categoria', subarea: '', finalizada: false };
-  const itemAdicionado = tipo === 'tarefa'
-    ? await addTarefa(novoItem, userId)
-    : await addAtividade(novoItem);
 
-  setItems([...items, itemAdicionado]);
+  const novoItem = { nome, numero: 0, area: 'Sem Categoria', subarea: '', finalizada: false };
+  const novoItemComId = { ...novoItem, id: items.length > 0 ? items[items.length - 1].id + 1 : 1 };
+
+  if (tipo === 'atividade') {
+    await addAtividade(novoItem);
+  }
+
+  setItems([...items, novoItemComId]);
 
   if (tipo === 'tarefa') {
-    const diaAtual = dias.find(dia => dia.dataAtual);
-    if (!diaAtual) {
-      console.error("Dia atual não encontrado");
-      return;
-    }
-    const dataAtual = new Date(diaAtual.data.split('/').reverse().join('-')).toISOString().split('T')[0];
+    const { areaId, subareaId } = buscarIdsAreaESubarea(areas, novoItem.area, novoItem.subarea);
+    const novoItemComIds = { ...novoItemComId, areaId, subareaId };
 
-    const tarefasPorDiaAtualizadas = {};
-    dias.forEach(dia => {
-        tarefasPorDiaAtualizadas[dia.data] = [...(tarefasPorDia[dia.data] || []), novoItem];
-    });
-    setTarefasPorDia(tarefasPorDiaAtualizadas);
-
-    const diasAtualizados = dias.map(dia => {
-      console.log("dia");
-      console.log(dia);
-      const diaData = new Date(dia.data.split('/').reverse().join('-')).toISOString().split('T')[0];;
-      console.log("diaData");
-      console.log(diaData);
-      if (diaData >= dataAtual) {
-        return { ...dia, tarefas: [...dia.tarefas, itemAdicionado] };
-      }
-      return dia;
-    });
-
-    await inserirDias({ userId, dias: diasAtualizados });
-    setDias(diasAtualizados);
-
-    console.log("Dias atualizados localmente e no Firebase");
-    console.log(diasAtualizados);
+    await atualizarTarefasEDias(novoItemComIds, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, false);
   }
 };
 
 
-export const updateItem = async (id, nome, numero, area, subarea, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia) => {
-
-  console.log("id")
-  console.log(id)
-
-  console.log("items")
-  console.log(items)
-  console.log("userId")
-  console.log(userId)
-  console.log("dias")
-  console.log(dias)
-
-  /*const itemAtualizado = tipo === 'tarefa'
-      ? await updateTarefa(id, { nome, numero, area, subarea }, userId, dias)
-      : await updateAtividade(id, { nome, numero, area, subarea });
-
-  const itensAtualizados = items.map(item => item.id === id ? itemAtualizado : item);*/
-
-
-
+export const updateItem = async (id, nome, numero, area, subarea, areaId, subareaId, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, areas) => {
   if (tipo === 'tarefa') {
-    // 1. Obter a lista de tarefas geral do Firebase.
-    const tarefasGerais = await getListaTarefas(userId);
-    console.log("dias")
-  console.log(dias)
-
-    // 2. Encontrar e substituir a tarefa modificada na lista geral.
-    const tarefasAtualizadas = tarefasGerais.map(tarefa => tarefa.id === id ? { ...tarefa, nome, numero, area, subarea } : tarefa);
-    console.log("dias")
-  console.log(dias)
-
-    // 3. Atualizar a lista geral no Firebase.
-    await substituirTarefasGerais(userId, tarefasAtualizadas);
-
-    const diaAtual = dias.find(dia => dia.dataAtual);
-  
-    const dataAtual = new Date(diaAtual.data.split('/').reverse().join('-')).toISOString().split('T')[0];
-
-    const tarefasPorDiaAtualizadas = {};
-    dias.forEach(dia => {
-        tarefasPorDiaAtualizadas[dia.data] = (tarefasPorDia[dia.data] || []).map(tarefa =>
-            tarefa.id === id ? { ...tarefa, nome, numero, area, subarea } : tarefa
-        );
-    });
-    setTarefasPorDia(tarefasPorDiaAtualizadas);
-
-    const diasAtualizados = dias.map(dia => {
-      const diaData = new Date(dia.data.split('/').reverse().join('-')).toISOString().split('T')[0];
-      if (diaData >= dataAtual) {
-        const tarefasAtualizadasDia = dia.tarefas.map(tarefa => tarefa.id === id ? { ...tarefa, nome, numero, area, subarea } : tarefa);
-        return { ...dia, tarefas: tarefasAtualizadasDia };
-      }
-      return dia;
-    });
-
-    await inserirDias({ userId, dias: diasAtualizados });
-    setDias(diasAtualizados);
+    const itemAtualizado = { id, nome, numero, area, subarea, areaId, subareaId };
+    console.log("itemAtualizado")
+    console.log(itemAtualizado)
+    await atualizarTarefasEDias(itemAtualizado, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, true);
+  } else {
+    const itemAtualizado = { id, nome, numero, area, subarea };
+    const itensAtualizados = items.map(item => item.id === id ? { ...item, nome, numero, area, subarea } : item);
+    setItems(itensAtualizados);
+    await updateAtividade(id, { nome, numero, area, subarea });
   }
+};
 
-  const itensAtualizados = items.map(item => item.id === id ? { ...item, nome, numero, area, subarea } : item);
+
+
+const atualizarTarefasEDias = async (item, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, isUpdate = false) => {
+  
+  console.log("item")
+  console.log(item)
+  
+
+  let novasTarefas;
+  if (isUpdate) {
+    console.log("if")
+    const tarefasGerais = await getListaTarefas(userId);
+    novasTarefas = tarefasGerais.map(tarefa =>
+      tarefa.id === item.id 
+        ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId } 
+        : tarefa
+    );
+  } else {
+    console.log("else")
+    novasTarefas = [...items, item];
+  }
+  console.log("novasTarefas do atualizar dias e tarefas")
+  console.log(novasTarefas)
+  await substituirTarefasGerais(userId, novasTarefas);
+
+  const tarefasPorDiaAtualizadas = {};
+  dias.forEach(dia => {
+    if (isUpdate) {
+      tarefasPorDiaAtualizadas[dia.data] = (tarefasPorDia[dia.data] || []).map(tarefa =>
+        tarefa.id === item.id 
+          ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId } 
+          : tarefa
+      );
+    } else {
+      tarefasPorDiaAtualizadas[dia.data] = [...(tarefasPorDia[dia.data] || []), item];
+    }
+  });
+  setTarefasPorDia(tarefasPorDiaAtualizadas);
+
+  const diaAtual = dias.find(dia => dia.dataAtual);
+  const dataAtual = new Date(diaAtual.data.split('/').reverse().join('-')).toISOString().split('T')[0];
+
+  const diasAtualizados = dias.map(dia => {
+    const diaData = new Date(dia.data.split('/').reverse().join('-')).toISOString().split('T')[0];
+    if (diaData >= dataAtual) {
+      const tarefasAtualizadasDia = isUpdate
+        ? dia.tarefas.map(tarefa => 
+          tarefa.id === item.id 
+            ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId } 
+            : tarefa
+        )
+        : [...dia.tarefas, item];
+      return { ...dia, tarefas: tarefasAtualizadasDia };
+    }
+    return dia;
+  });
+
+  await inserirDias({ userId, dias: diasAtualizados });
+  setDias(diasAtualizados);
+
+  console.log("Dias atualizados localmente e no Firebase");
+  console.log(diasAtualizados);
+
+  const itensAtualizados = isUpdate
+    ? items.map(itemAtual => itemAtual.id === item.id ? { ...itemAtual, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea } : itemAtual)
+    : [...items, item];
   setItems(itensAtualizados);
 };
+
+
+
+
+
+
+
 
 
 
@@ -184,12 +221,29 @@ export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes,
 };
 
 
-export const deleteItem = async (id, tipo, setItems, items) => {
+export const deleteItem = async (id, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia) => {
   if (tipo === 'tarefa') {
-    await deleteTarefa(id);
+    const tarefasAtualizadas = items.filter(item => item.id !== id);
+    setItems(tarefasAtualizadas);
+
+    const tarefasPorDiaAtualizadas = {};
+    dias.forEach(dia => {
+      tarefasPorDiaAtualizadas[dia.data] = (tarefasPorDia[dia.data] || []).filter(tarefa => tarefa.id !== id);
+    });
+    setTarefasPorDia(tarefasPorDiaAtualizadas);
+
+    const diasAtualizados = dias.map(dia => ({
+      ...dia,
+      tarefas: dia.tarefas.filter(tarefa => tarefa.id !== id)
+    }));
+
+    await substituirTarefasGerais(userId, tarefasAtualizadas);
+    await inserirDias({ userId, dias: diasAtualizados });
+
+    setDias(diasAtualizados);
   } else {
     await deleteAtividade(id);
+    setItems(items.filter(item => item.id !== id));
   }
-  setItems(items.filter(item => item.id !== id));
 };
 
