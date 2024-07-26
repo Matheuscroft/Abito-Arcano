@@ -1,11 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Atividade from './Atividade';
 import EditorItem from './EditorItem';
-import { addItem, updateItem, toggleFinalizada, deleteItem } from './todoUtils';
+import { addItem, updateItem, toggleFinalizada, deleteItem, buscarIdsAreaESubarea } from './todoUtils';
+import { getListaAtividades, setListaAtividades } from '../auth/firebaseAtividades';
 
-function ListaAtividades({ user, atividades, setAtividades, setPontuacoes }) {
+function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, dias, setDias, areas, resetarListaAtividades }) {
   const [novaAtividade, setNovaAtividade] = useState('');
   const [itemEditando, setItemEditando] = useState(null);
+
+  const reformarAtividades = async (userId, areas) => {
+    try {
+      const atividades = await getListaAtividades(userId);
+
+      const atividadesReformadas = atividades.map(atividade => {
+        const { areaId, subareaId } = buscarIdsAreaESubarea(areas, atividade.area, atividade.subarea);
+
+        return {
+          id: atividade.id,
+          area: atividade.area,
+          areaId: areaId,
+          finalizada: atividade.finalizada,
+          nome: atividade.nome,
+          numero: atividade.numero,
+          subarea: atividade.subarea,
+          subareaId: subareaId,
+          userId: atividade.userId
+        };
+      });
+
+      console.log("atividadesReformadas")
+      console.log(atividadesReformadas)
+
+      await setListaAtividades(userId, atividadesReformadas);
+      console.log("Atividades reformadas e salvas com sucesso.");
+    } catch (error) {
+      console.error("Erro ao reformar as atividades:", error);
+    }
+  };
+
+  useEffect(() => {
+    console.log("Estado no ListaAtividades - atividades:");
+    console.log(atividades)
+
+    console.log("atividades.atividades:");
+    console.log(atividades.atividades)
+  }, [atividades]);
+
+  if (!Array.isArray(atividades.atividades)) {
+    atividades.atividades = [];
+  }
 
   return (
     <div>
@@ -16,15 +59,17 @@ function ListaAtividades({ user, atividades, setAtividades, setPontuacoes }) {
         onChange={(e) => setNovaAtividade(e.target.value)}
         placeholder="Digite o nome da atividade"
       />
-      <button onClick={() => addItem(novaAtividade, 'atividade', setAtividades, atividades)}>Adicionar Atividade</button>
+      <button onClick={() => addItem(novaAtividade, 'atividade', setAtividades, atividades.atividades, user.uid)}>Adicionar Atividade</button>
+      <button onClick={() => reformarAtividades(user.uid, areas)}>Reformar Lista de Atividades</button>
+      <button onClick={() => resetarListaAtividades()}>Resetar Lista de Atividades</button>
       <ul>
         {atividades.filter(atividade => !atividade.finalizada).map((atividade) => (
           <li key={atividade.id}>
             <Atividade
               atividade={atividade}
               onEdit={() => setItemEditando(atividade)}
-              onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades)}
-              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid)}
+              onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades, user.uid)}
+              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid, dias, setDias)}
             />
           </li>
         ))}
@@ -33,7 +78,7 @@ function ListaAtividades({ user, atividades, setAtividades, setPontuacoes }) {
         <EditorItem
           item={itemEditando}
           setItemEditando={setItemEditando}
-          onSave={(nome, numero, area, subarea) => updateItem(itemEditando.id, nome, numero, area, subarea, 'atividade', setAtividades, atividades)}
+          onSave={(nome, numero, area, subarea, areaId, subareaId) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'atividade', setAtividades, atividades, user.uid)}
         />
       )}
       <h2>Finalizadas</h2>
@@ -43,8 +88,8 @@ function ListaAtividades({ user, atividades, setAtividades, setPontuacoes }) {
             <Atividade
               atividade={atividade}
               onEdit={() => setItemEditando(atividade)}
-              onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades)}
-              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid)}
+              onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades, user.uid)}
+              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid, dias, setDias)}
             />
           </li>
         ))}

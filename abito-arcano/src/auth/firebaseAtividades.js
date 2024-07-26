@@ -2,8 +2,8 @@ import { db } from './firebase';
 import {
   collection,
   getDocs,
-  addDoc,
-  updateDoc,
+  getDoc,
+  setDoc,
   deleteDoc,
   doc,
   query,
@@ -12,28 +12,48 @@ import {
 
 
 export const getListaAtividades = async (userId) => {
-  const q = query(collection(db, 'atividades'), where("userId", "==", userId));
-  const querySnapshot = await getDocs(q);
-  const atividades = [];
-  querySnapshot.forEach((doc) => {
-    atividades.push({ id: doc.id, ...doc.data() });
-  });
-  return atividades;
-};
-
-export const addAtividade = async (atividade, userId) => {
-  const docRef = await addDoc(collection(db, 'atividades'), { ...atividade, userId });
-  return { id: docRef.id, ...atividade };
+  const atividadesRef = doc(db, 'atividades', userId);
+  const atividadesDoc = await getDoc(atividadesRef);
+  if (atividadesDoc.exists()) {
+    return atividadesDoc.data();
+  } else {
+    return { userId, atividades: [] };
+  }
 };
 
 
-export const updateAtividade = async (id, atividade) => {
-  const atividadeRef = doc(db, 'atividades', id);
-  await updateDoc(atividadeRef, atividade);
-  return { id, ...atividade };
+/*export const setListaAtividades = async (userId, atividadesAtualizadas) => {
+  try {
+    const atividadesRef = doc(db, 'atividades', userId);
+    await setDoc(atividadesRef, { userId, atividades: atividadesAtualizadas }, { merge: true });
+    console.log("Atividades gerais substituídas com sucesso.");
+  } catch (error) {
+    console.error("Erro ao substituir as atividades gerais:", error);
+  }
+};*/
+
+export const setListaAtividades = async (userId, atividadesAtualizadas) => {
+  try {
+    const atividadesRef = doc(db, 'atividades', userId);
+
+    const atividadesDoc = await getDoc(atividadesRef);
+
+    if (atividadesDoc.exists()) {
+      console.log("Documento existente. Substituindo a lista de atividades.");
+
+      await setDoc(atividadesRef, { userId, atividades: atividadesAtualizadas }, { merge: false });
+      console.log("Atividades gerais substituídas com sucesso.");
+    } else {
+      console.log("Documento não existente. Criando com a nova lista de atividades:");
+      console.log(atividadesAtualizadas);
+
+      await setDoc(atividadesRef, { userId, atividades: atividadesAtualizadas });
+      console.log("Documento de atividades criado com sucesso.");
+    }
+  } catch (error) {
+    console.error("Erro ao substituir as atividades gerais:", error);
+  }
 };
 
-export const deleteAtividade = async (id) => {
-  const atividadeRef = doc(db, 'atividades', id);
-  await deleteDoc(atividadeRef);
-};
+
+

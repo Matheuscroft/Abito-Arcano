@@ -20,6 +20,9 @@ const RelogioCron = ({ trocarDia }) => {
             const now = new Date();
             const [horas, minutos, segundos] = horaTroca ? horaTroca.split(':').map(Number) : [0, 0, 0];
 
+          //  console.log("now")
+            //console.log(now)
+
             if (
                 (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() === 0) ||
                 (now.getHours() === horas && now.getMinutes() === minutos && now.getSeconds() === segundos)

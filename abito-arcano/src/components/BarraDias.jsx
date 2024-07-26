@@ -1,33 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { inserirDias } from '../auth/firebaseDiasHoras';
 
-const BarraDias = ({ user, dias, setDias, setDiaVisualizado, resetarListaDeDias, setDataAtual, tarefasGerais, diaVisualizado }) => {
+const BarraDias = ({ user, dias, setDias, setDiaVisualizado, resetarListaDeDias, setDataAtual, tarefasGerais, setTarefasPorDia, diaVisualizado, dataAtual }) => {
     const containerRef = useRef(null);
 
 
     const resetarTarefasFuturas = async () => {
         try {
             const tarefasGeraisLimpa = tarefasGerais.map(tarefa => ({ ...tarefa, finalizada: false }));
-            const hoje = new Date().toLocaleDateString('pt-BR');
-
-            console.log("tarefasGeraisLimpa")
-            console.log(tarefasGeraisLimpa)
-            console.log("dias")
-            console.log(dias)
-
+    
+            console.log("tarefasGeraisLimpa");
+            console.log(tarefasGeraisLimpa);
+            console.log("dias");
+            console.log(dias);
+    
             const diasAtualizados = dias.map(dia => {
-                const data = new Date(dia.data + 'T00:00:00').toLocaleDateString('pt-BR');
-                if (data > hoje) {
+                const data = new Date(dia.data.split('/').reverse().join('-') + 'T00:00:00').toLocaleDateString('pt-BR');
+                if (data > dataAtual) {
                     return { ...dia, tarefas: tarefasGeraisLimpa };
                 }
                 return dia;
             });
+    
+            console.log("diasAtualizados");
+            console.log(diasAtualizados);
 
-            console.log("diasAtualizados")
-            console.log(diasAtualizados)
-
-            await inserirDias(diasAtualizados, user.uid);
+    
+            await inserirDias(user.uid, diasAtualizados);
+            
             setDias(diasAtualizados);
+    
+            diasAtualizados.forEach(dia => {
+                setTarefasPorDia(prev => ({ ...prev, [dia.data]: dia.tarefas }));
+            });
+    
         } catch (error) {
             console.error("Erro ao resetar tarefas futuras:", error);
         }
@@ -37,7 +43,8 @@ const BarraDias = ({ user, dias, setDias, setDiaVisualizado, resetarListaDeDias,
         try {
             const hoje = new Date().toLocaleDateString('pt-BR');
             const diasSalvos = dias.map(dia => (dia.data === hoje ? { ...dia, dataAtual: true } : { ...dia, dataAtual: false }));
-            await inserirDias(diasSalvos, user.uid);
+            
+            await inserirDias(user.uid, diasSalvos);
             setDataAtual(hoje);
             setDiaVisualizado(hoje);
         } catch (error) {

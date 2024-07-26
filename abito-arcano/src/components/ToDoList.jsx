@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getPontuacoes, updatePontuacoes } from '../auth/firebasePontuacoes';
-import { getListaAtividades } from '../auth/firebaseAtividades';
+import { getListaAtividades, setListaAtividades } from '../auth/firebaseAtividades';
 import BarraPontuacoes from './BarraPontuacoes';
 import ListaAtividades from './ListaAtividades';
 import Diarias from './Diarias';
@@ -26,8 +26,24 @@ function ToDoList({ user }) {
   }, [user, navigate]);
 
   useEffect(() => {
+    console.log("Estado atualizadOOOOOO - atividades:");
+    console.log(atividades)
+  }, [atividades]);
+
+  useEffect(() => {
     const fetchData = async () => {
-      const atividades = await getListaAtividades(user.uid);
+      let atividades = await getListaAtividades(user.uid);
+
+      console.log("atividades")
+      console.log(atividades)
+      console.log("atividades.atividades")
+      console.log(atividades.atividades)
+
+      if (!atividades || atividades.atividades.length === 0) {
+        console.log("if")
+        atividades = await resetarListaAtividades()
+        
+      }
 
       const dataAtual = new Date().toLocaleDateString('pt-BR');
       const areas = await getAreas();
@@ -41,7 +57,7 @@ function ToDoList({ user }) {
         resetarListaPontuacoes(user, areas, dias)
       }
 
-      setAtividades(atividades);
+      setAtividades(atividades.atividades);
       setPontuacoes(pontuacoes);
       setDias(dias)
       setAreas(areas)
@@ -53,7 +69,18 @@ function ToDoList({ user }) {
     fetchData();
   }, []);
 
-  
+  const resetarListaAtividades = async () => {
+    console.log("entrei no resetar lista atv")
+    const atividadesObjeto = { userId: user.uid, atividades: [] };
+
+    console.log("atividadesObjeto")
+    console.log(atividadesObjeto)
+
+    await setListaAtividades(user.uid, atividadesObjeto.atividades);
+    setAtividades(atividadesObjeto.atividades);
+
+    return atividadesObjeto
+  }
 
   const resetarListaPontuacoes = async (user, areas, dias) => {
     let pontuacoes = [];
@@ -108,10 +135,10 @@ function ToDoList({ user }) {
     console.log(pontuacoes)
   }, [pontuacoes]);*/
 
-  useEffect(() => {
+/*  useEffect(() => {
     console.log("Estado atualizadOOOOOO - dias:");
     console.log(dias)
-  }, [dias]);
+  }, [dias]);*/
 
   /*useEffect(() => {
     console.log("Estado atualizadOOOOOO - areas:");
@@ -139,6 +166,9 @@ function ToDoList({ user }) {
             setPontuacoes={setPontuacoes}
             areas={areas}
             setAreas={setAreas}
+            dias={dias}
+            setDias={setDias}
+            resetarListaAtividades={resetarListaAtividades}
           />
         </div>
       </div>

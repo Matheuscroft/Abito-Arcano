@@ -14,7 +14,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
     const [diaVisualizado, setDiaVisualizado] = useState('');
     const [dias, setDias] = useState([]);
 
-    useEffect(() => {
+   /* useEffect(() => {
         console.log("Estado atualizadOOOOOO - tarefasGerais:");
         console.log(tarefasGerais)
     }, [tarefasGerais]);
@@ -22,7 +22,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
     useEffect(() => {
         console.log("Estado atualizadOOOOOO - tarefasPorDia:");
         console.log(tarefasPorDia)
-    }, [tarefasPorDia]);
+    }, [tarefasPorDia]);*/
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,36 +32,36 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
             const tarefasGerais = await getListaTarefas(user.uid);
             setTarefasGerais(tarefasGerais);
 
-            console.log("tarefasGerais fetchdata")
-            console.log(tarefasGerais)
+            //console.log("tarefasGerais fetchdata")
+            //console.log(tarefasGerais)
 
-           /* if (diasSalvos.length === 0) {
-                await resetarListaDeDias();
-                diasSalvos = await getDias(user.uid);
-            }*/
-            console.log("diasSalvos fetchdata")
-            console.log(diasSalvos)
+            /* if (diasSalvos.length === 0) {
+                 await resetarListaDeDias();
+                 diasSalvos = await getDias(user.uid);
+             }*/
+           // console.log("diasSalvos fetchdata")
+            //console.log(diasSalvos)
 
             let tarefasPorDiaTemp = {};
 
             const hoje = new Date().toLocaleDateString('pt-BR');
-        const diaAtual = diasSalvos.length > 0 ? diasSalvos.find(dia => dia.dataAtual)?.data : hoje;
+            const diaAtual = diasSalvos.length > 0 ? diasSalvos.find(dia => dia.dataAtual)?.data : hoje;
 
-        if (diasSalvos.length === 0) {
-            console.log("if")
-            const novosDias = await resetarListaDeDias();
-            setDataAtual(novosDias[0].data);
-        } else {
-            console.log("else")
-            for (const dia of diasSalvos) {
-                tarefasPorDiaTemp[dia.data] = dia.tarefas.length === 0
-                    ? tarefasGerais.map(tarefa => ({ ...tarefa, finalizada: false }))
-                    : dia.tarefas;
+            if (diasSalvos.length === 0) {
+                console.log("if diasSalvos.length === 0")
+                const novosDias = await resetarListaDeDias();
+                setDataAtual(novosDias[0].data);
+            } else {
+                console.log("else")
+                for (const dia of diasSalvos) {
+                    tarefasPorDiaTemp[dia.data] = dia.tarefas.length === 0
+                        ? tarefasGerais.map(tarefa => ({ ...tarefa, finalizada: false }))
+                        : dia.tarefas;
+                }
+
+                setDataAtual(diaAtual);
+                setDias(diasSalvos);
             }
-
-            setDataAtual(diaAtual);
-            setDias(diasSalvos);
-        }
 
 
             setTarefasPorDia(tarefasPorDiaTemp);
@@ -74,15 +74,18 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
 
     const resetarListaDeDias = async () => {
         try {
-            // Cria um novo array de dias para os próximos 7 dias
             const novosDias = [];
+            const options = { weekday: 'long', timeZone: 'UTC' };
             for (let i = 0; i <= 6; i++) {
                 const data = new Date();
                 data.setDate(data.getDate() + i);
                 const dataStr = data.toLocaleDateString('pt-BR');
+                const diaSemana = data.toLocaleDateString('pt-BR', options);
+
                 const dia = {
                     data: dataStr,
                     dataAtual: i === 0,
+                    diaSemana: diaSemana, 
                     tarefas: tarefasGerais.map(tarefa => ({ ...tarefa, finalizada: false }))
                 };
                 novosDias.push(dia);
@@ -92,29 +95,20 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
             console.log("novosDias");
             console.log(novosDias);
 
-            // Cria a nova estrutura para inserir no Firestore
-            const diasComUsuario = {
-                userId: user.uid,
-                dias: novosDias
-            };
 
-            // Insere os novos dias no Firestore
-            await inserirDias(diasComUsuario);
+            await inserirDias(user.uid, novosDias);
 
-            // Atualiza os estados locais
             setDias(novosDias);
             setDataAtual(novosDias[0].data);
 
-            // Filtra as pontuações com base nos novos dias
-            const novasPontuacoes = pontuacoes.filter(pontuacao =>
+            /*const novasPontuacoes = pontuacoes.filter(pontuacao =>
                 novosDias.some(dia => dia.data === pontuacao.data)
             );
 
             console.log("novasPontuacoes");
             console.log(novasPontuacoes);
 
-            // Atualiza as pontuações no Firestore
-            await updatePontuacoes(user.uid, novasPontuacoes);
+            await updatePontuacoes(user.uid, novasPontuacoes);*/
 
             return novosDias;
         } catch (error) {
@@ -155,15 +149,19 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
             ultimoDiaDate.setDate(ultimoDiaDate.getDate() + 1);
             const novoUltimoDiaStr = ultimoDiaDate.toLocaleDateString('pt-BR');
 
+            const options = { weekday: 'long', timeZone: 'UTC' };
+            const diaSemana = ultimoDiaDate.toLocaleDateString('pt-BR', options);
+
             const novoDia = {
                 data: novoUltimoDiaStr,
                 dataAtual: false,
+                diaSemana: diaSemana, 
                 tarefas: tarefasGerais.map(tarefa => ({ ...tarefa, finalizada: false }))
             };
 
             diasSalvos.push(novoDia);
 
-            await inserirDias(diasSalvos, user.uid);
+            await inserirDias(user.uid, diasSalvos);
 
             setDataAtual(novaDataStr);
             setDiaVisualizado(novaDataStr);
@@ -237,7 +235,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
                     console.log(novasTarefas)
                     console.log("user.uid")
                     console.log(user.uid)
-                    //updateTarefasPorDia(diaVisualizado, novasTarefas, user.uid);
+
                 }}
                 user={user}
                 setDias={setDias}
@@ -245,6 +243,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
                 tarefasPorDia={tarefasPorDia}
                 setTarefasPorDia={setTarefasPorDia}
                 areas={areas}
+                diaVisualizado={diaVisualizado}
             />
         </div>
     );
