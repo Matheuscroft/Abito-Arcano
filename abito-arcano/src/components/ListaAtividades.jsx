@@ -4,7 +4,7 @@ import EditorItem from './EditorItem';
 import { addItem, updateItem, toggleFinalizada, deleteItem, buscarIdsAreaESubarea } from './todoUtils';
 import { getListaAtividades, setListaAtividades } from '../auth/firebaseAtividades';
 
-function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, dias, setDias, areas, resetarListaAtividades }) {
+function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, dias, setDias, areas, resetarListaAtividades, dataAtual }) {
   const [novaAtividade, setNovaAtividade] = useState('');
   const [itemEditando, setItemEditando] = useState(null);
 
@@ -69,7 +69,7 @@ function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, 
               atividade={atividade}
               onEdit={() => setItemEditando(atividade)}
               onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades, user.uid)}
-              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid, dias, setDias)}
+              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid, dataAtual)}
             />
           </li>
         ))}
@@ -89,7 +89,7 @@ function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, 
               atividade={atividade}
               onEdit={() => setItemEditando(atividade)}
               onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades, user.uid)}
-              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid, dias, setDias)}
+              onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid, dataAtual)}
             />
           </li>
         ))}

@@ -4,60 +4,44 @@ import { resetPontuacao, getPontuacoes, updatePontuacoes } from '../auth/firebas
 function BarraPontuacoes({ pontuacoes, setPontuacoes, areas, setAreas, resetarListaPontuacoes, user }) {
   const [mostrarSubareas, setMostrarSubareas] = useState(false);
 
-  /*useEffect(() => {
+  useEffect(() => {
     console.log("Estado atual - areas:", areas);
   }, [areas]);
 
   useEffect(() => {
     console.log("Areas received: ", areas);
     console.log("Pontuacoes received: ", pontuacoes);
-  }, [areas, pontuacoes]);*/
+  }, [areas, pontuacoes]);
 
   const calcularPontuacaoTotal = (pontuacoes, areaId, subareaId = null) => {
-    if (typeof pontuacoes !== 'object' || pontuacoes === null) {
+    if (!Array.isArray(pontuacoes)) {
       console.error('Pontuações inválidas:', pontuacoes);
       return 0;
     }
   
-
-    /*console.log("CALCULAR PONTUACAO TOTAL")
-    console.log("pontuacoes")
-    console.log(pontuacoes)
-    console.log()*/
-
     let total = 0;
   
-    for (let key in pontuacoes) {
-      const pontuacao = pontuacoes[key];
-  
-      /*console.log("key")
-      console.log(key)
-      console.log("Array.isArray(pontuacao)")
-      console.log(Array.isArray(pontuacao))*/
-
-      if (Array.isArray(pontuacao)) {
-        pontuacao.forEach(p => {
-          if (p && p.areas && Array.isArray(p.areas)) {
-            p.areas.forEach(area => {
-              if (area.areaId === areaId) {
-                if (subareaId) {
-                  area.subareas.forEach(subarea => {
-                    if (subarea.subareaId === subareaId) {
-                      total += subarea.pontos;
-                    }
-                  });
-                } else {
-                  total += area.pontos;
+    pontuacoes.forEach(pontuacao => {
+      if (pontuacao && Array.isArray(pontuacao.areas)) {
+        pontuacao.areas.forEach(area => {
+          if (area.areaId === areaId) {
+            if (subareaId) {
+              area.subareas.forEach(subarea => {
+                if (subarea.subareaId === subareaId) {
+                  total += subarea.pontos;
                 }
-              }
-            });
+              });
+            } else {
+              total += area.pontos;
+            }
           }
         });
       }
-    }
+    });
   
     return total;
   };
+  
   
   
   

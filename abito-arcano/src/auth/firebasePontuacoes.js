@@ -50,6 +50,9 @@ export const updatePontuacao = async (userId, areaId, subareaId, pontos, data) =
 
     const pontuacaoDoc = await getDoc(pontuacaoRef);
 
+    console.log("pontuacaoDoc")
+    console.log(pontuacaoDoc)
+
     if (pontuacaoDoc.exists()) {
         const dataAtual = pontuacaoDoc.data();
         let pontuacoes = dataAtual.pontuacoes || [];

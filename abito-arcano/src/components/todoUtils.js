@@ -212,24 +212,30 @@ export const deleteItem = async (id, tipo, setItems, items, userId, setDias, dia
 
 
 
-export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes, userId, dias, setDias, tarefasGerais, setTarefasPorDia, diaVisualizado = "") => {
+export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes, userId, dataPontuacao = "", dias, setDias, tarefasGerais, setTarefasPorDia) => {
   const item = items.find(i => i.id === id);
   if (item) {
+    console.log("togglefinalizada")
     const finalizada = !item.finalizada;
     const atualizacaoPontuacao = finalizada ? item.numero : -item.numero;
     //const diaVisualizado = new Date().toLocaleDateString('pt-BR');
-    console.log("diaVisualizado")
-    console.log(diaVisualizado)
+    console.log("dataPontuacao")
+    console.log(dataPontuacao)
+
+    console.log("id")
+    console.log(id)
+    console.log("items")
+    console.log(items)
 
     if (tipo === 'tarefa') {
-      const diaReferido = dias.find(dia => dia.data === diaVisualizado);
+      const diaReferido = dias.find(dia => dia.data === dataPontuacao);
       if (diaReferido) {
         const tarefasAtualizadas = diaReferido.tarefas.map(tarefa =>
           tarefa.id === id ? { ...tarefa, finalizada } : tarefa
         );
 
         const diasAtualizados = dias.map(dia =>
-          dia.data === diaVisualizado ? { ...dia, tarefas: tarefasAtualizadas } : dia
+          dia.data === dataPontuacao ? { ...dia, tarefas: tarefasAtualizadas } : dia
         );
 
         setDias(diasAtualizados);
@@ -246,24 +252,31 @@ export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes,
         await inserirDias(userId, diasAtualizados);
       }
     } else if (tipo === 'atividade') {
+      
+    
       const atividadesAtualizadas = items.map(i => i.id === id ? { ...i, finalizada } : i);
       setItems(atividadesAtualizadas);
+      
 
       await setListaAtividades(userId, atividadesAtualizadas);
     }
 
-    console.log("item");
-    console.log(item);
-    console.log("userId");
-    console.log(userId);
 
 
+    await updatePontuacao(userId, item.areaId, item.subareaId, atualizacaoPontuacao, dataPontuacao);
 
-    await updatePontuacao(userId, item.areaId, item.subareaId, atualizacaoPontuacao, diaVisualizado);
+    console.log("item.areaId")
+    console.log(item.areaId)
+    console.log("item.subareaId")
+    console.log(item.subareaId)
+    console.log("atualizacaoPontuacao")
+    console.log(atualizacaoPontuacao)
+    console.log("dataPontuacao")
+    console.log(dataPontuacao)
 
     setPontuacoes(prev => {
       const novaPontuacao = {
-        data: diaVisualizado,
+        data: dataPontuacao,
         pontos: atualizacaoPontuacao,
         subareaId: item.subareaId,
       };

@@ -7,9 +7,9 @@ import RelogioCron from './RelogioCron';
 import BarraDias from './BarraDias';
 import { updatePontuacoes } from '../auth/firebasePontuacoes';
 
-const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
+const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtual }) => {
     const [tarefasPorDia, setTarefasPorDia] = useState({});
-    const [dataAtual, setDataAtual] = useState('');
+    
     const [tarefasGerais, setTarefasGerais] = useState([]);
     const [diaVisualizado, setDiaVisualizado] = useState('');
     const [dias, setDias] = useState([]);
@@ -210,7 +210,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas }) => {
         <div>
             <h1>Diárias</h1>
             <div>
-                <RelogioCron trocarDia={trocarDia} />
+                <RelogioCron trocarDia={trocarDia} userId={user.uid}/>
                 <BarraDias
                     tarefasGerais={tarefasGerais}
                     setDiaVisualizado={setDiaVisualizado}

@@ -58,7 +58,7 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
               tarefa={tarefa}
               onEdit={() => setItemEditando(tarefa)}
               onDelete={() => deleteItem(tarefa.id, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia)}
-              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, setTarefas, setPontuacoes, user.uid, dias, setDias, tarefas, setTarefasPorDia, diaVisualizado)}
+              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, setTarefas, setPontuacoes, user.uid, diaVisualizado, dias, setDias, tarefas, setTarefasPorDia)}
             />
           </li>
         ))}
@@ -79,7 +79,7 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
               tarefa={tarefa}
               onEdit={() => setItemEditando(tarefa)}
               onDelete={() => deleteItem(tarefa.id, 'tarefa', setTarefas, tarefas)}
-              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, setTarefas, setPontuacoes, user.uid, dias, setDias, tarefas, setTarefasPorDia, diaVisualizado)}
+              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, setTarefas, setPontuacoes, user.uid, diaVisualizado, dias, setDias, tarefas, setTarefasPorDia)}
             />
           </li>
         ))}

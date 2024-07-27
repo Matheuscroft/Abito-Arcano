@@ -14,6 +14,7 @@ function ToDoList({ user }) {
   const [pontuacoes, setPontuacoes] = useState({});
   const [dias, setDias] = useState({});
   const [areas, setAreas] = useState({});
+  const [dataAtual, setDataAtual] = useState('');
   const navigate = useNavigate();
 
 
@@ -25,10 +26,10 @@ function ToDoList({ user }) {
     }
   }, [user, navigate]);
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.log("Estado atualizadOOOOOO - atividades:");
     console.log(atividades)
-  }, [atividades]);
+  }, [atividades]);*/
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,6 +120,11 @@ function ToDoList({ user }) {
 
 
 
+  useEffect(() => {
+    console.log("Estado to do list - dataAtual:");
+    console.log(dataAtual)
+  }, [dataAtual]);
+
 
   /*useEffect(() => {
     console.log("Estado atualizadOOOOOO - atividades:");
@@ -149,7 +155,7 @@ function ToDoList({ user }) {
 
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1 }}>
-          <Diarias user={user} pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} />
+          <Diarias user={user} pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} dataAtual={dataAtual} setDataAtual={setDataAtual}/>
         </div>
 
         <div style={{ flex: 1 }}>
@@ -164,6 +170,7 @@ function ToDoList({ user }) {
             dias={dias}
             setDias={setDias}
             resetarListaAtividades={resetarListaAtividades}
+            dataAtual={dataAtual}
           />
         </div>
       </div>

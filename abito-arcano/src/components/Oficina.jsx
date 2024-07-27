@@ -30,7 +30,8 @@ function Oficina({ user }) {
             const atividades = await getListaAtividades(user.uid);
             const pontuacoes = await getPontuacoes(user.uid);
             const areas = await getAreas();
-            const horaTroca = await getHoraTrocaFirebase();
+            //const horaTroca = await getHoraTrocaFirebase();
+            const horaTroca = await getHoraTrocaFirebase(user.uid);
             const dias = await getDias(user.uid);
 
             console.log("pontuacoes")
