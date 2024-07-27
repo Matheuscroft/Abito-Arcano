@@ -34,11 +34,6 @@ function ToDoList({ user }) {
     const fetchData = async () => {
       let atividades = await getListaAtividades(user.uid);
 
-      console.log("atividades")
-      console.log(atividades)
-      console.log("atividades.atividades")
-      console.log(atividades.atividades)
-
       if (!atividades || atividades.atividades.length === 0) {
         console.log("if")
         atividades = await resetarListaAtividades()
@@ -50,8 +45,8 @@ function ToDoList({ user }) {
       let pontuacoes = await getPontuacoes(user.uid);
       const dias = await getDias(user.uid);
 
-      /*console.log("pontuacoes do to do")
-      console.log(pontuacoes)*/
+      console.log("pontuacoes do to do")
+      console.log(pontuacoes)
 
       if (pontuacoes.length === 0) {
         resetarListaPontuacoes(user, areas, dias)
@@ -61,8 +56,8 @@ function ToDoList({ user }) {
       setPontuacoes(pontuacoes);
       setDias(dias)
       setAreas(areas)
-      /*console.log("pontuacoes")
-      console.log(pontuacoes)*/
+      console.log("pontuacoes")
+      console.log(pontuacoes)
 
 
     };

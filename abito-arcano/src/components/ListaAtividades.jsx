@@ -38,13 +38,13 @@ function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, 
     }
   };
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.log("Estado no ListaAtividades - atividades:");
     console.log(atividades)
 
     console.log("atividades.atividades:");
     console.log(atividades.atividades)
-  }, [atividades]);
+  }, [atividades]);*/
 
   if (!Array.isArray(atividades.atividades)) {
     atividades.atividades = [];
