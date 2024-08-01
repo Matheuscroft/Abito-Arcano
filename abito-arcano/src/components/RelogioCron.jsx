@@ -71,6 +71,7 @@ const RelogioCron = ({ userId, trocarDia }) => {
                 step="60"
             />
             <button onClick={resetHoraTroca}>Resetar Hora de Troca</button>
+            <button onClick={trocarDia}>Trocar Dia</button>
         </div>
     );
 };
