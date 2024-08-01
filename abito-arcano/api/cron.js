@@ -54,8 +54,10 @@ const trocarDiaParaUsuario = async (userId) => {
       dia.dataAtual === true
     });
 
-    console.log("dataatualdodias")
-    console.log(dataatualdodias)
+    console.log("dataatualdodias.data")
+    console.log(dataatualdodias.data)
+    console.log("dataatualdodias.dataAtual")
+    console.log(dataatualdodias.dataAtual)
 
     //console.log(`Dias salvos após a atualização: ${JSON.stringify(diasSalvos)}`);nwdias
     console.log(`Dias salvos após a atualização: ${JSON.stringify(nwdias)}`);
@@ -81,7 +83,18 @@ const trocarDiaParaUsuario = async (userId) => {
       tarefas: tarefasGerais.map(tarefa => ({ ...tarefa, finalizada: false }))
     };
 
+    console.log("novoDia")
+    console.log(novoDia)
+
     diasSalvos.push(novoDia);
+
+    const diasfinais = diasSalvos.map(dia => {
+      return dia.data;
+    });
+
+    console.log("diasfinais")
+    console.log(diasfinais)
+
     await inserirDias(userId, diasSalvos);
 
     const novaPontuacao = {

@@ -1,14 +1,11 @@
 {
-    "crons": [
-      {
-        "path": "/api/handler",  
-        "schedule": "0 * * * *" 
-      }
-    ],
-    "functions": {
-      "api/handler.js": {
-        "runtime": "edge"
-      }
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "51 23 * * *"
     }
-  }
-  
+  ],
+  "routes": [
+    { "src": "/api/cron", "dest": "/api/cron.js" }
+  ]
+}
