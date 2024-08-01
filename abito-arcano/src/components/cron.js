@@ -1,14 +1,19 @@
 const cron = require('node-cron');
 const admin = require('firebase-admin');
+const serviceAccount = require('../../serviceAccountKey.json');
 
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-  databaseURL: "https://your-database-url.firebaseio.com"
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://abito-arcano.firebaseapp.com"  
+
 });
 
-// Função para trocar o dia para um usuário específico
+
+
+
 const trocarDiaParaUsuario = async (userId) => {
   try {
+    console.log(`Iniciando troca de dia para o usuário ${userId}`);
     const dataAtual = new Date().toLocaleDateString("pt-BR");
     const dataAtualDate = new Date();
     dataAtualDate.setDate(dataAtualDate.getDate() + 1);
@@ -64,9 +69,9 @@ const trocarDiaParaUsuario = async (userId) => {
   }
 };
 
-// Função para verificar a hora de troca para todos os usuários
 const verificarTrocaDeDia = async () => {
   try {
+    console.log("Verificando troca de dia...");
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
@@ -85,6 +90,7 @@ const verificarTrocaDeDia = async () => {
           (currentHour === 0 && currentMinute === 0 && currentSecond === 0) ||
           (currentHour === trocaHora && currentMinute === trocaMinuto && currentSecond === 0)
         ) {
+          console.log(`Hora de trocar o dia para o usuário ${userId}`);
           await trocarDiaParaUsuario(userId);
         }
       }
@@ -94,7 +100,16 @@ const verificarTrocaDeDia = async () => {
   }
 };
 
-// Agendar a função para rodar a cada minuto
-cron.schedule('* * * * *', verificarTrocaDeDia, {
+/*cron.schedule('* * * * *', verificarTrocaDeDia, {
   timezone: "UTC"
-});
+});*/
+
+export default async function handler(request, response) {
+
+  await verificarTrocaDeDia();
+
+  response.status(200).send('Troca de dia verificada com sucesso.');
+
+}
+
+console.log("Cron job iniciado, verificando troca de dia a cada minuto.");
