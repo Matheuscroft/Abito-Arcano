@@ -210,7 +210,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
         <div>
             <h1>Diárias</h1>
             <div>
-                <RelogioCron trocarDia={trocarDia} userId={user.uid}/>
+                <RelogioCron trocarDia={trocarDia} user={user}/>
                 <BarraDias
                     tarefasGerais={tarefasGerais}
                     setDiaVisualizado={setDiaVisualizado}
