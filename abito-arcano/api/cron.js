@@ -1,6 +1,10 @@
 const cron = require('node-cron');
 const admin = require('firebase-admin');
-const serviceAccount = require('../../serviceAccountKey.json');
+//const serviceAccount = require('../../serviceAccountKey.json');
+
+const path = require('path'); 
+const serviceAccountPath = path.resolve(__dirname, '../../serviceAccountKey.json');
+const serviceAccount = require(serviceAccountPath);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

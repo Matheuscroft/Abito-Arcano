@@ -65,7 +65,7 @@ export const addItem = async (nome, tipo, setItems, items, userId, setDias, dias
     //const atividadesAtualizadas = [...atividades, novaAtividade];
     //novasAtividades = [...items, item];
     console.log("Novasatividades")
-  console.log(atividadesArray)
+    console.log(atividadesArray)
     await setListaAtividades(userId, atividadesArray);
     setItems(atividadesArray);
   } else if (tipo === 'tarefa') {
@@ -88,7 +88,7 @@ export const updateItem = async (id, nome, numero, area, subarea, areaId, subare
 
     console.log("items")
     console.log(items)
-    
+
     const itemAtualizado = { id, nome, numero, area, subarea, areaId, subareaId };
     console.log("itemAtualizado")
     console.log(itemAtualizado)
@@ -102,7 +102,7 @@ export const updateItem = async (id, nome, numero, area, subarea, areaId, subare
 
     await setListaAtividades(userId, atividadesAtualizadas);
 
-    
+
     setItems(atividadesAtualizadas);
   }
 };
@@ -252,11 +252,11 @@ export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes,
         await inserirDias(userId, diasAtualizados);
       }
     } else if (tipo === 'atividade') {
-      
-    
+
+
       const atividadesAtualizadas = items.map(i => i.id === id ? { ...i, finalizada } : i);
       setItems(atividadesAtualizadas);
-      
+
 
       await setListaAtividades(userId, atividadesAtualizadas);
     }
@@ -281,18 +281,51 @@ export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes,
         subareaId: item.subareaId,
       };
 
-      const areaPontuacoes = prev[item.areaId] ? [...prev[item.areaId], novaPontuacao] : [novaPontuacao];
+      const dataExistente = prev.find(p => p.data === dataPontuacao);
 
-      const subareaPontuacoes = item.subareaId
-        ? { [item.subareaId]: [...(prev[item.subareaId] || []), novaPontuacao] }
-        : {};
+      if (dataExistente) {
+        const areaExistente = dataExistente.areas.find(a => a.areaId === item.areaId);
 
-      return {
-        ...prev,
-        [item.areaId]: areaPontuacoes,
-        ...subareaPontuacoes,
-      };
+        if (areaExistente) {
+          const subareaExistente = areaExistente.subareas.find(sa => sa.subareaId === item.subareaId);
+
+          if (subareaExistente) {
+            subareaExistente.pontos += atualizacaoPontuacao;
+          } else {
+            areaExistente.subareas.push({
+              subareaId: item.subareaId,
+              pontos: atualizacaoPontuacao
+            });
+          }
+
+          areaExistente.pontos += atualizacaoPontuacao;
+        } else {
+          dataExistente.areas.push({
+            areaId: item.areaId,
+            pontos: atualizacaoPontuacao,
+            subareas: [{
+              subareaId: item.subareaId,
+              pontos: atualizacaoPontuacao
+            }]
+          });
+        }
+      } else {
+        prev.push({
+          data: dataPontuacao,
+          areas: [{
+            areaId: item.areaId,
+            pontos: atualizacaoPontuacao,
+            subareas: [{
+              subareaId: item.subareaId,
+              pontos: atualizacaoPontuacao
+            }]
+          }]
+        });
+      }
+
+      return [...prev];
     });
+
   }
 };
 
