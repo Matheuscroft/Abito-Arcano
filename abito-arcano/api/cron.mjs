@@ -1,10 +1,14 @@
-const cron = require('node-cron');
-const admin = require('firebase-admin');
-//const serviceAccount = require('../../serviceAccountKey.json');
+import cron from 'node-cron';
+import admin from 'firebase-admin';
+import { getDias, inserirDias } from '../src/auth/firebaseDiasHoras.js';
+import { getPontuacoes, updatePontuacoes } from '../src/auth/firebasePontuacoes.js';
+import { getListaTarefas } from '../src/auth/firebaseTarefas.js';
 
-const path = require('path'); 
+/*const path = require('path'); 
 const serviceAccountPath = path.resolve(__dirname, '../../serviceAccountKey.json');
-const serviceAccount = require(serviceAccountPath);
+const serviceAccount = require(serviceAccountPath);*/
+
+const serviceAccount = require('../../serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -12,10 +16,9 @@ admin.initializeApp({
 
 });
 
-import { getDias, inserirDias } from '../src/auth/firebaseDiasHoras';
-import { getPontuacoes, updatePontuacoes } from '../src/auth/firebasePontuacoes';
-import { getListaTarefas } from '../src/auth/firebaseTarefas';
-
+/*const { getDias, inserirDias } = require('../src/auth/firebaseDiasHoras');
+const { getPontuacoes, updatePontuacoes } = require('../src/auth/firebasePontuacoes');
+const { getListaTarefas } = require('../src/auth/firebaseTarefas');*/
 
 const converterParaDate = (dataStr) => {
   const [dia, mes, ano] = dataStr.split('/').map(Number);

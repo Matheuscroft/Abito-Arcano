@@ -2,6 +2,7 @@
   "name": "abito-arcano",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@heroicons/react": "^2.1.5",
     "@testing-library/jest-dom": "^5.17.0",
