@@ -8,7 +8,7 @@ import { getListaTarefas } from '../src/auth/firebaseTarefas.js';
 const serviceAccountPath = path.resolve(__dirname, '../../serviceAccountKey.json');
 const serviceAccount = require(serviceAccountPath);*/
 
-const serviceAccount = require('../../serviceAccountKey.json');
+import serviceAccount from '../../serviceAccountKey.json' assert { type: 'json' };
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

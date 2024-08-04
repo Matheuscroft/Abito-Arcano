@@ -1,5 +1,5 @@
 
-import { db } from './firebase';
+import { db } from './firebase.mjs';
 import {
     updateDoc,
     doc,
