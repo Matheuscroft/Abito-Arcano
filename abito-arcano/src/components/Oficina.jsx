@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getPontuacoes } from '../auth/firebasePontuacoes';
-import { getListaAtividades, updatePontuacao } from '../auth/firebaseAtividades';
+import { getPontuacoes } from '../auth/firebasePontuacoes.js';
+import { getListaAtividades, updatePontuacao } from '../auth/firebaseAtividades.js';
 import { getAreas } from '../auth/firebaseAreaSubarea';
-import { getHoraTrocaFirebase } from '../auth/firebaseDiasHoras';
-import { getListaTarefas } from '../auth/firebaseTarefas';
-import { getDias } from '../auth/firebaseDiasHoras';
+import { getHoraTrocaFirebase } from '../auth/firebaseDiasHoras.js';
+import { getListaTarefas } from '../auth/firebaseTarefas.js';
+import { getDias } from '../auth/firebaseDiasHoras.js';
 
 function Oficina({ user }) {
     const navigate = useNavigate();

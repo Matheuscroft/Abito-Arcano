@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { resetPontuacao, getPontuacoes, updatePontuacoes } from '../auth/firebasePontuacoes';
+import { resetPontuacao, getPontuacoes, updatePontuacoes } from '../auth/firebasePontuacoes.js';
 
 function BarraPontuacoes({ pontuacoes, setPontuacoes, areas, setAreas, resetarListaPontuacoes, user }) {
   const [mostrarSubareas, setMostrarSubareas] = useState(false);

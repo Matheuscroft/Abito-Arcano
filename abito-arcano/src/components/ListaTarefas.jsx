@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import Tarefa from './Tarefa';
 import EditorItem from './EditorItem';
 import { addItem, updateItem, toggleFinalizada, deleteItem } from './todoUtils';
-import { substituirTarefasGerais } from '../auth/firebaseTarefas';
-import { getDias, inserirDias } from '../auth/firebaseDiasHoras';
+import { substituirTarefasGerais } from '../auth/firebaseTarefas.js';
+import { getDias, inserirDias } from '../auth/firebaseDiasHoras.js';
 
 function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias, tarefasPorDia, setTarefasPorDia, areas, diaVisualizado }) {
   const [novaTarefa, setNovaTarefa] = useState('');

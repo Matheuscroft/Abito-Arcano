@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { getPontuacoes, updatePontuacoes } from '../auth/firebasePontuacoes';
-import { getListaAtividades, setListaAtividades } from '../auth/firebaseAtividades';
+import { getPontuacoes, updatePontuacoes } from '../auth/firebasePontuacoes.js';
+import { getListaAtividades, setListaAtividades } from '../auth/firebaseAtividades.js';
 import BarraPontuacoes from './BarraPontuacoes';
 import ListaAtividades from './ListaAtividades';
 import Diarias from './Diarias';
 import { useNavigate } from 'react-router-dom';
 import { getAreas } from '../auth/firebaseAreaSubarea';
-import { getDias, inserirDias } from '../auth/firebaseDiasHoras';
-import { getListaTarefas, substituirTarefasGerais } from '../auth/firebaseTarefas';
+import { getDias, inserirDias } from '../auth/firebaseDiasHoras.js';
+import { getListaTarefas, substituirTarefasGerais } from '../auth/firebaseTarefas.js';
 
 function ToDoList({ user }) {
   const [atividades, setAtividades] = useState([]);

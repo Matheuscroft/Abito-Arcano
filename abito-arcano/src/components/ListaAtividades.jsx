@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Atividade from './Atividade';
 import EditorItem from './EditorItem';
 import { addItem, updateItem, toggleFinalizada, deleteItem, buscarIdsAreaESubarea } from './todoUtils';
-import { getListaAtividades, setListaAtividades } from '../auth/firebaseAtividades';
+import { getListaAtividades, setListaAtividades } from '../auth/firebaseAtividades.js';
 
 function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, dias, setDias, areas, resetarListaAtividades, dataAtual }) {
   const [novaAtividade, setNovaAtividade] = useState('');

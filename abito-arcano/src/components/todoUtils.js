@@ -1,19 +1,19 @@
 import {
   updatePontuacao
-} from '../auth/firebasePontuacoes';
+} from '../auth/firebasePontuacoes.js';
 import {
   getListaAtividades,
   updateAtividade,
   setListaAtividades
-} from '../auth/firebaseAtividades';
+} from '../auth/firebaseAtividades.js';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
   updateTarefa,
 
-} from '../auth/firebaseTarefas';
-import { inserirDias } from '../auth/firebaseDiasHoras';
-import { getListaTarefas, substituirTarefasGerais } from '../auth/firebaseTarefas';
+} from '../auth/firebaseTarefas.js';
+import { inserirDias } from '../auth/firebaseDiasHoras.js';
+import { getListaTarefas, substituirTarefasGerais } from '../auth/firebaseTarefas.js';
 
 export const buscarIdsAreaESubarea = (areas, areaNome, subareaNome) => {
   let areaId = null;

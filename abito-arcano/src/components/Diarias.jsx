@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import ListaTarefas from './ListaTarefas';
 
-import { getDias, inserirDias } from '../auth/firebaseDiasHoras';
-import { getListaTarefas, updateTarefasPorDia } from '../auth/firebaseTarefas';
+import { getDias, inserirDias } from '../auth/firebaseDiasHoras.js';
+import { getListaTarefas, updateTarefasPorDia } from '../auth/firebaseTarefas.js';
 import RelogioCron from './RelogioCron';
 import BarraDias from './BarraDias';
-import { updatePontuacoes } from '../auth/firebasePontuacoes';
+import { updatePontuacoes } from '../auth/firebasePontuacoes.js';
 
 const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtual }) => {
     const [tarefasPorDia, setTarefasPorDia] = useState({});

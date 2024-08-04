@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { setHoraTrocaFirebase, getHoraTrocaFirebase } from '../auth/firebaseDiasHoras';
+import { setHoraTrocaFirebase, getHoraTrocaFirebase } from '../auth/firebaseDiasHoras.js';
 
 const RelogioCron = ({ user, trocarDia }) => {
     const [horaTroca, setHoraTroca] = useState('00:00:00');
