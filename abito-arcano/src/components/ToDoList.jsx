@@ -34,84 +34,87 @@ function ToDoList({ user }) {
   useEffect(() => {
     const fetchData = async () => {
       //await resetarListaAreas(user.uid)
-      let atividades = await getListaAtividades(user.uid);
+      if (user && user.uid) {
 
-      if (!atividades || atividades.atividades.length === 0) {
-        console.log("if")
-        atividades = await resetarListaAtividades()
-        
-      }
 
-      const dataAtual = new Date().toLocaleDateString('pt-BR');
-      let areasData = await getAreas(user.uid);
-      let pontuacoes = await getPontuacoes(user.uid);
-      const dias = await getDias(user.uid);
+        let atividades = await getListaAtividades(user.uid);
 
-      /*if (areas.length === 0) {
-        console.log("to no areas 0")
-        await resetarListaAreas(user.uid)
-        areas = await getAreas(user.uid);
-        
-      }
+        if (!atividades || atividades.atividades.length === 0) {
+          console.log("if")
+          atividades = await resetarListaAtividades()
 
-      console.log("areas")
-      console.log(areas)
+        }
 
-      if (!Array.isArray(areas)) {
-        console.log("Estrutura de áreas inválida, resetando...");
-        await resetarListaAreas(user.uid);
-        areas = await getAreas(user.uid); 
-      }*/
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        let areasData = await getAreas(user.uid);
+        let pontuacoes = await getPontuacoes(user.uid);
+        const dias = await getDias(user.uid);
 
-      if (!areasData || !Array.isArray(areasData.areas) || areasData.areas.length === 0) {
-        console.log("Estrutura de áreas inválida ou vazia, resetando...");
-        await resetarListaAreas(user.uid);
-        areasData = await getAreas(user.uid); 
-    }
+        /*if (areas.length === 0) {
+          console.log("to no areas 0")
+          await resetarListaAreas(user.uid)
+          areas = await getAreas(user.uid);
+          
+        }
   
-      console.log("Áreas:", areasData);
-      /*console.log("pontuacoes do to do")
-      console.log(pontuacoes)*/
+        console.log("areas")
+        console.log(areas)
+  
+        if (!Array.isArray(areas)) {
+          console.log("Estrutura de áreas inválida, resetando...");
+          await resetarListaAreas(user.uid);
+          areas = await getAreas(user.uid); 
+        }*/
 
-      if (pontuacoes.length === 0) {
-        resetarListaPontuacoes(user, areasData.areas, dias)
+        if (!areasData || !Array.isArray(areasData.areas) || areasData.areas.length === 0) {
+          console.log("Estrutura de áreas inválida ou vazia, resetando...");
+          await resetarListaAreas(user.uid);
+          areasData = await getAreas(user.uid);
+        }
+
+        console.log("Áreas:", areasData);
+        /*console.log("pontuacoes do to do")
+        console.log(pontuacoes)*/
+
+        if (pontuacoes.length === 0) {
+          resetarListaPontuacoes(user, areasData.areas, dias)
+        }
+
+        setAtividades(atividades.atividades);
+        setPontuacoes(pontuacoes);
+        setDias(dias)
+        setAreas(areasData.areas)
+        /*console.log("pontuacoes")
+        console.log(pontuacoes)*/
+
       }
-
-      setAtividades(atividades.atividades);
-      setPontuacoes(pontuacoes);
-      setDias(dias)
-      setAreas(areasData.areas)
-      /*console.log("pontuacoes")
-      console.log(pontuacoes)*/
-
-
     };
     fetchData();
   }, []);
 
   const resetarListaAreas = async (userId) => {
     console.log("to no resetarListaAreas")
-    
+
 
     const areass = [
-        {
-          id: uuidv4(),
-          nome: "SEM CATEGORIA",
-          cor: "#000000",
-          subareas: [
-            {
-              id: uuidv4(),
-              nome: "SEM CATEGORIA"
-            }
-          ]
-        }
-      
+      {
+        id: uuidv4(),
+        nome: "SEM CATEGORIA",
+        cor: "#000000",
+        subareas: [
+          {
+            id: uuidv4(),
+            nome: "SEM CATEGORIA"
+          }
+        ]
+      }
+
     ];
-  
+
     await updateAreas(userId, areass);
     console.log("Estrutura de áreas resetada:", areass);
   };
-  
+
 
   const resetarListaAtividades = async () => {
     console.log("entrei no resetar lista atv")
@@ -184,10 +187,10 @@ function ToDoList({ user }) {
     console.log(pontuacoes)
   }, [pontuacoes]);*/
 
-/*  useEffect(() => {
-    console.log("Estado atualizadOOOOOO - dias:");
-    console.log(dias)
-  }, [dias]);*/
+  /*  useEffect(() => {
+      console.log("Estado atualizadOOOOOO - dias:");
+      console.log(dias)
+    }, [dias]);*/
 
   /*useEffect(() => {
     console.log("Estado atualizadOOOOOO - areas:");
@@ -199,11 +202,11 @@ function ToDoList({ user }) {
     <div>
       <h1>To-Do List</h1>
 
-      <BarraPontuacoes pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} resetarListaPontuacoes={() => resetarListaPontuacoes(user, areas, dias)} user={user} resetarListaAreas={() => resetarListaAreas(user.uid)}/>
+      <BarraPontuacoes pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} resetarListaPontuacoes={() => resetarListaPontuacoes(user, areas, dias)} user={user} resetarListaAreas={() => resetarListaAreas(user.uid)} />
 
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1 }}>
-          <Diarias user={user} pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} dataAtual={dataAtual} setDataAtual={setDataAtual}/>
+          <Diarias user={user} pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} dataAtual={dataAtual} setDataAtual={setDataAtual} />
         </div>
 
         <div style={{ flex: 1 }}>
