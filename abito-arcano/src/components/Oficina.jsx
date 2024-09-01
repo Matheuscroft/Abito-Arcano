@@ -29,7 +29,7 @@ function Oficina({ user }) {
             const tarefas = await getListaTarefas(user.uid);
             const atividades = await getListaAtividades(user.uid);
             const pontuacoes = await getPontuacoes(user.uid);
-            const areas = await getAreas();
+            const areas = await getAreas(user.uid);
             //const horaTroca = await getHoraTrocaFirebase();
             const horaTroca = await getHoraTrocaFirebase(user.uid);
             const dias = await getDias(user.uid);
@@ -37,7 +37,7 @@ function Oficina({ user }) {
             console.log("pontuacoes")
             console.log(pontuacoes)
 
-            const subareas = areas.flatMap(area => area.subareas || []);
+            const subareas = areas.areas.flatMap(area => area.subareas || []);
             //const projetos = areas.flatMap(area => area.projetos || []);
 
             setTarefas(tarefas);

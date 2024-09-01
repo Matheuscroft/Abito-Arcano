@@ -5,9 +5,9 @@ import BarraPontuacoes from './BarraPontuacoes';
 import ListaAtividades from './ListaAtividades';
 import Diarias from './Diarias';
 import { useNavigate } from 'react-router-dom';
-import { getAreas } from '../auth/firebaseAreaSubarea';
-import { getDias, inserirDias } from '../auth/firebaseDiasHoras.js';
-import { getListaTarefas, substituirTarefasGerais } from '../auth/firebaseTarefas.js';
+import { getAreas, updateAreas } from '../auth/firebaseAreaSubarea';
+import { getDias } from '../auth/firebaseDiasHoras.js';
+import { v4 as uuidv4 } from 'uuid';
 
 function ToDoList({ user }) {
   const [atividades, setAtividades] = useState([]);
@@ -33,6 +33,7 @@ function ToDoList({ user }) {
 
   useEffect(() => {
     const fetchData = async () => {
+      //await resetarListaAreas(user.uid)
       let atividades = await getListaAtividades(user.uid);
 
       if (!atividades || atividades.atividades.length === 0) {
@@ -42,28 +43,75 @@ function ToDoList({ user }) {
       }
 
       const dataAtual = new Date().toLocaleDateString('pt-BR');
-      const areas = await getAreas();
+      let areasData = await getAreas(user.uid);
       let pontuacoes = await getPontuacoes(user.uid);
       const dias = await getDias(user.uid);
 
-      console.log("pontuacoes do to do")
-      console.log(pontuacoes)
+      /*if (areas.length === 0) {
+        console.log("to no areas 0")
+        await resetarListaAreas(user.uid)
+        areas = await getAreas(user.uid);
+        
+      }
+
+      console.log("areas")
+      console.log(areas)
+
+      if (!Array.isArray(areas)) {
+        console.log("Estrutura de áreas inválida, resetando...");
+        await resetarListaAreas(user.uid);
+        areas = await getAreas(user.uid); 
+      }*/
+
+      if (!areasData || !Array.isArray(areasData.areas) || areasData.areas.length === 0) {
+        console.log("Estrutura de áreas inválida ou vazia, resetando...");
+        await resetarListaAreas(user.uid);
+        areasData = await getAreas(user.uid); 
+    }
+  
+      console.log("Áreas:", areasData);
+      /*console.log("pontuacoes do to do")
+      console.log(pontuacoes)*/
 
       if (pontuacoes.length === 0) {
-        resetarListaPontuacoes(user, areas, dias)
+        resetarListaPontuacoes(user, areasData.areas, dias)
       }
 
       setAtividades(atividades.atividades);
       setPontuacoes(pontuacoes);
       setDias(dias)
-      setAreas(areas)
-      console.log("pontuacoes")
-      console.log(pontuacoes)
+      setAreas(areasData.areas)
+      /*console.log("pontuacoes")
+      console.log(pontuacoes)*/
 
 
     };
     fetchData();
   }, []);
+
+  const resetarListaAreas = async (userId) => {
+    console.log("to no resetarListaAreas")
+    
+
+    const areass = [
+        {
+          id: uuidv4(),
+          nome: "SEM CATEGORIA",
+          cor: "#000000",
+          subareas: [
+            {
+              id: uuidv4(),
+              nome: "SEM CATEGORIA"
+            }
+          ]
+        }
+      
+    ];
+  
+    await updateAreas(userId, areass);
+    console.log("Estrutura de áreas resetada:", areass);
+  };
+  
 
   const resetarListaAtividades = async () => {
     console.log("entrei no resetar lista atv")
@@ -120,10 +168,10 @@ function ToDoList({ user }) {
 
 
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.log("Estado to do list - dataAtual:");
     console.log(dataAtual)
-  }, [dataAtual]);
+  }, [dataAtual]);*/
 
 
   /*useEffect(() => {
@@ -151,7 +199,7 @@ function ToDoList({ user }) {
     <div>
       <h1>To-Do List</h1>
 
-      <BarraPontuacoes pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} resetarListaPontuacoes={() => resetarListaPontuacoes(user, areas, dias)} user={user} />
+      <BarraPontuacoes pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} resetarListaPontuacoes={() => resetarListaPontuacoes(user, areas, dias)} user={user} resetarListaAreas={() => resetarListaAreas(user.uid)}/>
 
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1 }}>

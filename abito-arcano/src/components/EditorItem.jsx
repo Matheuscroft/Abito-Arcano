@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { getAreas } from '../auth/firebaseAreaSubarea';
 
-function EditorItem({ item, onSave, tipo, setItemEditando }) {
+function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
   const [nome, setNome] = useState(item.nome);
   const [numero, setNumero] = useState(item.numero);
   const [area, setArea] = useState(item.area);
   const [subarea, setSubarea] = useState(item.subarea);
-  const [areas, setAreas] = useState([]);
+  //const [areas, setAreas] = useState([]);
   const [subareas, setSubareas] = useState([]);
 
-  useEffect(() => {
-    const fetchAreas = async () => {
-      const fetchedAreas = await getAreas();
-      setAreas(fetchedAreas);
-    };
-    fetchAreas();
-  }, []);
+
 
   useEffect(() => {
     if (area) {

@@ -1,16 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { getCorArea } from '../auth/firebaseAreaSubarea';
 
-function Tarefa({ tarefa, onEdit, onDelete, onToggle }) {
+function Tarefa({ tarefa, onEdit, onDelete, onToggle, areas }) {
   const [corArea, setCorArea] = useState('#000');
 
+
   useEffect(() => {
-    const fetchCorArea = async () => {
-      const cor = await getCorArea(tarefa.area);
-      setCorArea(cor);
-    };
-    fetchCorArea();
-  }, [tarefa.area]);
+    if (Array.isArray(areas)) {
+      const areaEncontrada = areas.find(a => a.id === tarefa.areaId);
+      if (areaEncontrada) {
+        setCorArea(areaEncontrada.cor);
+      } else {
+        setCorArea('#000'); 
+      }
+    }
+  }, [tarefa.area, areas]);
+
+  useEffect(() => {
+
+    console.log("qual é areas")
+      console.log(areas)
+      console.log("areas.areas")
+      console.log(areas.areas)
+      console.log("tarefa")
+      console.log(tarefa)
+
+    /*if (areas.areas) {
+      console.log("qual é areas")
+      console.log(areas)
+      const areaEncontrada = areas.find(a => a.nome === tarefa.area);
+      if (areaEncontrada) {
+        setCorArea(areaEncontrada.cor);
+      }
+    }*/
+
+
+  }, [tarefa.area, areas]);
 
   return (
     <div>

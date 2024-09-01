@@ -8,7 +8,7 @@ import Cadastro from './components/Cadastro';
 import Oficina from './components/Oficina';
 import './App.css';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from './auth/firebase';
+import { auth, signOut } from './auth/firebase';
 
 function App() {
 
@@ -18,31 +18,16 @@ function App() {
     return <div>Carregando...</div>;
   }
 
-
-  /*return (
-    <Router>
-      <div className="App">
-        <div className="sidebar">
-          <Link to="/areas"><button>Áreas</button></Link>
-          <Link to="/projetos"><button>Projetos</button></Link>
-          <Link to="/missoes"><button>Missões</button></Link>
-          <Link to="/quests"><button>Quests</button></Link>
-          <Link to="/tarefas"><button>Tarefas</button></Link>
-        </div>
-        <div className="main-content">
-          <Routes>
-            <Route path="/tarefas" element={<ToDoList />} />
-            <Route path="/areas" element={<Areas />} />
-            <Route path="/projetos" element={<div>Componentes de Projetos</div>} />
-            <Route path="/missoes" element={<div>Componentes de Missões</div>} />
-            <Route path="/quests" element={<div>Componentes de Quests</div>} />
-            <Route path="/projeto/:nomeProjeto" element={<Projeto />} />
-            <Route path="/" element={<ToDoList />} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
-  );*/
+  function handleLogout() {
+    signOut(auth)
+      .then(() => {
+        console.log('Usuário desconectado');
+      })
+      .catch((error) => {
+        console.error('Erro ao desconectar: ', error);
+      });
+  }
+  
 
   return (
     <Router>
@@ -62,11 +47,12 @@ function App() {
               <Link to="/quests"><button>Quests</button></Link>
               <Link to="/tarefas"><button>Tarefas</button></Link>
               <Link to="/oficina"><button>Oficina</button></Link>
+              <button onClick={handleLogout}>Logout</button>
             </div>
             <div className="main-content">
               <Routes>
                 <Route path="/tarefas" element={<ToDoList user={user}/>} />
-                <Route path="/areas" element={<Areas />} />
+                <Route path="/areas" element={<Areas user={user}/>} />
                 <Route path="/projetos" element={<div>Componentes de Projetos</div>} />
                 <Route path="/missoes" element={<div>Componentes de Missões</div>} />
                 <Route path="/quests" element={<div>Componentes de Quests</div>} />

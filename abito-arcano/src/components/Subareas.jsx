@@ -9,8 +9,9 @@ import {
 import { addSubarea,
   updateSubarea,
   deleteSubarea } from '../auth/firebaseAreaSubarea';
+  import { v4 as uuidv4 } from 'uuid';
 
-function Subareas({ area, voltar, atualizarArea }) {
+function Subareas({ area, voltar, atualizarArea, atualizarAreaComSubarea }) {
   const [subareas, setSubareas] = useState([]);
   const [subareaSelecionada, setSubareaSelecionada] = useState(null);
   const [novoProjeto, setNovoProjeto] = useState('');
@@ -23,11 +24,15 @@ function Subareas({ area, voltar, atualizarArea }) {
 
   const adicionarSubarea = async (nomeSubarea) => {
     if (nomeSubarea.trim() === '') return;
-    const novaSubarea = { nome: nomeSubarea };
-    const subareaAdicionada = await addSubarea(area.id, novaSubarea);
-    const novasSubareas = [...subareas, subareaAdicionada];
-    atualizarSubareas(novasSubareas);
-  };
+    const novaSubarea = { id: uuidv4(), nome: nomeSubarea };
+    
+    const areaAtualizada = { 
+        ...area, 
+        subareas: [...area.subareas, novaSubarea] 
+    };
+    
+    atualizarAreaComSubarea(areaAtualizada);
+};
 
   const atualizarSubareas = (novasSubareas) => {
     const areaAtualizada = { ...area, subareas: novasSubareas };

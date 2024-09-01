@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import Subareas from './Subareas';
 import {
     getAreas,
-    addArea,
+    updateAreas,
     updateArea,
     deleteArea
 } from '../auth/firebaseAreaSubarea';
+import { v4 as uuidv4 } from 'uuid';
 
-function Areas() {
+function Areas({user}) {
     const [areas, setAreas] = useState([]);
     const [nomeArea, setNomeArea] = useState('');
     const [corArea, setCorArea] = useState('#ffffff');
@@ -16,33 +17,67 @@ function Areas() {
     const [modalAberto, setModalAberto] = useState(false);
     const [novoNomeArea, setNovoNomeArea] = useState('');
     const [novaCorArea, setNovaCorArea] = useState('#ffffff');
+    const [todasAreas, setTodasAreas] = useState([]);
+
+
 
     useEffect(() => {
         const fetchAreas = async () => {
-            const fetchedAreas = await getAreas();
-            setAreas(fetchedAreas);
-            console.log("fetchedAreas:")
-            console.log(fetchedAreas)
+            if (user.uid) { 
+                try {
+                    const fetchedAreas = await getAreas(user.uid);  
+                    console.log("fetchedAreas:", fetchedAreas);
+                    setTodasAreas(fetchedAreas.areas);
+
+                    const areasFiltradas = fetchedAreas.areas.filter(area => area.nome !== 'SEM CATEGORIA');
+                    setAreas(areasFiltradas);
+
+                    console.log("areasFiltradas:", areasFiltradas);
+
+                } catch (error) {
+                    console.error("Erro ao buscar áreas:", error);
+                }
+            }
         };
         fetchAreas();
+    }, [user]);
 
-
-
-        console.log("areas:")
-        console.log(areas)
-
-    }, []);
 
     const adicionarArea = async () => {
+        console.log("entrei adicionarArea")
         if (nomeArea.trim() === '') return;
-        const novaArea = { nome: nomeArea.toUpperCase(), cor: corArea, subareas: [] };
-        const areaAdicionada = await addArea(novaArea);
-        setAreas([...areas, areaAdicionada]);
+        const novaArea = { id: uuidv4(), nome: nomeArea.toUpperCase(), cor: corArea, subareas: [] };
+        
+        const novasAreas = [...todasAreas, novaArea];
+    
+        await updateAreas(user.uid, novasAreas);
+
+        console.log("novasAreas")
+        console.log(novasAreas)
+
+    
+        setTodasAreas(novasAreas);
+        setAreas(novasAreas.filter(area => area.nome !== 'SEM CATEGORIA'));
+
         setNomeArea('');
         setCorArea('#ffffff');
     };
 
+    const atualizarAreaComSubarea = async (areaAtualizada) => {
+        const novasAreas = todasAreas.map((a) =>
+            a.id === areaAtualizada.id ? areaAtualizada : a
+        );
+        
+        await updateAreas(user.uid, novasAreas);
+
+        setTodasAreas(novasAreas);
+        setAreas(novasAreas.filter(area => area.nome !== 'SEM CATEGORIA'));
+    };
+    
+
     const abrirModalEdicao = (index) => {
+        console.log(" abrirModalEdicao index")
+        console.log(index)
         setAreaSelecionada(index);
         setNovoNomeArea(areas[index].nome);
         setNovaCorArea(areas[index].cor);
@@ -54,7 +89,7 @@ function Areas() {
         setModalAberto(false);
     };
 
-    const editarArea = async () => {
+    /*const editarArea = async () => {
         const areaAtualizada = { ...areas[areaSelecionada], nome: novoNomeArea.toUpperCase(), cor: novaCorArea };
         await updateArea(areaAtualizada.id, areaAtualizada);
         const areasAtualizadas = areas.map((area, index) =>
@@ -62,13 +97,44 @@ function Areas() {
         );
         setAreas(areasAtualizadas);
         fecharModalEdicao();
-    };
+    };*/
 
-    const excluirArea = async (index) => {
+    const editarArea = async () => {
+        const areaAtualizada = { 
+            ...areas[areaSelecionada], 
+            nome: novoNomeArea.toUpperCase(), 
+            cor: novaCorArea 
+        };
+
+        const areasAtualizadas = todasAreas.map((area) =>
+            area.id === areaAtualizada.id ? areaAtualizada : area
+        );
+        
+        await updateAreas(user.uid, areasAtualizadas);
+    
+        setTodasAreas(areasAtualizadas);
+        setAreas(areasAtualizadas.filter(area => area.nome !== 'SEM CATEGORIA'));
+        
+        fecharModalEdicao();
+    };
+    
+
+    /*const excluirArea = async (index) => {
         await deleteArea(areas[index].id);
         const areasAtualizadas = areas.filter((_, i) => i !== index);
         setAreas(areasAtualizadas);
+    };*/
+
+    const excluirArea = async (id) => {
+        const areasAtualizadas = todasAreas.filter(area => area.id !== id);
+        
+        await updateAreas(user.uid, areasAtualizadas);
+    
+        setTodasAreas(areasAtualizadas);
+        setAreas(areasAtualizadas.filter(area => area.nome !== 'SEM CATEGORIA'));
     };
+    
+    
 
     const abrirSubareas = (index) => {
         const elementClicked = document.activeElement.tagName.toLowerCase();
@@ -83,10 +149,11 @@ function Areas() {
         return <Subareas
             area={areas[areaSelecionada]}
             voltar={() => setEntrarSubArea(false)}
-            atualizarArea={(areaAtualizada) => {
+            /*atualizarArea={(areaAtualizada) => {
                 const novasAreas = areas.map(a => a.id === areaAtualizada.id ? areaAtualizada : a);
                 setAreas(novasAreas);
-            }}
+            }}*/
+                atualizarAreaComSubarea={atualizarAreaComSubarea}
         />;
     }
 
@@ -116,7 +183,7 @@ function Areas() {
                             <div className="nome-area">{area.nome}</div>
                         </div>
                         <div>
-                            <button onClick={() => excluirArea(index)}>Excluir</button>
+                            <button onClick={() => excluirArea(area.id)}>Excluir</button>
                             <button onClick={() => abrirModalEdicao(index)}>Editar</button>
                         </div>
                     </div>

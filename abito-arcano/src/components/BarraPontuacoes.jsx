@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { resetPontuacao, getPontuacoes, updatePontuacoes } from '../auth/firebasePontuacoes.js';
 
-function BarraPontuacoes({ pontuacoes, setPontuacoes, areas, setAreas, resetarListaPontuacoes, user }) {
+function BarraPontuacoes({ pontuacoes, setPontuacoes, areas, setAreas, resetarListaPontuacoes, user, resetarListaAreas }) {
   const [mostrarSubareas, setMostrarSubareas] = useState(false);
 
   useEffect(() => {
     console.log("Estado atual - areas:", areas);
   }, [areas]);
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.log("Areas received: ", areas);
     console.log("Pontuacoes received: ", pontuacoes);
-  }, [areas, pontuacoes]);
+  }, [areas, pontuacoes]);*/
 
   const calcularPontuacaoTotal = (pontuacoes, areaId, subareaId = null) => {
     if (!Array.isArray(pontuacoes)) {
@@ -85,6 +85,7 @@ function BarraPontuacoes({ pontuacoes, setPontuacoes, areas, setAreas, resetarLi
       <button onClick={resetarListaPontuacoes}>Resetar Lista de Pontuações</button>
         <button onClick={resetPontuacaoAreas}>Resetar Pontuação das Áreas</button>
         <button onClick={resetPontuacaoSubareas}>Resetar Pontuação das Subáreas</button>
+        <button onClick={resetarListaAreas}>Resetar Lista das Áreas</button>
       </div>
       <div className="barra-pontuacoes">
         {areas && Array.isArray(areas) && areas.length > 0 ? (

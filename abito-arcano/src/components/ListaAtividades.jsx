@@ -70,6 +70,7 @@ function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, 
               onEdit={() => setItemEditando(atividade)}
               onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades, user.uid)}
               onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid, dataAtual)}
+              areas={areas}
             />
           </li>
         ))}
@@ -79,6 +80,7 @@ function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, 
           item={itemEditando}
           setItemEditando={setItemEditando}
           onSave={(nome, numero, area, subarea, areaId, subareaId) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'atividade', setAtividades, atividades, user.uid)}
+          areas={areas}
         />
       )}
       <h2>Finalizadas</h2>
@@ -90,6 +92,7 @@ function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, 
               onEdit={() => setItemEditando(atividade)}
               onDelete={() => deleteItem(atividade.id, 'atividade', setAtividades, atividades, user.uid)}
               onToggle={() => toggleFinalizada(atividade.id, 'atividade', atividades, setAtividades, setPontuacoes, user.uid, dataAtual)}
+              areas={areas}
             />
           </li>
         ))}

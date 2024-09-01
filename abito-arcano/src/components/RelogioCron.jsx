@@ -5,6 +5,8 @@ const RelogioCron = ({ user, trocarDia }) => {
     const [horaTroca, setHoraTroca] = useState('00:00:00');
     const [horaAtual, setHoraAtual] = useState(new Date().toLocaleTimeString());
 
+
+
     useEffect(() => {
         const fetchHoraTroca = async () => {
             const horaSalva = await getHoraTrocaFirebase(user.uid);
@@ -13,11 +15,11 @@ const RelogioCron = ({ user, trocarDia }) => {
             }
         };
         fetchHoraTroca();
-    }, [user.uid]);
+    }, [user]);
 
     useEffect(() => {
-        console.log("Estado atualizado - horaTroca:");
-        console.log(horaTroca)
+        /*console.log("Estado atualizado - horaTroca:");
+        console.log(horaTroca)*/
         console.log("user.uid")
         console.log(user.uid)
     }, [horaTroca]);

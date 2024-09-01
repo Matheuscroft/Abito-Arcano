@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Tarefa from './Tarefa';
 import EditorItem from './EditorItem';
 import { addItem, updateItem, toggleFinalizada, deleteItem } from './todoUtils';
@@ -8,6 +8,13 @@ import { getDias, inserirDias } from '../auth/firebaseDiasHoras.js';
 function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias, tarefasPorDia, setTarefasPorDia, areas, diaVisualizado }) {
   const [novaTarefa, setNovaTarefa] = useState('');
   const [itemEditando, setItemEditando] = useState(null);
+
+  useEffect(() => {
+    console.log("Estado atualizadOOOOOO lusta tarefas - areas:");
+    console.log(areas)
+    console.log("Estado atualizadOOOOOO lusta tarefas - tarefas:");
+    console.log(tarefas)
+  }, []);
 
   const resetarListaDeTarefasGerais = async (userId) => {
     try {
@@ -59,6 +66,7 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
               onEdit={() => setItemEditando(tarefa)}
               onDelete={() => deleteItem(tarefa.id, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia)}
               onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, setTarefas, setPontuacoes, user.uid, diaVisualizado, dias, setDias, tarefas, setTarefasPorDia)}
+              areas={areas}
             />
           </li>
         ))}
@@ -68,6 +76,7 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
           item={itemEditando}
           setItemEditando={setItemEditando}
           onSave={(nome, numero, area, subarea, areaId, subareaId) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia, areas)}
+          areas={areas}
         />
       )}
 
@@ -80,6 +89,7 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
               onEdit={() => setItemEditando(tarefa)}
               onDelete={() => deleteItem(tarefa.id, 'tarefa', setTarefas, tarefas)}
               onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, setTarefas, setPontuacoes, user.uid, diaVisualizado, dias, setDias, tarefas, setTarefasPorDia)}
+              areas={areas}
             />
           </li>
         ))}
