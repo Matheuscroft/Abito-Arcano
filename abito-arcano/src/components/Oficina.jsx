@@ -6,6 +6,7 @@ import { getAreas } from '../auth/firebaseAreaSubarea';
 import { getHoraTrocaFirebase } from '../auth/firebaseDiasHoras.js';
 import { getListaTarefas } from '../auth/firebaseTarefas.js';
 import { getDias } from '../auth/firebaseDiasHoras.js';
+import { getBrainstormList } from '../auth/firebaseBrainstorm.mjs';
 
 function Oficina({ user }) {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ function Oficina({ user }) {
     const [subareas, setSubareas] = useState([]);
     const [projetos, setProjetos] = useState([]);
     const [horaTroca, setHoraTroca] = useState([]);
+    const [brainstorm, setBrainstorm] = useState([]);
     const [dias, setDias] = useState([]);
     const [view, setView] = useState('areas');
 
@@ -33,6 +35,7 @@ function Oficina({ user }) {
             //const horaTroca = await getHoraTrocaFirebase();
             const horaTroca = await getHoraTrocaFirebase(user.uid);
             const dias = await getDias(user.uid);
+            const brainstorm = await getBrainstormList(user.uid);
 
             console.log("pontuacoes")
             console.log(pontuacoes)
@@ -48,6 +51,7 @@ function Oficina({ user }) {
             //setProjetos(projetos);
             setHoraTroca(horaTroca);
             setDias(dias)
+            setBrainstorm(brainstorm)
         };
         fetchData();
     }, [user, navigate]);
@@ -56,15 +60,15 @@ function Oficina({ user }) {
         if (typeof item !== 'object' || item === null) {
             return item;
         }
-    
+
         const orderedItem = {};
-    
+
         if (type === 'pontuacao') {
             // Ordena 'data' primeiro
             if (item.data) {
                 orderedItem.data = item.data;
             }
-    
+
             // Em seguida, ordena 'areas'
             if (item.areas) {
                 orderedItem.areas = item.areas.map(area => {
@@ -79,7 +83,7 @@ function Oficina({ user }) {
                     return orderedArea;
                 });
             }
-    
+
             // Finalmente, adiciona outras propriedades, exceto 'data' e 'areas'
             Object.keys(item)
                 .filter(key => key !== 'data' && key !== 'areas')
@@ -98,7 +102,7 @@ function Oficina({ user }) {
             if (item.id) {
                 orderedItem.id = item.id;
             }
-    
+
             Object.keys(item)
                 .filter(key => key !== 'id')
                 .sort()
@@ -112,10 +116,10 @@ function Oficina({ user }) {
                     }
                 });
         }
-    
+
         return orderedItem;
     };
-    
+
     const formatData = (data, type) => {
         if (Array.isArray(data)) {
             return (
@@ -132,7 +136,7 @@ function Oficina({ user }) {
             <pre>{JSON.stringify(formatItem(data, type), null, 2)}</pre>
         );
     };
-    
+
 
     const renderView = () => {
         switch (view) {
@@ -152,11 +156,13 @@ function Oficina({ user }) {
                 return formatData(dias, 'dia');
             case 'horaTroca':
                 return formatData(horaTroca, 'horaTroca');
+            case 'brainstorm':
+                return formatData(brainstorm, 'brainstorm');
             default:
                 return <div>Selecione uma visualização</div>;
         }
     };
-    
+
 
     return (
         <div>
@@ -170,6 +176,7 @@ function Oficina({ user }) {
                 <button onClick={() => setView('atividades')}>Atividades</button>
                 <button onClick={() => setView('dias')}>Dias</button>
                 <button onClick={() => setView('horaTroca')}>Hora de Troca</button>
+                <button onClick={() => setView('brainstorm')}>Brainstorm</button>
             </div>
             {renderView()}
         </div>
