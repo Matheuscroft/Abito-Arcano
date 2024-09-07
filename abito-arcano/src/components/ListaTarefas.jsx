@@ -10,8 +10,8 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
   const [itemEditando, setItemEditando] = useState(null);
 
   useEffect(() => {
-    console.log("Estado atualizadOOOOOO lusta tarefas - areas:");
-    console.log(areas)
+    console.log("Estado atualizadOOOOOO lusta tarefas - dias:");
+    console.log(dias)
     console.log("Estado atualizadOOOOOO lusta tarefas - tarefas:");
     console.log(tarefas)
   }, []);
@@ -36,6 +36,8 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
 
 
       console.log("Lista de tarefas gerais e tarefas de todos os dias resetadas com sucesso.");
+      console.log("diasAtualizados");
+      console.log(diasAtualizados);
 
       setDias(diasAtualizados)
       setTarefasPorDia({});
@@ -71,14 +73,28 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
           </li>
         ))}
       </ul>
-      {itemEditando && (
+      {/*itemEditando && (
         <EditorItem
           item={itemEditando}
           setItemEditando={setItemEditando}
           onSave={(nome, numero, area, subarea, areaId, subareaId) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia, areas)}
           areas={areas}
         />
+      )*/}
+      {itemEditando && (
+        <EditorItem
+          item={itemEditando}
+          setItemEditando={setItemEditando}
+          onSave={(nome, numero, area, subarea, areaId, subareaId) => {
+            console.log("Valor de dias:", dias); 
+
+            
+            updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia, areas);
+          }}
+          areas={areas}
+        />
       )}
+
 
       <h2>Finalizadas</h2>
       <ul>
@@ -87,7 +103,7 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
             <Tarefa
               tarefa={tarefa}
               onEdit={() => setItemEditando(tarefa)}
-              onDelete={() => deleteItem(tarefa.id, 'tarefa', setTarefas, tarefas)}
+              onDelete={() => deleteItem(tarefa.id, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia)}
               onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, setTarefas, setPontuacoes, user.uid, diaVisualizado, dias, setDias, tarefas, setTarefasPorDia)}
               areas={areas}
             />

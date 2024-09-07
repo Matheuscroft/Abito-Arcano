@@ -63,6 +63,8 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
                     }
 
                     setDataAtual(diaAtual);
+                    console.log("diasSalvos")
+                    console.log(diasSalvos)
                     setDias(diasSalvos);
                 }
 
@@ -233,12 +235,10 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
                 setTarefas={(novasTarefas) => {
                     setTarefasPorDia(prev => ({ ...prev, [diaVisualizado]: novasTarefas }));
                     console.log("dentro do set tarefas das diarias")
-                    console.log("diaVisualizado")
-                    console.log(diaVisualizado)
+                    
                     console.log("novasTarefas")
                     console.log(novasTarefas)
-                    console.log("user.uid")
-                    console.log(user.uid)
+                    
 
                 }}
                 user={user}

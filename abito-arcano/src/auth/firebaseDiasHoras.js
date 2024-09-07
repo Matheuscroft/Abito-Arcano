@@ -35,6 +35,7 @@ export const inserirDias = async (userId, dias) => {
         const diasRef = doc(db, 'dias', userId);
         await setDoc(diasRef, { userId, dias });
         console.log('Dias resetados com sucesso');
+        console.log(dias);
     } catch (error) {
         console.error('Erro ao resetar dias: ', error);
     }

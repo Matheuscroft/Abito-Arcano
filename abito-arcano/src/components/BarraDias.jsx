@@ -55,6 +55,8 @@ const BarraDias = ({ user, dias, setDias, setDiaVisualizado, resetarListaDeDias,
 
     useEffect(() => {
         setDias(dias);
+        console.log("dias do barra dias");
+        console.log(dias);
     }, [dias]);
 
     return (

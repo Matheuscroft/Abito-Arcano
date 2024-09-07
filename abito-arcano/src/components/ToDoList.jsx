@@ -50,6 +50,8 @@ function ToDoList({ user }) {
         let pontuacoes = await getPontuacoes(user.uid);
         const dias = await getDias(user.uid);
 
+        console.log("dias todolist")
+        console.log(dias)
         /*if (areas.length === 0) {
           console.log("to no areas 0")
           await resetarListaAreas(user.uid)
