@@ -41,8 +41,7 @@ export const addItem = async (nome, tipo, setItems, items, userId, setDias, dias
   if (nome.trim() === '') return;
 
   console.log("ADD ITEM")
-  const novoItem = { nome, numero: 0, area: 'Sem Categoria', subarea: '', finalizada: false };
-  //const novoItemComId = { ...novoItem, id: items.length > 0 ? items[items.length - 1].id + 1 : 1 };
+  const novoItem = { nome, numero: 1, area: 'SEM CATEGORIA', subarea: '', finalizada: false };
   const novoItemComId = { ...novoItem, id: uuidv4() };
 
   console.log("items")
@@ -80,6 +79,16 @@ export const addItem = async (nome, tipo, setItems, items, userId, setDias, dias
 
 
 export const updateItem = async (id, nome, numero, area, subarea, areaId, subareaId, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, areas) => {
+  
+  console.log("area")
+  console.log(area)
+  console.log("subarea")
+  console.log(subarea)
+  console.log("areaId")
+  console.log(areaId)
+  console.log("subareaId")
+  console.log(subareaId)
+  
   if (tipo === 'tarefa') {
     const itemAtualizado = { id, nome, numero, area, subarea, areaId, subareaId };
     console.log("updateItem itemAtualizado tarefa")
@@ -92,13 +101,14 @@ export const updateItem = async (id, nome, numero, area, subarea, areaId, subare
     console.log("items")
     console.log(items)
 
-    const itemAtualizado = { id, nome, numero, area, subarea, areaId, subareaId };
-    console.log("itemAtualizado")
-    console.log(itemAtualizado)
 
-    const atividadesAtualizadas = items.map(item =>
-      item.id === id ? itemAtualizado : item
+    const atividadesAtualizadas = items.map(atividade =>
+      atividade.id === id 
+        ? { ...atividade, nome, numero, area, subarea, areaId, subareaId }
+        : atividade
     );
+
+
 
     console.log("atividadesAtualizadas")
     console.log(atividadesAtualizadas)

@@ -1,28 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { getCorArea } from '../auth/firebaseAreaSubarea';
+import { setarCorAreaETexto } from './utils';
 
 function Atividade({ atividade, onEdit, onDelete, onToggle, areas }) {
 
     const [corArea, setCorArea] = useState('#000');
+    const [corTexto, setCorTexto] = useState('#fff');
 
-    /*useEffect(() => {
-        const fetchCorArea = async () => {
-            const cor = await getCorArea(atividade.area);
-            setCorArea(cor);
-        };
-        fetchCorArea();
-    }, [atividade.area]);*/
 
     useEffect(() => {
+        if (Array.isArray(areas) && atividade.areaId) {
 
-        if (areas) {
-            const areaEncontrada = areas.find(a => a.nome === atividade.area);
-            if (areaEncontrada) {
-                setCorArea(areaEncontrada.cor);
-            }
+            setarCorAreaETexto(atividade, areas, setCorArea, setCorTexto)
+
+        } else {
+            console.log("areas não é um array ou tarefa não possui areaId");
         }
-
-    }, [atividade.area, areas]);
+    }, [atividade.areaId, areas]);;
 
     return (
         <div>
@@ -31,7 +24,11 @@ function Atividade({ atividade, onEdit, onDelete, onToggle, areas }) {
                 checked={atividade.finalizada}
                 onChange={onToggle}
             />
-            {atividade.nome} - <span style={{ backgroundColor: corArea, padding: '0 5px', borderRadius: '5px' }}>{atividade.numero}</span> - <span style={{ backgroundColor: corArea, padding: '0 5px', borderRadius: '5px' }}>{atividade.area}</span> - {atividade.subarea}
+            {atividade.nome} -
+            <span style={{ backgroundColor: corArea, color: corTexto, padding: '0 5px', borderRadius: '5px' }}>
+                {"+" + atividade.numero + " " + atividade.area}
+            </span>
+            {atividade.subarea ? ` - ${atividade.subarea}` : ""}
             <button onClick={onEdit}>Editar</button>
             <button onClick={onDelete}>Excluir</button>
         </div>

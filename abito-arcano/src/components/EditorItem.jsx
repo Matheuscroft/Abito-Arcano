@@ -18,15 +18,22 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
   }, [area, areas]);
 
   const handleSave = () => {
-    const areaEncontrada = areas.find(a => a.nome === area);
+    //const areaEncontrada = areas.find(a => a.nome === area);
+
+    const areaNome = area === "" ? "SEM CATEGORIA" : area;
+    const areaEncontrada = areas.find(a => a.nome === areaNome);
+
     const subareaEncontrada = areaEncontrada?.subareas.find(s => s.nome === subarea);
+
+    //let nomeArea = areaEncontrada ? areaEncontrada.nome : "SEM CATEGORIA"
+    let nomeSubarea = subareaEncontrada ? subareaEncontrada.nome : ""
 
     console.log("handlesave")
     console.log("areaEncontrada")
     console.log(areaEncontrada)
     console.log("subareaEncontrada")
     console.log(subareaEncontrada)
-    
+
     const areaId = areaEncontrada ? areaEncontrada.id : null;
     const subareaId = subareaEncontrada ? subareaEncontrada.id : null;
 
@@ -36,7 +43,7 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
     console.log(subareaId)
 
     setItemEditando(false);
-    onSave(nome, numero, area, subarea, areaId, subareaId);
+    onSave(nome, numero, areaNome, nomeSubarea, areaId, subareaId);
   };
 
   return (
