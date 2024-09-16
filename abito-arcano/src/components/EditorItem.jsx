@@ -7,6 +7,10 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
   const [subarea, setSubarea] = useState(item.subarea);
   //const [areas, setAreas] = useState([]);
   const [subareas, setSubareas] = useState([]);
+  const [diasSemana, setDiasSemana] = useState(item.diasSemana || []);
+  
+
+  const diasOpcoes = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
 
 
@@ -17,33 +21,38 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
     }
   }, [area, areas]);
 
+  useEffect(() => {
+    console.log("item.diasSemana")
+    console.log(item.diasSemana)
+  }, []);
+
   const handleSave = () => {
-    //const areaEncontrada = areas.find(a => a.nome === area);
 
     const areaNome = area === "" ? "SEM CATEGORIA" : area;
     const areaEncontrada = areas.find(a => a.nome === areaNome);
 
     const subareaEncontrada = areaEncontrada?.subareas.find(s => s.nome === subarea);
 
-    //let nomeArea = areaEncontrada ? areaEncontrada.nome : "SEM CATEGORIA"
     let nomeSubarea = subareaEncontrada ? subareaEncontrada.nome : ""
 
-    console.log("handlesave")
-    console.log("areaEncontrada")
-    console.log(areaEncontrada)
-    console.log("subareaEncontrada")
-    console.log(subareaEncontrada)
-
+   
     const areaId = areaEncontrada ? areaEncontrada.id : null;
     const subareaId = subareaEncontrada ? subareaEncontrada.id : null;
 
-    console.log("areaId")
-    console.log(areaId)
-    console.log("subareaId")
-    console.log(subareaId)
-
     setItemEditando(false);
-    onSave(nome, numero, areaNome, nomeSubarea, areaId, subareaId);
+    if (tipo === 'tarefa') {
+      onSave(nome, numero, areaNome, nomeSubarea, areaId, subareaId, diasSemana);
+    } else {
+      onSave(nome, numero, areaNome, nomeSubarea, areaId, subareaId);
+    }
+  };
+
+  const handleDiaSemanaChange = (dia) => {
+    setDiasSemana(prevDias =>
+      prevDias.includes(dia)
+        ? prevDias.filter(d => d !== dia) 
+        : [...prevDias, dia] 
+    );
   };
 
   return (
@@ -73,6 +82,23 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
           <option key={index} value={s.nome}>{s.nome}</option>
         ))}
       </select>
+
+      {tipo === 'tarefa' && (
+        <div>
+          <h4>Selecione os dias da semana:</h4>
+          {diasOpcoes.map((dia, index) => (
+            <label key={index}>
+              <input
+                type="checkbox"
+                checked={diasSemana.includes(dia)}
+                onChange={() => handleDiaSemanaChange(dia)}
+              />
+              {dia}
+            </label>
+          ))}
+        </div>
+      )}
+
       <button onClick={handleSave}>Salvar</button>
     </div>
   );

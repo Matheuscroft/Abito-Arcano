@@ -59,7 +59,7 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
         onChange={(e) => setNovaTarefa(e.target.value)}
         placeholder="Digite o nome da tarefa"
       />
-      <button onClick={() => addItem(novaTarefa, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia, areas)}>Adicionar Tarefa</button>
+      <button onClick={() => addItem(novaTarefa, 'tarefa', setTarefas, tarefas, user.uid, areas, setDias, dias, tarefasPorDia, setTarefasPorDia)}>Adicionar Tarefa</button>
       <ul>
         {tarefas.filter(tarefa => !tarefa.finalizada).map((tarefa) => (
           <li key={tarefa.id}>
@@ -73,24 +73,13 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
           </li>
         ))}
       </ul>
-      {/*itemEditando && (
-        <EditorItem
-          item={itemEditando}
-          setItemEditando={setItemEditando}
-          onSave={(nome, numero, area, subarea, areaId, subareaId) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia, areas)}
-          areas={areas}
-        />
-      )*/}
+      
       {itemEditando && (
         <EditorItem
           item={itemEditando}
+          tipo={"tarefa"}
           setItemEditando={setItemEditando}
-          onSave={(nome, numero, area, subarea, areaId, subareaId) => {
-            console.log("Valor de dias:", dias); 
-
-            
-            updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia, areas);
-          }}
+          onSave={(nome, numero, area, subarea, areaId, subareaId, diasSemana) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia, diasSemana)}
           areas={areas}
         />
       )}

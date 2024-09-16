@@ -59,7 +59,7 @@ function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, 
         onChange={(e) => setNovaAtividade(e.target.value)}
         placeholder="Digite o nome da atividade"
       />
-      <button onClick={() => addItem(novaAtividade, 'atividade', setAtividades, atividades.atividades, user.uid)}>Adicionar Atividade</button>
+      <button onClick={() => addItem(novaAtividade, 'atividade', setAtividades, atividades.atividades, user.uid, areas)}>Adicionar Atividade</button>
       <button onClick={() => reformarAtividades(user.uid, areas)}>Reformar Lista de Atividades</button>
       <button onClick={() => resetarListaAtividades()}>Resetar Lista de Atividades</button>
       <ul>
@@ -78,6 +78,7 @@ function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, 
       {itemEditando && (
         <EditorItem
           item={itemEditando}
+          tipo={"atividade"}
           setItemEditando={setItemEditando}
           onSave={(nome, numero, area, subarea, areaId, subareaId) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'atividade', setAtividades, atividades, user.uid)}
           areas={areas}

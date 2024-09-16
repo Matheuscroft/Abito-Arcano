@@ -37,69 +37,67 @@ export const buscarIdsAreaESubarea = (areas, areaNome, subareaNome) => {
 };
 
 
-export const addItem = async (nome, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, areas) => {
+export const addItem = async (nome, tipo, setItems, items, userId, areas, setDias, dias, tarefasPorDia, setTarefasPorDia) => {
   if (nome.trim() === '') return;
 
+  const { areaId, subareaId } = await buscarIdsAreaESubarea(areas, "SEM CATEGORIA", "");
+
   console.log("ADD ITEM")
-  const novoItem = { nome, numero: 1, area: 'SEM CATEGORIA', subarea: '', finalizada: false };
-  const novoItemComId = { ...novoItem, id: uuidv4() };
+  const novoItem = { 
+    id: uuidv4(),
+    nome, 
+    numero: 1, 
+    area: 'SEM CATEGORIA', 
+    subarea: '', 
+    areaId: areaId,
+    subareaId: subareaId,
+    finalizada: false
+  };
 
   console.log("items")
   console.log(items)
 
   console.log("novoItem")
   console.log(novoItem)
-  console.log("novoItemComId")
-  console.log(novoItemComId)
+  console.log("novoItem")
+  console.log(novoItem)
+
 
   if (tipo === 'atividade') {
+
     const atividadesData = await getListaAtividades(userId);
     const atividadesArray = atividadesData.atividades || [];
-    atividadesArray.push(novoItemComId)
-    const atividadesObjeto = {
-      userId: items.userId,
-      atividades: atividadesArray
-    }
-    //const novaAtividade = { ...novoItemComId };
-    //const atividadesAtualizadas = [...atividades, novaAtividade];
-    //novasAtividades = [...items, item];
+    atividadesArray.push(novoItem)
+    
     console.log("Novasatividades")
     console.log(atividadesArray)
+    
     await setListaAtividades(userId, atividadesArray);
     setItems(atividadesArray);
-  } else if (tipo === 'tarefa') {
-    const { areaId, subareaId } = buscarIdsAreaESubarea(areas, novoItem.area, novoItem.subarea);
-    const novoItemComIds = { ...novoItemComId, areaId, subareaId };
 
-    await atualizarTarefasEDias(novoItemComIds, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, false);
+  } else if (tipo === 'tarefa') {
+    
+
+    await atualizarTarefasEDias(novoItem, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, false);
   }
 };
 
 
 
 
-export const updateItem = async (id, nome, numero, area, subarea, areaId, subareaId, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, areas) => {
+export const updateItem = async (id, nome, numero, area, subarea, areaId, subareaId, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, diasSemana) => {
   
-  console.log("area")
-  console.log(area)
-  console.log("subarea")
-  console.log(subarea)
-  console.log("areaId")
-  console.log(areaId)
-  console.log("subareaId")
-  console.log(subareaId)
   
   if (tipo === 'tarefa') {
-    const itemAtualizado = { id, nome, numero, area, subarea, areaId, subareaId };
-    console.log("updateItem itemAtualizado tarefa")
+    const itemAtualizado = { id, nome, numero, area, subarea, areaId, subareaId, diasSemana };
+
+    console.log("itemAtualizado")
     console.log(itemAtualizado)
+    
 
     await atualizarTarefasEDias(itemAtualizado, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, true);
   } else if (tipo === 'atividade') {
     console.log("else, sou atividade")
-
-    console.log("items")
-    console.log(items)
 
 
     const atividadesAtualizadas = items.map(atividade =>
@@ -123,13 +121,14 @@ export const updateItem = async (id, nome, numero, area, subarea, areaId, subare
 
 const atualizarTarefasGerais = async (item, items, userId, isUpdate) => {
 
+  console.log("to no atualizarTarefasGerais")
   let novasTarefas;
   if (isUpdate) {
     console.log("if")
     const tarefasGerais = await getListaTarefas(userId);
     novasTarefas = tarefasGerais.map(tarefa =>
       tarefa.id === item.id
-        ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId }
+        ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId, diasSemana: item.diasSemana }
         : tarefa
     );
   } else {
@@ -149,7 +148,7 @@ const atualizarTarefasPorDia = async (item, dias, tarefasPorDia, isUpdate, setTa
     if (isUpdate) {
       tarefasPorDiaAtualizadas[dia.data] = (tarefasPorDia[dia.data] || []).map(tarefa =>
         tarefa.id === item.id
-          ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId }
+          ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId, diasSemana: item.diasSemana }
           : tarefa
       );
     } else {
@@ -174,7 +173,7 @@ const atualizarDias = async (item, userId, setDias, dias, isUpdate) => {
       const tarefasAtualizadasDia = isUpdate
         ? dia.tarefas.map(tarefa =>
           tarefa.id === item.id
-            ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId }
+            ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId, diasSemana: item.diasSemana }
             : tarefa
         )
         : [...dia.tarefas, item];
@@ -205,7 +204,7 @@ const atualizarTarefasEDias = async (item, setItems, items, userId, setDias, dia
   
 
   const itensAtualizados = isUpdate
-    ? items.map(itemAtual => itemAtual.id === item.id ? { ...itemAtual, nome: item.nome, numero: item.numero, area: item.area, areaId: item.areaId, subarea: item.subarea, subareaId: item.subareaId } : itemAtual)
+    ? items.map(itemAtual => itemAtual.id === item.id ? { ...itemAtual, nome: item.nome, numero: item.numero, area: item.area, areaId: item.areaId, subarea: item.subarea, subareaId: item.subareaId, diasSemana: item.diasSemana } : itemAtual)
     : [...items, item];
     
     console.log("itensAtualizados ANTES DO SETITEMS -SETTAREFAS")
@@ -260,8 +259,11 @@ export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes,
 
     console.log("id")
     console.log(id)
-    console.log("items")
-    console.log(items)
+    console.log("item")
+    console.log(item)
+
+    console.log("id")
+    console.log(id)
 
     if (tipo === 'tarefa') {
       const diaReferido = dias.find(dia => dia.data === dataPontuacao);
@@ -293,11 +295,18 @@ export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes,
       const atividadesAtualizadas = items.map(i => i.id === id ? { ...i, finalizada } : i);
       setItems(atividadesAtualizadas);
 
+      console.log("atividade else")
+      console.log("atividadesAtualizadas")
+      console.log(atividadesAtualizadas)
+
 
       await setListaAtividades(userId, atividadesAtualizadas);
     }
 
 
+    console.log("item.areaId")
+    
+    console.log(item.areaId)
 
     await updatePontuacao(userId, item.areaId, item.subareaId, atualizacaoPontuacao, dataPontuacao);
 

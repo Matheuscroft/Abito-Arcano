@@ -11,6 +11,7 @@ function Atividade({ atividade, onEdit, onDelete, onToggle, areas }) {
         if (Array.isArray(areas) && atividade.areaId) {
 
             setarCorAreaETexto(atividade, areas, setCorArea, setCorTexto)
+            console.log("SETOU COR")
 
         } else {
             console.log("areas não é um array ou tarefa não possui areaId");
