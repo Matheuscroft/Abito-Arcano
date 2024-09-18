@@ -7,6 +7,7 @@ import Login from './components/Login';
 import Cadastro from './components/Cadastro';
 import Oficina from './components/Oficina';
 import Brainstorm from './components/Brainstorm';
+import Listas from './components/Listas/Listas';
 import './App.css';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, signOut } from './auth/firebase';
@@ -49,6 +50,7 @@ function App() {
               <Link to="/tarefas"><button>Tarefas</button></Link>
               <Link to="/oficina"><button>Oficina</button></Link>
               <Link to="/brainstorm"><button>Brainstorm</button></Link>
+              <Link to="/listas"><button>Listas</button></Link>
               <button onClick={handleLogout}>Logout</button>
             </div>
             <div className="main-content">
@@ -61,6 +63,7 @@ function App() {
                 <Route path="/projeto/:nomeProjeto" element={<Projeto />} />
                 <Route path="/oficina" element={<Oficina user={user}/>} />
                 <Route path="/brainstorm" element={<Brainstorm user={user}/>} />
+                <Route path="/listas" element={<Listas user={user}/>} />
                 <Route path="/" element={<ToDoList />} />
                 <Route path="*" element={<Navigate to="/tarefas" />} />
               </Routes>
