@@ -7,6 +7,7 @@ import { getHoraTrocaFirebase } from '../auth/firebaseDiasHoras.js';
 import { getListaTarefas } from '../auth/firebaseTarefas.js';
 import { getDias } from '../auth/firebaseDiasHoras.js';
 import { getBrainstormList } from '../auth/firebaseBrainstorm.mjs';
+import { getListas } from '../auth/firebaseListas.mjs';
 
 function Oficina({ user }) {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ function Oficina({ user }) {
     const [horaTroca, setHoraTroca] = useState([]);
     const [brainstorm, setBrainstorm] = useState([]);
     const [dias, setDias] = useState([]);
+    const [listas, setListas] = useState([]);
     const [view, setView] = useState('areas');
 
     useEffect(() => {
@@ -36,6 +38,7 @@ function Oficina({ user }) {
             const horaTroca = await getHoraTrocaFirebase(user.uid);
             const dias = await getDias(user.uid);
             const brainstorm = await getBrainstormList(user.uid);
+            const listas = await getListas(user.uid)
 
             console.log("pontuacoes")
             console.log(pontuacoes)
@@ -52,6 +55,7 @@ function Oficina({ user }) {
             setHoraTroca(horaTroca);
             setDias(dias)
             setBrainstorm(brainstorm)
+            setListas(listas)
         };
         fetchData();
     }, [user, navigate]);
@@ -158,6 +162,8 @@ function Oficina({ user }) {
                 return formatData(horaTroca, 'horaTroca');
             case 'brainstorm':
                 return formatData(brainstorm, 'brainstorm');
+            case 'listas':
+                return formatData(listas, 'listas');
             default:
                 return <div>Selecione uma visualização</div>;
         }
@@ -177,6 +183,7 @@ function Oficina({ user }) {
                 <button onClick={() => setView('dias')}>Dias</button>
                 <button onClick={() => setView('horaTroca')}>Hora de Troca</button>
                 <button onClick={() => setView('brainstorm')}>Brainstorm</button>
+                <button onClick={() => setView('listas')}>Listas</button>
             </div>
             {renderView()}
         </div>

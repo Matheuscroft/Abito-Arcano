@@ -6,13 +6,12 @@ export const getListas = async (userId) => {
   const listasDoc = await getDoc(listasRef);
   if (listasDoc.exists()) {
     const data = listasDoc.data();
-    return data.listas || [];  // Certifica-se de retornar um array
+    return data.listas || [];  
   } else {
-    return [];  // Retorna um array vazio se não houver listas
+    return [];  
   }
 };
 
-// Função para salvar as listas no Firebase
 export const setListas = async (userId, listasAtualizadas) => {
   const listasRef = doc(db, 'listas', userId);
   await setDoc(listasRef, { listas: listasAtualizadas }, { merge: true });

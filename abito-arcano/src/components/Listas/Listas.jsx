@@ -34,7 +34,6 @@ const Listas = ({ user }) => {
     fetchListas();
   }, [user]);
 
-  // Adicionar nova lista
   const addLista = async (novaLista) => {
     const novasListas = [...listas, { id: uuidv4(), ...novaLista, itens: [] }];
     setListasLocal(novasListas);
@@ -49,6 +48,50 @@ const Listas = ({ user }) => {
 
     await setListas(user.uid, novasListas);  // Atualiza o Firebase
   };
+
+  const reformarItensComTipo = async (listas) => {
+    // Percorre cada lista
+
+    console.log("listas entru")
+    console.log(listas)
+
+    const listasAtualizadas = listas.map((lista) => {
+
+      const itensReformados = lista.itens.map((item) => {
+        if (!item.tipo) {
+          let tipo;
+          tipo = "checklist"
+  
+  
+          return {
+            ...item,
+            tipo, 
+          };
+        }
+  
+        return item;
+      });
+
+      return {
+        ...lista,
+        itens: itensReformados
+      }
+
+    });
+
+
+    console.log("listasAtualizadas")
+    console.log(listasAtualizadas)
+
+    setListasLocal(listasAtualizadas); 
+
+    
+
+    await setListas(user.uid, listasAtualizadas);
+  
+    return listasAtualizadas;
+  };
+  
 
   // Adicionar item à checklist
   /*const addChecklistItem = async (listaId, novoItem) => {
@@ -111,6 +154,7 @@ const Listas = ({ user }) => {
   return (
     <div>
       <ListaForm addLista={addLista} />
+      <button onClick={() => reformarItensComTipo(listas)}>reformarItensComTipo</button>
 
       <div className="listas-container">
         {Array.isArray(listas) && listas.length > 0 ? (
