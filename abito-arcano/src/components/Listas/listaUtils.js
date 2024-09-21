@@ -5,6 +5,9 @@ export const updateListas = async (userId, listaId, listas, setListasLocal, item
     if (listaIndex === -1) return;
   
     let listaAtualizada = { ...listas[listaIndex] };
+
+    console.log("newOrder")
+    console.log(newOrder)
   
     if (item) {
       
@@ -31,10 +34,14 @@ export const updateListas = async (userId, listaId, listas, setListasLocal, item
     }
 
     if (newOrder) {
+      console.log("ifnewordrt")
+    
         listaAtualizada = {
           ...listaAtualizada,
           itens: newOrder 
         };
+        console.log("listaAtualizada")
+        console.log(listaAtualizada)
       }
 
     const novasListas = [
@@ -42,6 +49,9 @@ export const updateListas = async (userId, listaId, listas, setListasLocal, item
       listaAtualizada,
       ...listas.slice(listaIndex + 1),
     ];
+
+    console.log("novasListas")
+        console.log(novasListas)
 
     setListasLocal(novasListas);
     await setListas(userId, novasListas); 

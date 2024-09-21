@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { updateLocalList } from './listaUtils';
 import { v4 as uuidv4 } from 'uuid';
+import EditorItemLista from './EditorItemLista';
+import ItemLista from './ItemLista';
 
 const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas }) => {
   const [novoItem, setNovoItem] = useState('');
-  const [tipoItem, setTipoItem] = useState('checklist'); // Estado para o tipo de item
+  const [tipoItem, setTipoItem] = useState('checklist');
   const [listaLocal, setListaLocal] = useState(lista);
+  const [itemEditando, setItemEditando] = useState()
 
   const handleAddItem = () => {
     if (novoItem.trim()) {
@@ -16,20 +19,20 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
           id: uuidv4(),
           nome: novoItem,
           completed: false,
-          tipo: 'checklist', // Tipo de item
+          tipo: 'checklist',
         };
       } else if (tipoItem === 'paragrafo') {
         novoChecklistItem = {
           id: uuidv4(),
           nome: novoItem,
-          tipo: 'paragrafo', // Parágrafo não tem campo de "completed"
+          tipo: 'paragrafo',
         };
       } else if (tipoItem === 'lista') {
         novoChecklistItem = {
           id: uuidv4(),
           nome: novoItem,
-          tipo: 'lista', // Lista aninhada
-          itens: [], // Uma lista começa vazia
+          tipo: 'lista',
+          itens: [],
         };
       }
 
@@ -43,7 +46,6 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
   const handleToggleItem = (itemId) => {
     const item = listaLocal.itens.find((item) => item.id === itemId);
 
-    // Apenas aplica o toggle para checklist, outros tipos ignoram
     if (item.tipo === 'checklist') {
       updateListas(user.uid, lista.id, listas, setListasLocal, null, item);
       const listaAtualizada = updateLocalList(listaLocal, null, item);
@@ -72,41 +74,75 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
     }
   };
 
+  const atualizarItem = (id, nome, tipo) => {
+
+    const itemAtualizado = {
+      ...itemEditando,
+      nome: nome,
+      tipo: tipo
+    }
+    console.log("itemAtualizado")
+    console.log(itemAtualizado)
+
+    const itensAtualizados = listaLocal.itens.map(item =>
+      item.id === itemAtualizado.id 
+        ? itemAtualizado
+        : item
+    );
+
+    console.log("itensAtualizados")
+    console.log(itensAtualizados)
+
+    const listaAtualizada = { ...listaLocal, itens: itensAtualizados };
+    setListaLocal(listaAtualizada);
+    updateListas(user.uid, lista.id, listas, setListasLocal, null, null, null, itensAtualizados);
+
+
+    
+
+    //await setListaAtividades(userId, atividadesAtualizadas);
+
+
+    //setItems(atividadesAtualizadas);
+  }
+
+  const handleSave = (nome, tipo) => {
+    console.log("entrei")
+    console.log("nome")
+    console.log(nome)
+    console.log("tipo")
+    console.log(tipo)
+    atualizarItem(itemEditando, nome, tipo)
+  }
+
   return (
     <div className="modal">
       <h2>{listaLocal.nome}</h2>
       <p>Tipo: {listaLocal.tipo}</p>
-      
+
       <ul>
         {listaLocal.itens && listaLocal.itens.map((item, index) => (
           <li key={item.id}>
-            {item.tipo === 'checklist' && (
-              <label>
-                <input 
-                  type="checkbox" 
-                  checked={item.completed} 
-                  onChange={() => handleToggleItem(item.id)} 
-                />
-                <span style={{ textDecoration: item.completed ? 'line-through' : 'none' }}>
-                  {item.nome}
-                </span>
-              </label>
-            )}
-            {item.tipo === 'paragrafo' && <p>{item.nome}</p>}
-            {item.tipo === 'lista' && <p>Lista: {item.nome}</p>}
 
-            <button onClick={() => handleDeleteItem(item.id)}>X</button>
-            <button onClick={() => moveItem(index, -1)} disabled={index === 0}>↑</button>
-            <button onClick={() => moveItem(index, 1)} disabled={index === listaLocal.itens.length - 1}>↓</button>
+            <ItemLista item={item} index={index} lista={lista} onEdit={() => setItemEditando(item)} onDelete={handleDeleteItem} onToggle={handleToggleItem} onMove={moveItem}/>
+
+            {itemEditando && itemEditando === item && (
+              <EditorItemLista
+                item={itemEditando}
+                setItemEditando={setItemEditando}
+                onSave={(nome, tipo) => handleSave(nome, tipo)}
+              />
+            )}
+
           </li>
         ))}
       </ul>
 
-      <input 
-        type="text" 
-        placeholder="Adicionar item" 
-        value={novoItem} 
-        onChange={(e) => setNovoItem(e.target.value)} 
+      <input
+        type="text"
+        placeholder="Adicionar item"
+        value={novoItem}
+        onChange={(e) => setNovoItem(e.target.value)}
       />
       <select value={tipoItem} onChange={(e) => setTipoItem(e.target.value)}>
         <option value="checklist">Checklist</option>

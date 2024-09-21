@@ -19,4 +19,10 @@
     padding: 20px;
     border: 1px solid #ccc;
   }
+
+  .editor-item-lista-div{
+    background-color: antiquewhite;
+    padding: 10px 10px 10px 10px;
+    border: 1px solid rebeccapurple;
+  }
   
