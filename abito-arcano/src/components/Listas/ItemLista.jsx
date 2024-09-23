@@ -12,7 +12,7 @@ const ItemLista = ({ item, onEdit, lista, onDelete, onToggle, areas, onMove, ind
             {item && index !== undefined && (
                 <>
                     {item.tipo === 'checklist' && (
-                        <label>
+                        <label >
                             <input
                                 type="checkbox"
                                 checked={item.completed}
@@ -23,8 +23,8 @@ const ItemLista = ({ item, onEdit, lista, onDelete, onToggle, areas, onMove, ind
                             </span>
                         </label>
                     )}
-                    {item.tipo === 'paragrafo' && <p>{item.nome}</p>}
-                    {item.tipo === 'lista' && <p>Lista: {item.nome}</p>}
+                    {item.tipo === 'paragrafo' && <p style={{ display: 'inline-block' }}>{item.nome}</p>}
+                    {item.tipo === 'lista' && <p style={{ display: 'inline-block' }}>Lista: {item.nome}</p>}
 
                     <button style={{ marginLeft: '50px' }} onClick={() => onEdit(index, -1)} disabled={index === 0}>Editar</button>
                     <button onClick={() => onDelete(item.id)}>X</button>

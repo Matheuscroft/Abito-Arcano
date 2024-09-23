@@ -3,6 +3,7 @@ import { updateLocalList } from './listaUtils';
 import { v4 as uuidv4 } from 'uuid';
 import EditorItemLista from './EditorItemLista';
 import ItemLista from './ItemLista';
+import InputAdicionarItem from './InputAdicionarItem';
 
 const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas }) => {
   const [novoItem, setNovoItem] = useState('');
@@ -120,6 +121,8 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
       <h2>{listaLocal.nome}</h2>
       <p>Tipo: {listaLocal.tipo}</p>
 
+      <InputAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas}/>
+
       <ul>
         {listaLocal.itens && listaLocal.itens.map((item, index) => (
           <li key={item.id}>
@@ -138,18 +141,7 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
         ))}
       </ul>
 
-      <input
-        type="text"
-        placeholder="Adicionar item"
-        value={novoItem}
-        onChange={(e) => setNovoItem(e.target.value)}
-      />
-      <select value={tipoItem} onChange={(e) => setTipoItem(e.target.value)}>
-        <option value="checklist">Checklist</option>
-        <option value="paragrafo">Parágrafo</option>
-        <option value="lista">Lista</option>
-      </select>
-      <button onClick={handleAddItem}>Adicionar Item</button>
+      
       <button onClick={onClose}>Fechar</button>
     </div>
   );
