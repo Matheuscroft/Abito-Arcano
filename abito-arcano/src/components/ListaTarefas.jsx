@@ -6,7 +6,7 @@ import { substituirTarefasGerais } from '../auth/firebaseTarefas.js';
 import { getDias, inserirDias } from '../auth/firebaseDiasHoras.js';
 
 function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias, tarefasPorDia, setTarefasPorDia, areas, diaVisualizado }) {
-  const [novaTarefa, setNovaTarefa] = useState('');
+  const [nomeNovaTarefa, setNomeNovaTarefa] = useState('');
   const [itemEditando, setItemEditando] = useState(null);
 
   useEffect(() => {
@@ -49,17 +49,31 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
     }
   };
 
+  const handleAdicionarItem = async () => {
+
+    if (nomeNovaTarefa.trim() === '') return;
+
+    addItem(nomeNovaTarefa, 'tarefa', setTarefas, tarefas, user.uid, areas, setDias, dias, tarefasPorDia, setTarefasPorDia)
+
+    setNomeNovaTarefa('');
+};
+
   return (
     <div>
       <h1>Tarefas</h1>
       <button onClick={() => resetarListaDeTarefasGerais(user.uid)}>Resetar Lista de Tarefas Gerais</button>
       <input
         type="text"
-        value={novaTarefa}
-        onChange={(e) => setNovaTarefa(e.target.value)}
+        value={nomeNovaTarefa}
+        onChange={(e) => setNomeNovaTarefa(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            handleAdicionarItem();
+          }
+        }}
         placeholder="Digite o nome da tarefa"
       />
-      <button onClick={() => addItem(novaTarefa, 'tarefa', setTarefas, tarefas, user.uid, areas, setDias, dias, tarefasPorDia, setTarefasPorDia)}>Adicionar Tarefa</button>
+      <button onClick={handleAdicionarItem}>Adicionar Tarefa</button>
       <ul>
         {tarefas.filter(tarefa => !tarefa.finalizada).map((tarefa) => (
           <li key={tarefa.id}>

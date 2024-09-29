@@ -5,7 +5,7 @@ import { addItem, updateItem, toggleFinalizada, deleteItem, buscarIdsAreaESubare
 import { getListaAtividades, setListaAtividades } from '../auth/firebaseAtividades.js';
 
 function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, dias, setDias, areas, resetarListaAtividades, dataAtual }) {
-  const [novaAtividade, setNovaAtividade] = useState('');
+  const [nomeNovaAtividade, setNomeNovaAtividade] = useState('');
   const [itemEditando, setItemEditando] = useState(null);
 
   const reformarAtividades = async (userId, areas) => {
@@ -50,16 +50,30 @@ function ListaAtividades({ user, atividades = [], setAtividades, setPontuacoes, 
     atividades.atividades = [];
   }
 
+  const handleAdicionarItem = async () => {
+
+    if (nomeNovaAtividade.trim() === '') return;
+
+    addItem(nomeNovaAtividade, 'atividade', setAtividades, atividades.atividades, user.uid, areas)
+
+    setNomeNovaAtividade('');
+};
+
   return (
     <div>
       <h1>Atividades</h1>
       <input
         type="text"
-        value={novaAtividade}
-        onChange={(e) => setNovaAtividade(e.target.value)}
+        value={nomeNovaAtividade}
+        onChange={(e) => setNomeNovaAtividade(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            handleAdicionarItem();
+          }
+        }}
         placeholder="Digite o nome da atividade"
       />
-      <button onClick={() => addItem(novaAtividade, 'atividade', setAtividades, atividades.atividades, user.uid, areas)}>Adicionar Atividade</button>
+      <button onClick={handleAdicionarItem}>Adicionar Atividade</button>
       <button onClick={() => reformarAtividades(user.uid, areas)}>Reformar Lista de Atividades</button>
       <button onClick={() => resetarListaAtividades()}>Resetar Lista de Atividades</button>
       <ul>

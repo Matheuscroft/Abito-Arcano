@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import EditorItemLista from './EditorItemLista';
 import ItemLista from './ItemLista';
 import InputAdicionarItem from './InputAdicionarItem';
+import { setListas } from '../../auth/firebaseListas.mjs';
 
 const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas }) => {
   const [novoItem, setNovoItem] = useState('');
@@ -86,7 +87,7 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
     console.log(itemAtualizado)
 
     const itensAtualizados = listaLocal.itens.map(item =>
-      item.id === itemAtualizado.id 
+      item.id === itemAtualizado.id
         ? itemAtualizado
         : item
     );
@@ -99,7 +100,7 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
     updateListas(user.uid, lista.id, listas, setListasLocal, null, null, null, itensAtualizados);
 
 
-    
+
 
     //await setListaAtividades(userId, atividadesAtualizadas);
 
@@ -116,18 +117,56 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
     atualizarItem(itemEditando, nome, tipo)
   }
 
+  const handleResetar = async () => {
+    // Resetar todos os itens da lista atual (listaLocal) para completed: false
+    const itensResetados = listaLocal.itens.map(item => {
+        return {
+            ...item,
+            completed: false
+        };
+    });
+
+    console.log("Itens Resetados:", itensResetados);
+
+    // Criar uma nova lista com os itens resetados
+    const novaLista = {
+        ...listaLocal,
+        itens: itensResetados
+    };
+
+    // Atualizar as listas locais, substituindo a lista resetada pela lista modificada
+    const novasListas = listas.map(lista => {
+        if (lista.id === listaLocal.id) {
+            return novaLista; // Substituir a lista atualizada
+        }
+        return lista; // Manter as outras listas inalteradas
+    });
+
+    // Atualizar o estado das listas locais com as novas listas
+    setListasLocal(novasListas);
+
+    // Agora vamos salvar as novas listas no Firebase
+    try {
+        await setListas(user.uid, novasListas);
+        console.log("Listas atualizadas com sucesso no Firebase.");
+    } catch (error) {
+        console.error("Erro ao atualizar as listas no Firebase:", error);
+    }
+};
+
+
   return (
     <div className="modal">
       <h2>{listaLocal.nome}</h2>
       <p>Tipo: {listaLocal.tipo}</p>
 
-      <InputAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas}/>
-
+      <InputAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas} />
+      <button onClick={handleResetar}>Resetar checklists</button>
       <ul>
         {listaLocal.itens && listaLocal.itens.map((item, index) => (
           <li key={item.id}>
 
-            <ItemLista item={item} index={index} lista={lista} onEdit={() => setItemEditando(item)} onDelete={handleDeleteItem} onToggle={handleToggleItem} onMove={moveItem}/>
+            <ItemLista item={item} index={index} lista={lista} onEdit={() => setItemEditando(item)} onDelete={handleDeleteItem} onToggle={handleToggleItem} onMove={moveItem} />
 
             {itemEditando && itemEditando === item && (
               <EditorItemLista
@@ -141,7 +180,7 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
         ))}
       </ul>
 
-      
+
       <button onClick={onClose}>Fechar</button>
     </div>
   );
