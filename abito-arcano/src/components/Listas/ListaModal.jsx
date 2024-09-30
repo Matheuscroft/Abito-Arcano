@@ -3,7 +3,7 @@ import { updateLocalList } from './listaUtils';
 import { v4 as uuidv4 } from 'uuid';
 import EditorItemLista from './EditorItemLista';
 import ItemLista from './ItemLista';
-import InputAdicionarItem from './InputAdicionarItem';
+import FormAdicionarItem from './FormAdicionarItem';
 import { setListas } from '../../auth/firebaseListas.mjs';
 
 const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas }) => {
@@ -160,7 +160,7 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
       <h2>{listaLocal.nome}</h2>
       <p>Tipo: {listaLocal.tipo}</p>
 
-      <InputAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas} />
+      <FormAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas} />
       <button onClick={handleResetar}>Resetar checklists</button>
       <ul>
         {listaLocal.itens && listaLocal.itens.map((item, index) => (

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import InputAdicionarNome from '../componentes/inputs/InputAdicionarNome/InputAdicionarNome';
 
 const ListaForm = ({ addLista }) => {
   const [nome, setNome] = useState('');
   const [tipo, setTipo] = useState('lista');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    //e.preventDefault();
     if (nome.trim()) {
       addLista({ nome, tipo });
       setNome('');
@@ -13,20 +14,16 @@ const ListaForm = ({ addLista }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input 
-        type="text" 
-        placeholder="Nome da lista" 
-        value={nome} 
-        onChange={(e) => setNome(e.target.value)} 
-      />
+    <div>
+      <InputAdicionarNome placeholder="Nome da lista" nomeNovo={nome} setNomeNovo={setNome} handleAddItem={handleSubmit}/>
+      
       <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
         <option value="lista">Lista</option>
         <option value="treino">Treino</option>
         <option value="checklist">Checklist</option>
       </select>
-      <button type="submit">Criar Lista</button>
-    </form>
+      <button onClick={handleSubmit}>Criar Lista</button>
+    </div>
   );
 };
 

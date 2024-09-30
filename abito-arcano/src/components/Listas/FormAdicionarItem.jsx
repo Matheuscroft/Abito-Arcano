@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { updateLocalList } from './listaUtils';
 import { v4 as uuidv4 } from 'uuid';
+import InputAdicionarNome from '../componentes/inputs/InputAdicionarNome/InputAdicionarNome'
 
-const InputAdicionarItem = ({ listas, user, lista, setListasLocal, updateListas }) => {
+const FormAdicionarItem = ({ listas, user, lista, setListasLocal, updateListas }) => {
   const [nomeNovoItem, setNomeNovoItem] = useState('');
   const [tipoItem, setTipoItem] = useState('checklist');
   const [listaLocal, setListaLocal] = useState(lista);
@@ -42,17 +43,8 @@ const InputAdicionarItem = ({ listas, user, lista, setListasLocal, updateListas 
 
   return (
     <div>
-      <input
-        type="text"
-        placeholder="Adicionar item"
-        value={nomeNovoItem}
-        onChange={(e) => setNomeNovoItem(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            handleAddItem();
-          }
-        }}
-      />
+      <InputAdicionarNome placeholder="Adicionar item" nomeNovo={nomeNovoItem} setNomeNovo={setNomeNovoItem} handleAddItem={handleAddItem} />
+      
       <select value={tipoItem} onChange={(e) => setTipoItem(e.target.value)}>
         <option value="checklist">Checklist</option>
         <option value="paragrafo">Parágrafo</option>
@@ -63,4 +55,4 @@ const InputAdicionarItem = ({ listas, user, lista, setListasLocal, updateListas 
   );
 };
 
-export default InputAdicionarItem;
+export default FormAdicionarItem;

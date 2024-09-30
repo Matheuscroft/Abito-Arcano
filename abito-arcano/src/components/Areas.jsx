@@ -7,6 +7,7 @@ import {
     deleteArea
 } from '../auth/firebaseAreaSubarea';
 import { v4 as uuidv4 } from 'uuid';
+import InputAdicionarNome from './componentes/inputs/InputAdicionarNome/InputAdicionarNome';
 
 function Areas({user}) {
     const [areas, setAreas] = useState([]);
@@ -160,12 +161,8 @@ function Areas({user}) {
     return (
         <div>
             <h1>Áreas</h1>
-            <input
-                type="text"
-                value={nomeArea}
-                onChange={(e) => setNomeArea(e.target.value.toUpperCase())}
-                placeholder="Digite o nome da área"
-            />
+            <InputAdicionarNome placeholder="Digite o nome da área" nomeNovo={nomeArea.toUpperCase()} setNomeNovo={setNomeArea} handleAddItem={adicionarArea} />
+            
             <input
                 type="color"
                 value={corArea}
