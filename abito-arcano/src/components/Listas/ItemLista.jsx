@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import FormSetasOrdenar from '../componentes/forms/FormSetasOrdenar/FormSetasOrdenar';
+import FormItemLista from '../componentes/forms/FormItemLista/FormItemLista';
+import './ItemLista.css'
 
 const ItemLista = ({ item, onEdit, lista, onDelete, onToggle, areas, onMove, index }) => {
     const [novoItem, setNovoItem] = useState('');
@@ -8,29 +11,30 @@ const ItemLista = ({ item, onEdit, lista, onDelete, onToggle, areas, onMove, ind
 
 
     return (
-        <div>
+        <div className="parent-div">
             {item && index !== undefined && (
                 <>
-                    {item.tipo === 'checklist' && (
-                        <label >
-                            <input
-                                type="checkbox"
-                                checked={item.completed}
-                                onChange={() => onToggle(item.id)}
-                            />
-                            <span style={{ textDecoration: item.completed ? 'line-through' : 'none' }}>
-                                {item.nome}
-                            </span>
-                        </label>
-                    )}
-                    {item.tipo === 'paragrafo' && <p style={{ display: 'inline-block' }}>{item.nome}</p>}
-                    {item.tipo === 'lista' && <p style={{ display: 'inline-block' }}>Lista: {item.nome}</p>}
-
-                    <button style={{ marginLeft: '50px' }} onClick={() => onEdit(index, -1)} disabled={index === 0}>Editar</button>
-                    <button onClick={() => onDelete(item.id)}>X</button>
-                    <button onClick={() => onMove(index, -1)} disabled={index === 0}>↑</button>
-                    <button onClick={() => onMove(index, 1)} disabled={index === lista.itens.length - 1}>↓</button>
-                </>
+                <div className="left-content">
+                  {item.tipo === 'checklist' && (
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={item.completed}
+                        onChange={() => onToggle(item.id)}
+                      />
+                      <span style={{ textDecoration: item.completed ? 'line-through' : 'none' }}>
+                        {item.nome}
+                      </span>
+                    </label>
+                  )}
+                  {item.tipo === 'paragrafo' && <p style={{ display: 'inline-block' }}>{item.nome}</p>}
+                  {item.tipo === 'lista' && <p style={{ display: 'inline-block' }}>Lista: {item.nome}</p>}
+                </div>
+        
+                <div className="right-content">
+                  <FormItemLista item={item} onEdit={onEdit} lista={lista} onDelete={onDelete} onMove={onMove} index={index} />
+                </div>
+              </>
             )}
 
 

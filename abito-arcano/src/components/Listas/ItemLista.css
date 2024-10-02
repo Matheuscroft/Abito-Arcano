@@ -1,0 +1,16 @@
+.parent-div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .left-content {
+    flex-grow: 1;
+  }
+  
+  .right-content {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
