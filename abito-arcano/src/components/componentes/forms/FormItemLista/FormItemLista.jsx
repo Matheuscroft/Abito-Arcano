@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, {  } from 'react';
 import FormSetasOrdenar from '../FormSetasOrdenar/FormSetasOrdenar';
 import './FormItemLista.css';
+import FormBotoesEditarEDelete from '../FormBotoesEditarEDelete/FormBotoesEditarEDelete';
 
 const FormItemLista = ({ item, onEdit, lista, onDelete, onMove, index }) => {
  
@@ -9,8 +10,7 @@ const FormItemLista = ({ item, onEdit, lista, onDelete, onMove, index }) => {
             {item && index !== undefined && (
                 <>
 
-                    <button style={{ marginLeft: '50px' }} onClick={() => onEdit(index, -1)}>Editar</button>
-                    <button onClick={() => onDelete(item.id)}>X</button>
+                    <FormBotoesEditarEDelete item={item} onEdit={onEdit} onDelete={onDelete} index={index}/>
                     
                     <FormSetasOrdenar onMove={onMove} index={index} lista={lista}/>
                 </>

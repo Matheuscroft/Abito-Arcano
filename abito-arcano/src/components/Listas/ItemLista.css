@@ -3,14 +3,36 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    box-sizing: border-box;
   }
   
   .left-content {
     flex-grow: 1;
+    background-color: pink;
+    width: 400px;
   }
   
   .right-content {
     display: flex;
     justify-content: flex-end;
   }
+  
+  /*.parent-div {
+    
+    height: 60px; // Definindo um tamanho fixo para a altura do item 
+    box-sizing: border-box; // Inclui padding e border na largura/altura 
+  }*/
+  
+  /*.left-content {
+    width: 300px; // Tamanho fixo para a div da esquerda 
+    overflow: hidden; // Garante que o conteúdo seja cortado se for muito longo 
+    text-overflow: ellipsis; // Adiciona "..." para texto que exceder a largura 
+    white-space: nowrap; // Impede quebra de linha 
+  }
+  
+  .right-content {
+    display: flex;
+    justify-content: flex-end;
+    width: 200px; // Tamanho fixo para a área da direita 
+  }*/
   

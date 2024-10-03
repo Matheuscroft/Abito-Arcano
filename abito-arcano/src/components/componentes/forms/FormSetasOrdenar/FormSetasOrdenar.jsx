@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './FormSetasOrdenar.css';
 const FormSetasOrdenar = ({ onMove, index, lista}) => {
 

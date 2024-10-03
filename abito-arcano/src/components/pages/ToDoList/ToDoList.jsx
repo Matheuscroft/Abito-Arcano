@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getPontuacoes, updatePontuacoes } from '../auth/firebasePontuacoes.js';
-import { getListaAtividades, setListaAtividades } from '../auth/firebaseAtividades.js';
-import BarraPontuacoes from './BarraPontuacoes';
-import ListaAtividades from './ListaAtividades';
-import Diarias from './Diarias';
+import { getPontuacoes, updatePontuacoes } from '../../../auth/firebasePontuacoes.js';
+import { getListaAtividades, setListaAtividades } from '../../../auth/firebaseAtividades.js';
+import BarraPontuacoes from '../../BarraPontuacoes';
+import ListaAtividades from '../../ListaAtividades.jsx';
+import Diarias from '../../Diarias';
 import { useNavigate } from 'react-router-dom';
-import { getAreas, updateAreas } from '../auth/firebaseAreaSubarea';
-import { getDias } from '../auth/firebaseDiasHoras.js';
+import { getAreas, updateAreas } from '../../../auth/firebaseAreaSubarea.js';
+import { getDias } from '../../../auth/firebaseDiasHoras.js';
 import { v4 as uuidv4 } from 'uuid';
 
 function ToDoList({ user }) {

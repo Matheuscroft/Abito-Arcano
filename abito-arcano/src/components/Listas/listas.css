@@ -20,6 +20,7 @@
     border: 1px solid #ccc;
     max-height: calc(100vh - 210px);
     overflow-y: auto;
+    width: 800px;
   }
 
   .editor-item-lista-div{

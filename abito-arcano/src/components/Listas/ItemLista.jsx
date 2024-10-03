@@ -1,15 +1,9 @@
-import React, { useState } from 'react';
-import FormSetasOrdenar from '../componentes/forms/FormSetasOrdenar/FormSetasOrdenar';
+import React from 'react';
 import FormItemLista from '../componentes/forms/FormItemLista/FormItemLista';
 import './ItemLista.css'
 
 const ItemLista = ({ item, onEdit, lista, onDelete, onToggle, areas, onMove, index }) => {
-    const [novoItem, setNovoItem] = useState('');
-    const [tipoItem, setTipoItem] = useState('checklist');
-    const [listaLocal, setListaLocal] = useState(lista);
-
-
-
+    
     return (
         <div className="parent-div">
             {item && index !== undefined && (
