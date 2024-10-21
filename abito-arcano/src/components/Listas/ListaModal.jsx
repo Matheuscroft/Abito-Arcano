@@ -120,26 +120,26 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
   const handleResetar = async () => {
     // Resetar todos os itens da lista atual (listaLocal) para completed: false
     const itensResetados = listaLocal.itens.map(item => {
-        return {
-            ...item,
-            completed: false
-        };
+      return {
+        ...item,
+        completed: false
+      };
     });
 
     console.log("Itens Resetados:", itensResetados);
 
     // Criar uma nova lista com os itens resetados
     const novaLista = {
-        ...listaLocal,
-        itens: itensResetados
+      ...listaLocal,
+      itens: itensResetados
     };
 
     // Atualizar as listas locais, substituindo a lista resetada pela lista modificada
     const novasListas = listas.map(lista => {
-        if (lista.id === listaLocal.id) {
-            return novaLista; // Substituir a lista atualizada
-        }
-        return lista; // Manter as outras listas inalteradas
+      if (lista.id === listaLocal.id) {
+        return novaLista; // Substituir a lista atualizada
+      }
+      return lista; // Manter as outras listas inalteradas
     });
 
     // Atualizar o estado das listas locais com as novas listas
@@ -147,12 +147,17 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
 
     // Agora vamos salvar as novas listas no Firebase
     try {
-        await setListas(user.uid, novasListas);
-        console.log("Listas atualizadas com sucesso no Firebase.");
+      await setListas(user.uid, novasListas);
+      console.log("Listas atualizadas com sucesso no Firebase.");
     } catch (error) {
-        console.error("Erro ao atualizar as listas no Firebase:", error);
+      console.error("Erro ao atualizar as listas no Firebase:", error);
     }
-};
+  };
+
+  const handleEditar = (item) => {
+
+    setItemEditando(item)
+  }
 
 
   return (
@@ -166,7 +171,15 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
         {listaLocal.itens && listaLocal.itens.map((item, index) => (
           <li key={item.id}>
 
-            <ItemLista item={item} index={index} lista={lista} onEdit={() => setItemEditando(item)} onDelete={handleDeleteItem} onToggle={handleToggleItem} onMove={moveItem} />
+            <ItemLista 
+              item={item} 
+              index={index} 
+              lista={lista} 
+              onEdit={() => handleEditar(item)} 
+              onDelete={handleDeleteItem} 
+              onToggle={handleToggleItem} 
+              onMove={moveItem} 
+            />
 
             {itemEditando && itemEditando === item && (
               <EditorItemLista

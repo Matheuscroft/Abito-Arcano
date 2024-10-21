@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { setarCorAreaETexto } from './utils';
+import FormBotoesEditarEDelete from '../components/componentes/forms/FormBotoesEditarEDelete/FormBotoesEditarEDelete'
+import FormSetasOrdenar from './componentes/forms/FormSetasOrdenar/FormSetasOrdenar';
 
-function Tarefa({ tarefa, onEdit, onDelete, onToggle, areas }) {
+function Tarefa({ tarefa, onEdit, onDelete, onToggle, areas, index, lista, onMove }) {
   const [corArea, setCorArea] = useState('#000');
   const [corTexto, setCorTexto] = useState('#fff');
 
@@ -16,19 +18,23 @@ function Tarefa({ tarefa, onEdit, onDelete, onToggle, areas }) {
   }, [tarefa.areaId, areas]);
 
   return (
-    <div>
-      <input
-        type="checkbox"
-        checked={tarefa.finalizada}
-        onChange={onToggle}
-      />
-      {tarefa.nome} - 
-      <span style={{ backgroundColor: corArea, color: corTexto, padding: '0 5px', borderRadius: '5px' }}>
-        {"+"+ tarefa.numero + " " + tarefa.area}
-      </span>
-      {tarefa.subarea ? ` - ${tarefa.subarea}` : ""}
-      <button onClick={onEdit}>Editar</button>
-      <button onClick={onDelete}>Excluir</button>
+    <div className="parent-div">
+      <div className="left-content">
+        <input
+          type="checkbox"
+          checked={tarefa.finalizada}
+          onChange={onToggle}
+        />
+        {tarefa.nome} -
+        <span style={{ backgroundColor: corArea, color: corTexto, padding: '0 5px', borderRadius: '5px' }}>
+          {"+" + tarefa.numero + " " + tarefa.area}
+        </span>
+        {tarefa.subarea ? ` - ${tarefa.subarea}` : ""}
+      </div>
+      <div className="right-content">
+        <FormBotoesEditarEDelete item={tarefa} onEdit={onEdit} onDelete={onDelete} index={areas} />
+        <FormSetasOrdenar onMove={onMove} index={index} lista={lista}/>
+      </div>
     </div>
   );
 }

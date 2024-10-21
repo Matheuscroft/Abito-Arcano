@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { inserirDias } from '../auth/firebaseDiasHoras.js';
+import { atualizarDiasLocalmenteENoFirebase } from './todoUtils.js';
 
 const BarraDias = ({ user, dias, setDias, setDiaVisualizado, resetarListaDeDias, setDataAtual, tarefasGerais, setTarefasPorDia, diaVisualizado, dataAtual }) => {
     const containerRef = useRef(null);
@@ -25,10 +26,7 @@ const BarraDias = ({ user, dias, setDias, setDiaVisualizado, resetarListaDeDias,
             console.log("diasAtualizados");
             console.log(diasAtualizados);
 
-    
-            await inserirDias(user.uid, diasAtualizados);
-            
-            setDias(diasAtualizados);
+            atualizarDiasLocalmenteENoFirebase(user.uid, diasAtualizados, setDias);
     
             diasAtualizados.forEach(dia => {
                 setTarefasPorDia(prev => ({ ...prev, [dia.data]: dia.tarefas }));

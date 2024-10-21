@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Tarefa from './Tarefa';
 import EditorItem from './EditorItem';
-import { addItem, updateItem, toggleFinalizada, deleteItem } from './todoUtils';
+import { addItem, updateItem, toggleFinalizada, deleteItem, atualizarDiasLocalmenteENoFirebase } from './todoUtils';
 import { substituirTarefasGerais } from '../auth/firebaseTarefas.js';
 import { getDias, inserirDias } from '../auth/firebaseDiasHoras.js';
 
-function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias, tarefasPorDia, setTarefasPorDia, areas, diaVisualizado }) {
+function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaVisualizado }) {
   const [nomeNovaTarefa, setNomeNovaTarefa] = useState('');
   const [itemEditando, setItemEditando] = useState(null);
 
@@ -20,7 +20,7 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
     try {
       const tarefasVazias = [];
       await substituirTarefasGerais(userId, tarefasVazias);
-      setTarefas(tarefasVazias)
+      ////setTarefas(tarefasVazias)
 
       const dias = await getDias(userId);
 
@@ -32,15 +32,14 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
         tarefas: []
       }));
 
-      await inserirDias(userId, diasAtualizados);
-
-
       console.log("Lista de tarefas gerais e tarefas de todos os dias resetadas com sucesso.");
       console.log("diasAtualizados");
       console.log(diasAtualizados);
 
-      setDias(diasAtualizados)
-      setTarefasPorDia({});
+
+      atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
+
+      //setTarefasPorDia({});
 
       return { tarefas: tarefasVazias, dias: diasAtualizados };
     } catch (error) {
@@ -53,10 +52,61 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
 
     if (nomeNovaTarefa.trim() === '') return;
 
-    addItem(nomeNovaTarefa, 'tarefa', setTarefas, tarefas, user.uid, areas, setDias, dias, tarefasPorDia, setTarefasPorDia)
+    addItem(nomeNovaTarefa, 'tarefa', null, tarefas, user.uid, areas, setDias, dias)
 
     setNomeNovaTarefa('');
-};
+  };
+
+
+  const moveItem = async (index, direction, userId, tarefas, setDias, dias) => {
+
+    const tarefasNaoFinalizadas = tarefas.filter(tarefa => !tarefa.finalizada);
+
+    const targetIndex = index + direction;
+
+    if (targetIndex >= 0 && targetIndex < tarefasNaoFinalizadas.length) {
+
+      const temp = tarefasNaoFinalizadas[index];
+      tarefasNaoFinalizadas[index] = tarefasNaoFinalizadas[targetIndex];
+      tarefasNaoFinalizadas[targetIndex] = temp;
+
+
+      let tarefaNaoFinalizadaIndex = 0;
+      const tarefasAtualizadas = tarefas.map(tarefa => {
+        if (tarefa.finalizada) {
+          return tarefa;
+        }
+        const tarefaAtualizada = tarefasNaoFinalizadas[tarefaNaoFinalizadaIndex];
+        tarefaNaoFinalizadaIndex++;
+        return tarefaAtualizada;
+      });
+
+      console.log("tarefasAtualizadas")
+      console.log(tarefasAtualizadas)
+
+
+      await substituirTarefasGerais(userId, tarefasAtualizadas);
+
+
+    const diasAtualizados = dias.map(dia => {
+      const tarefasDoDiaAtualizadas = tarefasAtualizadas.filter(tarefaGeralAtualizada => {
+          return dia.tarefas.some(tarefaDoDia => tarefaDoDia.id === tarefaGeralAtualizada.id);
+      });
+  
+      return { ...dia, tarefas: tarefasDoDiaAtualizadas };
+  });
+  
+
+      console.log("diasAtualizados")
+      console.log(diasAtualizados)
+
+
+      atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
+    }
+  };
+
+
+
 
   return (
     <div>
@@ -75,25 +125,28 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
       />
       <button onClick={handleAdicionarItem}>Adicionar Tarefa</button>
       <ul>
-        {tarefas.filter(tarefa => !tarefa.finalizada).map((tarefa) => (
+        {tarefas.filter(tarefa => !tarefa.finalizada).map((tarefa, index) => (
           <li key={tarefa.id}>
             <Tarefa
               tarefa={tarefa}
               onEdit={() => setItemEditando(tarefa)}
-              onDelete={() => deleteItem(tarefa.id, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia)}
-              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, setTarefas, setPontuacoes, user.uid, diaVisualizado, dias, setDias, tarefas, setTarefasPorDia)}
+              onDelete={() => deleteItem(tarefa.id, 'tarefa', null, tarefas, user.uid, setDias, dias)}
+              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, null, setPontuacoes, user.uid, diaVisualizado, dias, setDias)}
               areas={areas}
+              index={index}
+              lista={tarefas}
+              onMove={(index, direction) => moveItem(index, direction, user.uid, tarefas, setDias, dias)}
             />
           </li>
         ))}
       </ul>
-      
+
       {itemEditando && (
         <EditorItem
           item={itemEditando}
           tipo={"tarefa"}
           setItemEditando={setItemEditando}
-          onSave={(nome, numero, area, subarea, areaId, subareaId, diasSemana) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia, diasSemana)}
+          onSave={(nome, numero, area, subarea, areaId, subareaId, diasSemana) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', null, tarefas, user.uid, setDias, dias, diasSemana)}
           areas={areas}
         />
       )}
@@ -101,14 +154,15 @@ function ListaTarefas({ user, tarefas, setTarefas, setPontuacoes, setDias, dias,
 
       <h2>Finalizadas</h2>
       <ul>
-        {tarefas.filter(tarefa => tarefa.finalizada).map((tarefa) => (
+        {tarefas.filter(tarefa => tarefa.finalizada).map((tarefa, index) => (
           <li key={tarefa.id} style={{ textDecoration: 'line-through' }}>
             <Tarefa
               tarefa={tarefa}
               onEdit={() => setItemEditando(tarefa)}
-              onDelete={() => deleteItem(tarefa.id, 'tarefa', setTarefas, tarefas, user.uid, setDias, dias, tarefasPorDia, setTarefasPorDia)}
-              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, setTarefas, setPontuacoes, user.uid, diaVisualizado, dias, setDias, tarefas, setTarefasPorDia)}
+              onDelete={() => deleteItem(tarefa.id, 'tarefa', null, tarefas, user.uid, setDias, dias)}
+              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, null, setPontuacoes, user.uid, diaVisualizado, dias, setDias)}
               areas={areas}
+              onMove={(direction) => moveItem(index, direction)}
             />
           </li>
         ))}

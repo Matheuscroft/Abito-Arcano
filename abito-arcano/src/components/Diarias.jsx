@@ -6,9 +6,9 @@ import { getListaTarefas, updateTarefasPorDia } from '../auth/firebaseTarefas.js
 import RelogioCron from './RelogioCron';
 import BarraDias from './BarraDias';
 import { updatePontuacoes } from '../auth/firebasePontuacoes.js';
+import { atualizarDiasLocalmenteENoFirebase } from './todoUtils.js';
 
 const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtual }) => {
-    const [tarefasPorDia, setTarefasPorDia] = useState({});
 
     const [tarefasGerais, setTarefasGerais] = useState([]);
     const [diaVisualizado, setDiaVisualizado] = useState('');
@@ -35,8 +35,8 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
                 const tarefasGerais = await getListaTarefas(user.uid);
                 setTarefasGerais(tarefasGerais);
 
-                //console.log("tarefasGerais fetchdata")
-                //console.log(tarefasGerais)
+                console.log("tarefasGerais fetchdata")
+                console.log(tarefasGerais)
 
                 /* if (diasSalvos.length === 0) {
                      await resetarListaDeDias();
@@ -69,7 +69,6 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
                 }
 
 
-                setTarefasPorDia(tarefasPorDiaTemp);
                 setDiaVisualizado(diaAtual);
             }
         };
@@ -95,16 +94,14 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
                     tarefas: tarefasGerais.map(tarefa => ({ ...tarefa, finalizada: false }))
                 };
                 novosDias.push(dia);
-                setTarefasPorDia(prev => ({ ...prev, [dataStr]: dia.tarefas }));
             }
 
             console.log("novosDias");
             console.log(novosDias);
 
 
-            await inserirDias(user.uid, novosDias);
+            atualizarDiasLocalmenteENoFirebase(user.uid, novosDias, setDias);
 
-            setDias(novosDias);
             setDataAtual(novosDias[0].data);
 
             /*const novasPontuacoes = pontuacoes.filter(pontuacao =>
@@ -220,7 +217,6 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
                 <BarraDias
                     tarefasGerais={tarefasGerais}
                     setDiaVisualizado={setDiaVisualizado}
-                    setTarefasPorDia={setTarefasPorDia}
                     setDataAtual={setDataAtual}
                     setDias={setDias}
                     dataAtual={dataAtual}
@@ -230,22 +226,11 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
                     user={user} />
             </div>
             <ListaTarefas
-                tarefas={tarefasPorDia[diaVisualizado] || []}
+                tarefas={(dias.find(dia => dia.data === diaVisualizado)?.tarefas) || []}
                 setPontuacoes={setPontuacoes}
-                setTarefas={(novasTarefas) => {
-                    setTarefasPorDia(prev => ({ ...prev, [diaVisualizado]: novasTarefas }));
-                    console.log("dentro do set tarefas das diarias")
-                    
-                    console.log("novasTarefas")
-                    console.log(novasTarefas)
-                    
-
-                }}
                 user={user}
                 setDias={setDias}
                 dias={dias}
-                tarefasPorDia={tarefasPorDia}
-                setTarefasPorDia={setTarefasPorDia}
                 areas={areas}
                 diaVisualizado={diaVisualizado}
             />

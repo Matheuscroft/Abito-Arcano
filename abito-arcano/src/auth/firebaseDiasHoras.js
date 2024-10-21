@@ -42,22 +42,6 @@ export const inserirDias = async (userId, dias) => {
 };
 
 
-
-/* export const setHoraTrocaFirebase = async (hora) => {
-   const docRef = doc(db, 'config', 'horaTroca');
-   await setDoc(docRef, { hora });
- };
- 
- export const getHoraTrocaFirebase = async () => {
-   const docRef = doc(db, 'config', 'horaTroca');
-   const docSnap = await getDoc(docRef);
-   if (docSnap.exists()) {
-       return docSnap.data().hora;
-   } else {
-       return null;
-   }
- };*/
-
 export const setHoraTrocaFirebase = async (userId, hora) => {
     const docRef = doc(db, 'userConfigs', userId);
     await setDoc(docRef, { horaTroca: hora }, { merge: true });

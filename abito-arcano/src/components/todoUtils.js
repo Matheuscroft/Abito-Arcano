@@ -37,7 +37,7 @@ export const buscarIdsAreaESubarea = (areas, areaNome, subareaNome) => {
 };
 
 
-export const addItem = async (nome, tipo, setItems, items, userId, areas, setDias, dias, tarefasPorDia, setTarefasPorDia) => {
+export const addItem = async (nome, tipo, setItems, items, userId, areas, setDias, dias) => {
   if (nome.trim() === '') return;
 
   const { areaId, subareaId } = await buscarIdsAreaESubarea(areas, "SEM CATEGORIA", "");
@@ -78,14 +78,14 @@ export const addItem = async (nome, tipo, setItems, items, userId, areas, setDia
   } else if (tipo === 'tarefa') {
     
 
-    await atualizarTarefasEDias(novoItem, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, false);
+    await atualizarTarefasEDias(novoItem, setItems, items, userId, setDias, dias, false);
   }
 };
 
 
 
 
-export const updateItem = async (id, nome, numero, area, subarea, areaId, subareaId, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, diasSemana) => {
+export const updateItem = async (id, nome, numero, area, subarea, areaId, subareaId, tipo, setItems, items, userId, setDias, dias, diasSemana) => {
   
   
   if (tipo === 'tarefa') {
@@ -95,7 +95,7 @@ export const updateItem = async (id, nome, numero, area, subarea, areaId, subare
     console.log(itemAtualizado)
     
 
-    await atualizarTarefasEDias(itemAtualizado, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, true);
+    await atualizarTarefasEDias(itemAtualizado, setItems, items, userId, setDias, dias, true);
   } else if (tipo === 'atividade') {
     console.log("else, sou atividade")
 
@@ -138,26 +138,7 @@ const atualizarTarefasGerais = async (item, items, userId, isUpdate) => {
   console.log("novasTarefas do atualizar dias e tarefas")
   console.log(novasTarefas)
   await substituirTarefasGerais(userId, novasTarefas);
-}
 
-const atualizarTarefasPorDia = async (item, dias, tarefasPorDia, isUpdate, setTarefasPorDia) => {
-
-  console.log('ENTREEEI')
-  const tarefasPorDiaAtualizadas = {};
-  dias.forEach(dia => {
-    if (isUpdate) {
-      tarefasPorDiaAtualizadas[dia.data] = (tarefasPorDia[dia.data] || []).map(tarefa =>
-        tarefa.id === item.id
-          ? { ...tarefa, nome: item.nome, numero: item.numero, area: item.area, subarea: item.subarea, areaId: item.areaId, subareaId: item.subareaId, diasSemana: item.diasSemana }
-          : tarefa
-      );
-    } else {
-      tarefasPorDiaAtualizadas[dia.data] = [...(tarefasPorDia[dia.data] || []), item];
-    }
-  });
-  console.log("tarefasPorDiaAtualizadas")
-  console.log(tarefasPorDiaAtualizadas)
-  setTarefasPorDia(tarefasPorDiaAtualizadas);
 }
 
 const atualizarDias = async (item, userId, setDias, dias, isUpdate) => {
@@ -182,13 +163,14 @@ const atualizarDias = async (item, userId, setDias, dias, isUpdate) => {
     return dia;
   });
 
-  await inserirDias(userId, diasAtualizados);
-  setDias(diasAtualizados);
+
+  atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
+
   console.log("Dias atualizados localmente e no Firebase");
   console.log(diasAtualizados);
 }
 
-const atualizarTarefasEDias = async (item, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia, isUpdate = false) => {
+const atualizarTarefasEDias = async (item, setItems, items, userId, setDias, dias, isUpdate = false) => {
 
   console.log("item")
   console.log(item)
@@ -198,43 +180,32 @@ const atualizarTarefasEDias = async (item, setItems, items, userId, setDias, dia
 
   atualizarTarefasGerais(item, items, userId, isUpdate);
 
-  atualizarTarefasPorDia(item, dias, tarefasPorDia, isUpdate, setTarefasPorDia)
 
   atualizarDias(item, userId, setDias, dias, isUpdate)
   
 
-  const itensAtualizados = isUpdate
-    ? items.map(itemAtual => itemAtual.id === item.id ? { ...itemAtual, nome: item.nome, numero: item.numero, area: item.area, areaId: item.areaId, subarea: item.subarea, subareaId: item.subareaId, diasSemana: item.diasSemana } : itemAtual)
-    : [...items, item];
-    
-    console.log("itensAtualizados ANTES DO SETITEMS -SETTAREFAS")
-    console.log(itensAtualizados)
-    setItems(itensAtualizados);
 };
 
 
 
 
-export const deleteItem = async (id, tipo, setItems, items, userId, setDias, dias, tarefasPorDia, setTarefasPorDia) => {
+export const deleteItem = async (id, tipo, setItems, items, userId, setDias, dias) => {
   if (tipo === 'tarefa') {
     const tarefasAtualizadas = items.filter(item => item.id !== id);
-    setItems(tarefasAtualizadas);
 
-    const tarefasPorDiaAtualizadas = {};
-    dias.forEach(dia => {
-      tarefasPorDiaAtualizadas[dia.data] = (tarefasPorDia[dia.data] || []).filter(tarefa => tarefa.id !== id);
-    });
-    setTarefasPorDia(tarefasPorDiaAtualizadas);
+    atualizarTarefasLocalmenteENoFirebase(userId, tarefasAtualizadas, setItems);
+
 
     const diasAtualizados = dias.map(dia => ({
       ...dia,
       tarefas: dia.tarefas.filter(tarefa => tarefa.id !== id)
     }));
 
-    await substituirTarefasGerais(userId, tarefasAtualizadas);
-    await inserirDias(userId, diasAtualizados);
 
-    setDias(diasAtualizados);
+    
+
+    atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
+
   } else if (tipo === 'atividade') {
     const atividadesAtualizadas = items.filter(item => item.id !== id);
     setItems(atividadesAtualizadas);
@@ -243,11 +214,23 @@ export const deleteItem = async (id, tipo, setItems, items, userId, setDias, dia
 };
 
 
+export const atualizarTarefasLocalmenteENoFirebase = async (userId, tarefasAtualizadas, setTarefas) => {
+
+  //setTarefas(tarefasAtualizadas);
+  await substituirTarefasGerais(userId, tarefasAtualizadas);
+
+}
+
+export const atualizarDiasLocalmenteENoFirebase = async (userId, diasAtualizados, setDias) => {
+
+  setDias(diasAtualizados);
+  await inserirDias(userId, diasAtualizados);
+
+}
 
 
 
-
-export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes, userId, dataPontuacao = "", dias, setDias, tarefasGerais, setTarefasPorDia) => {
+export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes, userId, dataPontuacao = "", dias, setDias) => {
   const item = items.find(i => i.id === id);
   if (item) {
     console.log("togglefinalizada")
@@ -276,18 +259,7 @@ export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes,
           dia.data === dataPontuacao ? { ...dia, tarefas: tarefasAtualizadas } : dia
         );
 
-        setDias(diasAtualizados);
-
-        let tarefasPorDiaTemp = {}
-
-        for (const dia of diasAtualizados) {
-          tarefasPorDiaTemp[dia.data] = dia.tarefas.length === 0
-            ? tarefasGerais.map(tarefa => ({ ...tarefa, finalizada: false }))
-            : dia.tarefas;
-        }
-        setTarefasPorDia(tarefasPorDiaTemp);
-
-        await inserirDias(userId, diasAtualizados);
+        atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
       }
     } else if (tipo === 'atividade') {
 
@@ -310,14 +282,6 @@ export const toggleFinalizada = async (id, tipo, items, setItems, setPontuacoes,
 
     await updatePontuacao(userId, item.areaId, item.subareaId, atualizacaoPontuacao, dataPontuacao);
 
-    console.log("item.areaId")
-    console.log(item.areaId)
-    console.log("item.subareaId")
-    console.log(item.subareaId)
-    console.log("atualizacaoPontuacao")
-    console.log(atualizacaoPontuacao)
-    console.log("dataPontuacao")
-    console.log(dataPontuacao)
 
     setPontuacoes(prev => {
       const novaPontuacao = {

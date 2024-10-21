@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { setarCorAreaETexto } from './utils';
+import FormBotoesEditarEDelete from './componentes/forms/FormBotoesEditarEDelete/FormBotoesEditarEDelete';
 
 function Atividade({ atividade, onEdit, onDelete, onToggle, areas }) {
 
@@ -19,19 +20,22 @@ function Atividade({ atividade, onEdit, onDelete, onToggle, areas }) {
     }, [atividade.areaId, areas]);;
 
     return (
-        <div>
-            <input
-                type="checkbox"
-                checked={atividade.finalizada}
-                onChange={onToggle}
-            />
-            {atividade.nome} -
-            <span style={{ backgroundColor: corArea, color: corTexto, padding: '0 5px', borderRadius: '5px' }}>
-                {"+" + atividade.numero + " " + atividade.area}
-            </span>
-            {atividade.subarea ? ` - ${atividade.subarea}` : ""}
-            <button onClick={onEdit}>Editar</button>
-            <button onClick={onDelete}>Excluir</button>
+        <div className="parent-div">
+            <div className="left-content">
+                <input
+                    type="checkbox"
+                    checked={atividade.finalizada}
+                    onChange={onToggle}
+                />
+                {atividade.nome} -
+                <span style={{ backgroundColor: corArea, color: corTexto, padding: '0 5px', borderRadius: '5px' }}>
+                    {"+" + atividade.numero + " " + atividade.area}
+                </span>
+                {atividade.subarea ? ` - ${atividade.subarea}` : ""}
+            </div>
+            <div className="right-content">
+                <FormBotoesEditarEDelete item={atividade} onEdit={onEdit} onDelete={onDelete} index={areas}/>
+            </div>
         </div>
     );
 }
