@@ -88,14 +88,32 @@ function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaV
       await substituirTarefasGerais(userId, tarefasAtualizadas);
 
 
-    const diasAtualizados = dias.map(dia => {
-      const tarefasDoDiaAtualizadas = tarefasAtualizadas.filter(tarefaGeralAtualizada => {
-          return dia.tarefas.some(tarefaDoDia => tarefaDoDia.id === tarefaGeralAtualizada.id);
+      /* const diasAtualizados = dias.map(dia => {
+         const tarefasDoDiaAtualizadas = tarefasAtualizadas.filter(tarefaGeralAtualizada => {
+             return dia.tarefas.some(tarefaDoDia => tarefaDoDia.id === tarefaGeralAtualizada.id);
+         });
+     
+         return { ...dia, tarefas: tarefasDoDiaAtualizadas };
+     });*/
+
+      const diasAtualizados = dias.map(dia => {
+        const tarefasDoDiaAtualizadas = tarefasAtualizadas.map(tarefaGeralAtualizada => {
+          const tarefaDoDia = dia.tarefas.find(tarefaDoDia => tarefaDoDia.id === tarefaGeralAtualizada.id);
+
+          if (tarefaDoDia) {
+            return { ...tarefaGeralAtualizada, finalizada: tarefaDoDia.finalizada };
+          } else {
+            return { ...tarefaGeralAtualizada, finalizada: false };
+          }
+        });
+
+        console.log("dia", dia.data);
+        console.log("tarefasDoDiaAtualizadas", tarefasDoDiaAtualizadas);
+
+        return { ...dia, tarefas: tarefasDoDiaAtualizadas };
       });
-  
-      return { ...dia, tarefas: tarefasDoDiaAtualizadas };
-  });
-  
+
+
 
       console.log("diasAtualizados")
       console.log(diasAtualizados)

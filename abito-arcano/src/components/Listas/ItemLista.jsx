@@ -1,6 +1,7 @@
 import React from 'react';
 import FormItemLista from '../componentes/forms/FormItemLista/FormItemLista';
 import './ItemLista.css'
+import ListaAninhada from './ListaAninhada';
 
 const ItemLista = ({ item, onEdit, lista, onDelete, onToggle, areas, onMove, index }) => {
     
@@ -22,7 +23,7 @@ const ItemLista = ({ item, onEdit, lista, onDelete, onToggle, areas, onMove, ind
                     </label>
                   )}
                   {item.tipo === 'paragrafo' && <p style={{ display: 'inline-block' }}>{item.nome}</p>}
-                  {item.tipo === 'lista' && <p style={{ display: 'inline-block' }}>Lista: {item.nome}</p>}
+                  {item.tipo === 'lista' && <ListaAninhada item={item} lista={lista}/>}
                 </div>
         
                 <div className="right-content">

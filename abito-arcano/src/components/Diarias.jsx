@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ListaTarefas from './ListaTarefas';
 
 import { getDias, inserirDias } from '../auth/firebaseDiasHoras.js';
-import { getListaTarefas, updateTarefasPorDia } from '../auth/firebaseTarefas.js';
+import { getListaTarefas } from '../auth/firebaseTarefas.js';
 import RelogioCron from './RelogioCron';
 import BarraDias from './BarraDias';
 import { updatePontuacoes } from '../auth/firebasePontuacoes.js';
@@ -17,16 +17,11 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
     /* useEffect(() => {
          console.log("Estado atualizadOOOOOO - tarefasGerais:");
          console.log(tarefasGerais)
-     }, [tarefasGerais]);
+     }, [tarefasGerais]);*/
  
-     useEffect(() => {
-         console.log("Estado atualizadOOOOOO - tarefasPorDia:");
-         console.log(tarefasPorDia)
-     }, [tarefasPorDia]);*/
-
     useEffect(() => {
         const fetchData = async () => {
-            //resetarListaDeDias()
+            
             if (user && user.uid) {
 
 
