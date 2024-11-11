@@ -5,8 +5,9 @@ import EditorItemLista from './EditorItemLista';
 import ItemLista from './ItemLista';
 import FormAdicionarItem from './FormAdicionarItem';
 import { setListas } from '../../auth/firebaseListas.mjs';
+import CabecalhoListaModal from './CabecalhoListaModal';
 
-const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas }) => {
+const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas, areas }) => {
   const [novoItem, setNovoItem] = useState('');
   const [tipoItem, setTipoItem] = useState('checklist');
   //const [listaLocal, setListaLocal] = useState(lista);
@@ -82,23 +83,6 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
 
   };
 
-
-  /*const moveItem = (index, direction) => {
-    const novosItens = [...lista.itens];
-    const targetIndex = index + direction;
-
-    if (targetIndex >= 0 && targetIndex < novosItens.length) {
-      const temp = novosItens[index];
-      novosItens[index] = novosItens[targetIndex];
-      novosItens[targetIndex] = temp;
-      const listaAtualizada = { ...lista, itens: novosItens };
-      //setListaLocal(listaAtualizada);
-      console.log()
-      //updateListas(user.uid, lista.id, listas, setListasLocal, null, null, null, novosItens);
-    }
-  };*/
-
-  // Função para mover um item dentro de uma lista aninhada
   const moveItem = (itemId, direction) => {
 
     console.log("demorouuu")
@@ -112,38 +96,25 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
       itens: findAndMoveItemRecursivamente(lista.itens, itemId, direction)
     };
 
-    console.log("Lista atualizada após mover o item:", listaAtualizada);
-
-    // Atualiza a lista local ou envia para o backend
     updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
 
   };
 
-  // Função recursiva para encontrar e mover o item
   const findAndMoveItemRecursivamente = (itens, itemId, direction) => {
     const index = itens.findIndex(item => item.id === itemId);
 
-    console.log("index", index);
-    console.log("direction", direction);
-
-    // Se o item for encontrado e o movimento for válido
     if (index !== -1) {
 
-      console.log(" if (index !== -1)", (index !== -1));
       const targetIndex = index + direction;
-
-      console.log("targetIndex", targetIndex);
 
       if (targetIndex >= 0 && targetIndex < itens.length) {
         const novosItens = [...itens];
-        // Troca os itens de posição
         [novosItens[index], novosItens[targetIndex]] = [novosItens[targetIndex], novosItens[index]];
         return novosItens;
       }
-      return itens; // Retorna a lista sem alteração se o movimento não for válido
+      return itens;
     }
 
-    // Recursão: percorre os itens aninhados
     return itens.map(item =>
       item.itens && item.itens.length > 0
         ? { ...item, itens: findAndMoveItemRecursivamente(item.itens, itemId, direction) }
@@ -152,10 +123,7 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
   };
 
 
-
-  const atualizarItem = (item, nome, tipo) => {
-
-    console.log("direto pra ca")
+  const handleSave = (item, nome, tipo) => {
 
     const itemAtualizado = {
       ...item,
@@ -177,17 +145,12 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
     console.log("listaAtualizada")
     console.log(listaAtualizada)
     updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
-
   }
 
-  const handleSave = (item, nome, tipo) => {
-    console.log("entrei")
-    console.log("nome")
-    console.log(nome)
-    console.log("tipo")
-    console.log(tipo)
-    atualizarItem(item, nome, tipo)
-  }
+  const handleSaveLista = (novaLista) => {
+    
+    updateListas(user.uid, lista, listas, setListasLocal, novaLista);
+  };
 
   const handleResetar = async () => {
     // Função recursiva para resetar o campo 'completed' para 'false' em todos os itens, incluindo subitens
@@ -238,8 +201,7 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
 
   return (
     <div className="modal">
-      <h2>{lista.nome}</h2>
-      <p>Tipo: {lista.tipo}</p>
+      <CabecalhoListaModal lista={lista} onSave={handleSaveLista} areas={areas}/>
 
       <FormAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas} />
       <button onClick={handleResetar}>Resetar checklists</button>

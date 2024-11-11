@@ -8,10 +8,10 @@ const ListaAninhada = ({ listas, user, item, lista, onToggle, setListasLocal, up
 
   const [itemEditando, setItemEditando] = useState()
 
-  useEffect(() => {
+ /* useEffect(() => {
     console.log("Estado atualizadOOOOOO - item:");
     console.log(item)
-  }, [item]);
+  }, [item]);*/
 
   return (
     <div className='lista-aninhada'>

@@ -6,10 +6,14 @@ import Lista from './Lista';
 import ListaModal from './ListaModal';
 import './listas.css';
 import { updateListas } from './listaUtils';
+import { getAreas } from '../../auth/firebaseAreaSubarea';
+import FiltroAreasListas from './FiltroAreasListas';
 
 const Listas = ({ user }) => {
   const [listas, setListasLocal] = useState([]);
   const [selectedLista, setSelectedLista] = useState(null);
+  const [filteredListas, setFilteredListas] = useState([]);
+  const [areas, setAreas] = useState([]);
 
   useEffect(() => {
     console.log("Estado atualizadOOOOOO - listas das listas:");
@@ -21,6 +25,12 @@ const Listas = ({ user }) => {
       if (user && user.uid) {
         try {
           const listasFromFirebase = await getListas(user.uid);
+          const areasData = await getAreas(user.uid);
+          console.log("areasData.areas")
+          console.log(areasData.areas)
+          setAreas(areasData.areas);
+
+
           if (Array.isArray(listasFromFirebase)) {
             setListasLocal(listasFromFirebase);
           } else {
@@ -38,6 +48,11 @@ const Listas = ({ user }) => {
 
     fetchListas();
   }, [user]);
+
+  useEffect(() => {
+    // Atualiza `filteredListas` sempre que `listas` muda para garantir que todas as listas estejam exibidas inicialmente.
+    setFilteredListas(listas);
+  }, [listas]);
 
   useEffect(() => {
     if (selectedLista) {
@@ -106,74 +121,27 @@ const Listas = ({ user }) => {
   
     return listasAtualizadas;
   };
+
+  const handleFilterChange = (selectedAreas) => {
+    if (selectedAreas.length === 0) {
+      setFilteredListas(listas);
+    } else {
+      const filtered = listas.filter(lista => selectedAreas.includes(lista.areaId));
+      setFilteredListas(filtered);
+    }
+  };
   
-
-  // Adicionar item à checklist
-  /*const addChecklistItem = async (listaId, novoItem) => {
-    const listaIndex = listas.findIndex((lista) => lista.id === listaId);
-    if (listaIndex === -1) return;
-
-    const novoChecklistItem = {
-      id: uuidv4(),
-      nome: novoItem,
-      completed: false
-    };
-
-    const listaAtualizada = {
-      ...listas[listaIndex],
-      itens: [...listas[listaIndex].itens, novoChecklistItem]
-    };
-
-    const novasListas = [
-      ...listas.slice(0, listaIndex),
-      listaAtualizada,
-      ...listas.slice(listaIndex + 1),
-    ];
-
-    setListasLocal(novasListas);
-    await setListas(user.uid, novasListas);
-  };*/
-
-  /*const addChecklistItem = (listaId, novoItem) => {
-    updateListas(user.uid, listaId, listas, setListasLocal, novoItem);
-  };*/
-
-  // Marcar item de checklist como concluído
-  /*const toggleChecklistItem = async (listaId, itemId) => {
-    const listaIndex = listas.findIndex((lista) => lista.id === listaId);
-    if (listaIndex === -1) return;
-
-    const lista = listas[listaIndex];
-    const itemIndex = lista.itens.findIndex((item) => item.id === itemId);
-    if (itemIndex === -1) return;
-
-    const itensAtualizados = [...lista.itens];
-    itensAtualizados[itemIndex].completed = !itensAtualizados[itemIndex].completed;
-
-    const listaAtualizada = { ...lista, itens: itensAtualizados };
-
-    const novasListas = [
-      ...listas.slice(0, listaIndex),
-      listaAtualizada,
-      ...listas.slice(listaIndex + 1),
-    ];
-
-    setListasLocal(novasListas);
-    await setListas(user.uid, novasListas);
-  };*/
-
-  /*const toggleChecklistItem = (listaId, itemId) => {
-    updateListas(user.uid, listaId, listas, setListasLocal, null, itemId);
-  };*/
 
   return (
     <div>
-      <ListaForm addLista={addLista} />
+      <ListaForm addLista={addLista} areas={areas} />
       <button onClick={() => reformarItensComTipo(listas)}>reformarItensComTipo</button>
 
+      <FiltroAreasListas areas={areas} onFilterChange={handleFilterChange} />
+
       <div className="listas-container">
-        {Array.isArray(listas) && listas.length > 0 ? (
-          listas.map((lista) => (
+        {Array.isArray(filteredListas) && filteredListas.length > 0 ? (
+          filteredListas.map((lista) => (
             <Lista
               key={lista.id}
               lista={lista}
@@ -182,6 +150,7 @@ const Listas = ({ user }) => {
               user={user}
               listas={listas}
               setListasLocal={setListasLocal}
+              areas={areas}
             />
           ))
         ) : (
@@ -197,6 +166,7 @@ const Listas = ({ user }) => {
           user={user}
           setListasLocal={setListasLocal}
           listas={listas}
+          areas={areas}
         />
       )}
     </div>
