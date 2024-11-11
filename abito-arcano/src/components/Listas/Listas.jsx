@@ -12,6 +12,11 @@ const Listas = ({ user }) => {
   const [selectedLista, setSelectedLista] = useState(null);
 
   useEffect(() => {
+    console.log("Estado atualizadOOOOOO - listas das listas:");
+    console.log(listas)
+  }, [listas]);
+
+  useEffect(() => {
     const fetchListas = async () => {
       if (user && user.uid) {
         try {
@@ -33,6 +38,16 @@ const Listas = ({ user }) => {
 
     fetchListas();
   }, [user]);
+
+  useEffect(() => {
+    if (selectedLista) {
+      const listaAtualizada = listas.find((lista) => lista.id === selectedLista.id);
+      if (listaAtualizada) {
+        setSelectedLista(listaAtualizada);
+      }
+    }
+  }, [listas, selectedLista?.id]);
+
 
   const addLista = async (novaLista) => {
     const novasListas = [...listas, { id: uuidv4(), ...novaLista, itens: [] }];

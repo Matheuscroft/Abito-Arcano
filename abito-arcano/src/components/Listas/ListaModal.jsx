@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { updateLocalList } from './listaUtils';
 import { v4 as uuidv4 } from 'uuid';
 import EditorItemLista from './EditorItemLista';
@@ -9,137 +9,218 @@ import { setListas } from '../../auth/firebaseListas.mjs';
 const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas }) => {
   const [novoItem, setNovoItem] = useState('');
   const [tipoItem, setTipoItem] = useState('checklist');
-  const [listaLocal, setListaLocal] = useState(lista);
+  //const [listaLocal, setListaLocal] = useState(lista);
   const [itemEditando, setItemEditando] = useState()
 
-  const handleAddItem = () => {
-    if (novoItem.trim()) {
-      let novoChecklistItem;
+  useEffect(() => {
+    console.log("Estado atualizadOOOOOO - novas listas do listamodal:");
+    console.log(listas)
+  }, [listas]);
 
-      if (tipoItem === 'checklist') {
-        novoChecklistItem = {
-          id: uuidv4(),
-          nome: novoItem,
-          completed: false,
-          tipo: 'checklist',
-        };
-      } else if (tipoItem === 'paragrafo') {
-        novoChecklistItem = {
-          id: uuidv4(),
-          nome: novoItem,
-          tipo: 'paragrafo',
-        };
-      } else if (tipoItem === 'lista') {
-        novoChecklistItem = {
-          id: uuidv4(),
-          nome: novoItem,
-          tipo: 'lista',
-          itens: [],
-        };
+  const findAndUpdateItemRecursivamente = (itens, itemId, callback) => {
+    console.log("itemId", itemId);
+    return itens.map((item) => {
+      if (item.id === itemId) {
+        console.log("Item encontrado e atualizado:", item);
+        return callback(item); // Aplica o callback para atualizar o item
+      } else if (item.itens && item.itens.length > 0) {
+        console.log("ELSEIF", item);
+        return { ...item, itens: findAndUpdateItemRecursivamente(item.itens, itemId, callback) };
       }
-
-      updateListas(user.uid, lista.id, listas, setListasLocal, novoChecklistItem);
-      const listaAtualizada = updateLocalList(listaLocal, novoChecklistItem, null);
-      setListaLocal(listaAtualizada);
-      setNovoItem('');
-    }
+      console.log("RETURN ITEM", item);
+      return item;
+    });
   };
 
   const handleToggleItem = (itemId) => {
-    const item = listaLocal.itens.find((item) => item.id === itemId);
 
-    if (item.tipo === 'checklist') {
-      updateListas(user.uid, lista.id, listas, setListasLocal, null, item);
-      const listaAtualizada = updateLocalList(listaLocal, null, item);
-      setListaLocal(listaAtualizada);
-    }
+    console.log("to no handlet otggle")
+    const findAndToggleItem = (itens) => {
+      return itens.map(item => {
+        if (item.id === itemId) {
+          return { ...item, completed: !item.completed };
+        }
+        if (item.itens) {
+          return { ...item, itens: findAndToggleItem(item.itens) };
+        }
+        return item;
+      });
+    };
+
+    const listaAtualizada = {
+      ...lista,
+      itens: findAndToggleItem(lista.itens)
+    };
+
+    console.log("listaAtualizada", listaAtualizada);
+    updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
   };
 
   const handleDeleteItem = async (itemId) => {
-    const item = listaLocal.itens.find((item) => item.id === itemId);
-    await updateListas(user.uid, lista.id, listas, setListasLocal, null, null, item);
-    const listaAtualizada = updateLocalList(listaLocal, null, null, item);
-    setListaLocal(listaAtualizada);
+
+    const deleteItemFromItems = (itens) => {
+      return itens
+        .filter(item => item.id !== itemId)
+        .map(item => {
+          if (item.itens && Array.isArray(item.itens)) {
+            return {
+              ...item,
+              itens: deleteItemFromItems(item.itens)
+            };
+          }
+          return item;
+        });
+    };
+
+
+    const novaLista = {
+      ...lista,
+      itens: deleteItemFromItems(lista.itens)
+    };
+
+    updateListas(user.uid, lista, listas, setListasLocal, novaLista);
+
   };
 
-  const moveItem = (index, direction) => {
-    const novosItens = [...listaLocal.itens];
+
+  /*const moveItem = (index, direction) => {
+    const novosItens = [...lista.itens];
     const targetIndex = index + direction;
 
     if (targetIndex >= 0 && targetIndex < novosItens.length) {
       const temp = novosItens[index];
       novosItens[index] = novosItens[targetIndex];
       novosItens[targetIndex] = temp;
-      const listaAtualizada = { ...listaLocal, itens: novosItens };
-      setListaLocal(listaAtualizada);
-      updateListas(user.uid, lista.id, listas, setListasLocal, null, null, null, novosItens);
+      const listaAtualizada = { ...lista, itens: novosItens };
+      //setListaLocal(listaAtualizada);
+      console.log()
+      //updateListas(user.uid, lista.id, listas, setListasLocal, null, null, null, novosItens);
     }
+  };*/
+
+  // Função para mover um item dentro de uma lista aninhada
+  const moveItem = (itemId, direction) => {
+
+    console.log("demorouuu")
+    console.log("itemId")
+    console.log(itemId)
+    console.log("direction")
+    console.log(direction)
+
+    const listaAtualizada = {
+      ...lista,
+      itens: findAndMoveItemRecursivamente(lista.itens, itemId, direction)
+    };
+
+    console.log("Lista atualizada após mover o item:", listaAtualizada);
+
+    // Atualiza a lista local ou envia para o backend
+    updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
+
   };
 
-  const atualizarItem = (id, nome, tipo) => {
+  // Função recursiva para encontrar e mover o item
+  const findAndMoveItemRecursivamente = (itens, itemId, direction) => {
+    const index = itens.findIndex(item => item.id === itemId);
+
+    console.log("index", index);
+    console.log("direction", direction);
+
+    // Se o item for encontrado e o movimento for válido
+    if (index !== -1) {
+
+      console.log(" if (index !== -1)", (index !== -1));
+      const targetIndex = index + direction;
+
+      console.log("targetIndex", targetIndex);
+
+      if (targetIndex >= 0 && targetIndex < itens.length) {
+        const novosItens = [...itens];
+        // Troca os itens de posição
+        [novosItens[index], novosItens[targetIndex]] = [novosItens[targetIndex], novosItens[index]];
+        return novosItens;
+      }
+      return itens; // Retorna a lista sem alteração se o movimento não for válido
+    }
+
+    // Recursão: percorre os itens aninhados
+    return itens.map(item =>
+      item.itens && item.itens.length > 0
+        ? { ...item, itens: findAndMoveItemRecursivamente(item.itens, itemId, direction) }
+        : item
+    );
+  };
+
+
+
+  const atualizarItem = (item, nome, tipo) => {
+
+    console.log("direto pra ca")
 
     const itemAtualizado = {
-      ...itemEditando,
+      ...item,
       nome: nome,
       tipo: tipo
     }
-    console.log("itemAtualizado")
+    console.log("itemAtualizado do modal")
     console.log(itemAtualizado)
 
-    const itensAtualizados = listaLocal.itens.map(item =>
-      item.id === itemAtualizado.id
-        ? itemAtualizado
-        : item
-    );
+    const listaAtualizada = {
+      ...lista,
+      itens: findAndUpdateItemRecursivamente(lista.itens, item.id, (item) => ({
+        ...item,
+        nome: nome,
+        tipo: tipo,
+      })),
+    };
 
-    console.log("itensAtualizados")
-    console.log(itensAtualizados)
+    console.log("listaAtualizada")
+    console.log(listaAtualizada)
+    updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
 
-    const listaAtualizada = { ...listaLocal, itens: itensAtualizados };
-    setListaLocal(listaAtualizada);
-    updateListas(user.uid, lista.id, listas, setListasLocal, null, null, null, itensAtualizados);
-
-
-
-
-    //await setListaAtividades(userId, atividadesAtualizadas);
-
-
-    //setItems(atividadesAtualizadas);
   }
 
-  const handleSave = (nome, tipo) => {
+  const handleSave = (item, nome, tipo) => {
     console.log("entrei")
     console.log("nome")
     console.log(nome)
     console.log("tipo")
     console.log(tipo)
-    atualizarItem(itemEditando, nome, tipo)
+    atualizarItem(item, nome, tipo)
   }
 
   const handleResetar = async () => {
-    // Resetar todos os itens da lista atual (listaLocal) para completed: false
-    const itensResetados = listaLocal.itens.map(item => {
-      return {
-        ...item,
-        completed: false
-      };
-    });
+    // Função recursiva para resetar o campo 'completed' para 'false' em todos os itens, incluindo subitens
+    const resetCompletedInItems = (itens) => {
+      return itens.map(item => {
+        const itemResetado = { ...item, completed: false };
+
+        // Se o item tiver subitens, chamamos a função recursivamente para resetar também esses itens
+        if (item.itens && Array.isArray(item.itens)) {
+          itemResetado.itens = resetCompletedInItems(item.itens);
+        }
+
+        return itemResetado;
+      });
+    };
+
+    // Resetar todos os itens da lista atual, incluindo subitens
+    const itensResetados = resetCompletedInItems(lista.itens);
 
     console.log("Itens Resetados:", itensResetados);
 
     // Criar uma nova lista com os itens resetados
     const novaLista = {
-      ...listaLocal,
+      ...lista,
       itens: itensResetados
     };
 
     // Atualizar as listas locais, substituindo a lista resetada pela lista modificada
-    const novasListas = listas.map(lista => {
-      if (lista.id === listaLocal.id) {
+    const novasListas = listas.map(l => {
+      if (l.id === lista.id) {
         return novaLista; // Substituir a lista atualizada
       }
-      return lista; // Manter as outras listas inalteradas
+      return l; // Manter as outras listas inalteradas
     });
 
     // Atualizar o estado das listas locais com as novas listas
@@ -154,38 +235,38 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
     }
   };
 
-  const handleEditar = (item) => {
-
-    setItemEditando(item)
-  }
-
 
   return (
     <div className="modal">
-      <h2>{listaLocal.nome}</h2>
-      <p>Tipo: {listaLocal.tipo}</p>
+      <h2>{lista.nome}</h2>
+      <p>Tipo: {lista.tipo}</p>
 
       <FormAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas} />
       <button onClick={handleResetar}>Resetar checklists</button>
       <ul>
-        {listaLocal.itens && listaLocal.itens.map((item, index) => (
+        {lista.itens && lista.itens.map((item, index) => (
           <li key={item.id}>
 
-            <ItemLista 
-              item={item} 
-              index={index} 
-              lista={lista} 
-              onEdit={() => handleEditar(item)} 
-              onDelete={handleDeleteItem} 
-              onToggle={handleToggleItem} 
-              onMove={moveItem} 
+            <ItemLista
+              listas={listas}
+              user={user}
+              item={item}
+              index={index}
+              lista={lista}
+              onEdit={() => setItemEditando(item)}
+              onDelete={handleDeleteItem}
+              onToggle={handleToggleItem}
+              onMove={moveItem}
+              setListasLocal={setListasLocal}
+              updateListas={updateListas}
+              onSave={handleSave}
             />
 
             {itemEditando && itemEditando === item && (
               <EditorItemLista
                 item={itemEditando}
                 setItemEditando={setItemEditando}
-                onSave={(nome, tipo) => handleSave(nome, tipo)}
+                onSave={(nome, tipo) => handleSave(itemEditando, nome, tipo)}
               />
             )}
 

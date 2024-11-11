@@ -1,7 +1,13 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { updateListas } from './listaUtils';
 
 const Lista = ({ user, listas, setListasLocal, lista, onDelete, onEdit, onClick }) => {
+
+   /* useEffect(() => {
+        console.log("Estado atualizadOOOOOO - novas lista do lista:");
+        console.log(lista)
+      }, [lista]);*/
+
     return (
         <div className="lista-card">
             <h3>{lista.nome} ({lista.tipo})</h3>
@@ -10,7 +16,7 @@ const Lista = ({ user, listas, setListasLocal, lista, onDelete, onEdit, onClick 
             <button onClick={() => onDelete(lista.id)}>Excluir</button>
             <button onClick={onClick}>Abrir</button>
             <ul>
-                {lista.itens.map((item) => (
+                {(Array.isArray(lista.itens) ? lista.itens : []).map((item) => (
                     <li key={item.id} style={{ textDecoration: item.completed ? 'line-through' : 'none' }}>
                         <input
                             type="checkbox"
@@ -21,6 +27,7 @@ const Lista = ({ user, listas, setListasLocal, lista, onDelete, onEdit, onClick 
                     </li>
                 ))}
             </ul>
+
         </div>
     );
 };

@@ -27,8 +27,8 @@ const FormBotoesEditarEDelete = ({ item, onEdit, onDelete, index }) => {
             {item && index !== undefined && (
                 <>
 
-                    <button style={{ marginLeft: '50px' }} onClick={() => onEdit(index, -1)}>Editar</button>
-                    <button className='form-botoes-editar-delete-button-delete' onClick={() => onDelete(item.id)}>X</button>
+                    <button  onClick={() => onEdit(index, -1)}>Editar</button>
+                    <button className='form-botoes-editar-delete-button-delete' onClick={() => onDelete(item.id, { listaId: item.id })}>X</button>
                 </>
             )}
         </div>

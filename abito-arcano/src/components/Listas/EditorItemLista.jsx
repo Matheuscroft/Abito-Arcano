@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './listas.css';
 
-function EditorItemLista({ item, onSave, setItemEditando, areas }) {
+function EditorItemLista({ item, onSave, setItemEditando }) {
     const [nome, setNome] = useState(item.nome);
     const [tipo, setTipo] = useState(item.tipo);
 
@@ -10,6 +10,11 @@ function EditorItemLista({ item, onSave, setItemEditando, areas }) {
         setItemEditando(false);
         onSave(nome, tipo);
     };
+
+    useEffect(() => {
+        console.log("Estado atualizadOOOOOO - item do editoritemlista:");
+        console.log(item)
+      }, [item]);
 
 
     return (
