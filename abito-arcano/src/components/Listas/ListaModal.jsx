@@ -7,10 +7,7 @@ import FormAdicionarItem from './FormAdicionarItem';
 import { setListas } from '../../auth/firebaseListas.mjs';
 import CabecalhoListaModal from './CabecalhoListaModal';
 
-const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas, areas }) => {
-  const [novoItem, setNovoItem] = useState('');
-  const [tipoItem, setTipoItem] = useState('checklist');
-  //const [listaLocal, setListaLocal] = useState(lista);
+const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas, areas, handleToggleItem, handleResetar }) => {
   const [itemEditando, setItemEditando] = useState()
 
   useEffect(() => {
@@ -31,30 +28,6 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
       console.log("RETURN ITEM", item);
       return item;
     });
-  };
-
-  const handleToggleItem = (itemId) => {
-
-    console.log("to no handlet otggle")
-    const findAndToggleItem = (itens) => {
-      return itens.map(item => {
-        if (item.id === itemId) {
-          return { ...item, completed: !item.completed };
-        }
-        if (item.itens) {
-          return { ...item, itens: findAndToggleItem(item.itens) };
-        }
-        return item;
-      });
-    };
-
-    const listaAtualizada = {
-      ...lista,
-      itens: findAndToggleItem(lista.itens)
-    };
-
-    console.log("listaAtualizada", listaAtualizada);
-    updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
   };
 
   const handleDeleteItem = async (itemId) => {
@@ -152,59 +125,13 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
     updateListas(user.uid, lista, listas, setListasLocal, novaLista);
   };
 
-  const handleResetar = async () => {
-    // Função recursiva para resetar o campo 'completed' para 'false' em todos os itens, incluindo subitens
-    const resetCompletedInItems = (itens) => {
-      return itens.map(item => {
-        const itemResetado = { ...item, completed: false };
-
-        // Se o item tiver subitens, chamamos a função recursivamente para resetar também esses itens
-        if (item.itens && Array.isArray(item.itens)) {
-          itemResetado.itens = resetCompletedInItems(item.itens);
-        }
-
-        return itemResetado;
-      });
-    };
-
-    // Resetar todos os itens da lista atual, incluindo subitens
-    const itensResetados = resetCompletedInItems(lista.itens);
-
-    console.log("Itens Resetados:", itensResetados);
-
-    // Criar uma nova lista com os itens resetados
-    const novaLista = {
-      ...lista,
-      itens: itensResetados
-    };
-
-    // Atualizar as listas locais, substituindo a lista resetada pela lista modificada
-    const novasListas = listas.map(l => {
-      if (l.id === lista.id) {
-        return novaLista; // Substituir a lista atualizada
-      }
-      return l; // Manter as outras listas inalteradas
-    });
-
-    // Atualizar o estado das listas locais com as novas listas
-    setListasLocal(novasListas);
-
-    // Agora vamos salvar as novas listas no Firebase
-    try {
-      await setListas(user.uid, novasListas);
-      console.log("Listas atualizadas com sucesso no Firebase.");
-    } catch (error) {
-      console.error("Erro ao atualizar as listas no Firebase:", error);
-    }
-  };
-
 
   return (
     <div className="modal">
       <CabecalhoListaModal lista={lista} onSave={handleSaveLista} areas={areas}/>
 
       <FormAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas} />
-      <button onClick={handleResetar}>Resetar checklists</button>
+      <button onClick={() => handleResetar(lista)}>Resetar checklists</button>
       <ul>
         {lista.itens && lista.itens.map((item, index) => (
           <li key={item.id}>

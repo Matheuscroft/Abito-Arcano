@@ -19,7 +19,7 @@ const ListaAninhada = ({ listas, user, item, lista, onToggle, setListasLocal, up
         <input
           type="checkbox"
           checked={item.completed}
-          onChange={() => onToggle(item.id)}
+          onChange={() => onToggle(lista, item.id)}
         />
         <span style={{ textDecoration: item.completed ? 'line-through' : 'none' }}>
           {item.nome}

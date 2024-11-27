@@ -8,6 +8,7 @@ import './listas.css';
 import { updateListas } from './listaUtils';
 import { getAreas } from '../../auth/firebaseAreaSubarea';
 import FiltroAreasListas from './FiltroAreasListas';
+import FiltroTiposListas from './FiltroTiposListas';
 
 const Listas = ({ user }) => {
   const [listas, setListasLocal] = useState([]);
@@ -130,6 +131,129 @@ const Listas = ({ user }) => {
       setFilteredListas(filtered);
     }
   };
+
+  const handleFilterChangeTipo = (selectedTipos) => {
+    if (selectedTipos.length === 0) {
+      setFilteredListas(listas);
+    } else {
+      const filtered = listas.filter(lista => selectedTipos.includes(lista.tipo));
+      setFilteredListas(filtered);
+    }
+  };
+  
+
+  const moveLista = async (listaId, direction) => {
+    const index = listas.findIndex((lista) => lista.id === listaId);
+    if (index < 0) return;
+
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= listas.length) return;
+
+    const updatedListas = [...listas];
+    const [removedLista] = updatedListas.splice(index, 1);
+    updatedListas.splice(newIndex, 0, removedLista);
+
+    console.log(updatedListas)
+    await setListas(user.uid, updatedListas);
+  };
+
+ /* const handleToggleItem = (lista, itemId) => {
+
+    console.log("to no handlet otggle")
+    const findAndToggleItem = (itens) => {
+      return itens.map(item => {
+        if (item.id === itemId) {
+          return { ...item, completed: !item.completed };
+        }
+        if (item.itens) {
+          return { ...item, itens: findAndToggleItem(item.itens) };
+        }
+        return item;
+      });
+    };
+
+    const listaAtualizada = {
+      ...lista,
+      itens: findAndToggleItem(lista.itens)
+    };
+
+    console.log("listaAtualizada", listaAtualizada);
+    updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
+  };*/
+
+  const handleToggleItem = (lista, itemId) => {
+    const findAndToggleItem = (itens, targetId, toggleState) => {
+      console.log("entrei")
+      console.log("itens")
+      console.log(itens)
+      return itens.map(item => {
+        if (item.id === targetId) {
+          console.log("if (item.id === targetId)")
+          console.log("item.nome")
+          console.log(item.nome)
+          // Inverte o estado de "completed" do item e propaga para todos os itens internos
+          const newCompletedState = toggleState !== undefined ? toggleState : !item.completed;
+          return {
+            ...item,
+            completed: newCompletedState,
+            itens: item.itens ? findAndToggleItem(item.itens, null, newCompletedState) : item.itens
+          };
+        } else if (item.itens) {
+          console.log("else if")
+          // Verifica se todos os itens internos estão marcados e ajusta o estado do item pai
+          const updatedSubItems = findAndToggleItem(item.itens, targetId, toggleState);
+          const allSubItemsCompleted = updatedSubItems.every(subItem => subItem.completed);
+          console.log("updatedSubItems")
+          console.log(updatedSubItems)
+          return {
+            ...item,
+            completed: allSubItemsCompleted,
+            itens: updatedSubItems
+          };
+        }
+        return item;
+      });
+    };
+  
+    const listaAtualizada = {
+      ...lista,
+      itens: findAndToggleItem(lista.itens, itemId)
+    };
+  
+    console.log("listaAtualizada", listaAtualizada);
+    updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
+  };
+  
+
+  const handleResetar = async (lista) => {
+    console.log(" lista:", lista);
+    const resetCompletedInItems = (itens) => {
+      return itens.map(item => {
+        const itemResetado = { ...item, completed: false };
+
+        if (item.itens && Array.isArray(item.itens)) {
+          itemResetado.itens = resetCompletedInItems(item.itens);
+        }
+
+        return itemResetado;
+      });
+    };
+
+    const itensResetados = resetCompletedInItems(lista.itens);
+
+    console.log("Itens Resetados:", itensResetados);
+
+    const novaLista = {
+      ...lista,
+      itens: itensResetados
+    };
+
+    console.log(" novaLista:", novaLista);
+
+    
+    updateListas(user.uid, lista, listas, setListasLocal, novaLista)
+
+  };
   
 
   return (
@@ -138,6 +262,7 @@ const Listas = ({ user }) => {
       <button onClick={() => reformarItensComTipo(listas)}>reformarItensComTipo</button>
 
       <FiltroAreasListas areas={areas} onFilterChange={handleFilterChange} />
+      <FiltroTiposListas listas={listas} onFilterChangeTipo={handleFilterChangeTipo} />
 
       <div className="listas-container">
         {Array.isArray(filteredListas) && filteredListas.length > 0 ? (
@@ -151,6 +276,9 @@ const Listas = ({ user }) => {
               listas={listas}
               setListasLocal={setListasLocal}
               areas={areas}
+              onMove={moveLista}
+              handleToggleItem={handleToggleItem}
+              handleResetar={handleResetar}
             />
           ))
         ) : (
@@ -167,6 +295,8 @@ const Listas = ({ user }) => {
           setListasLocal={setListasLocal}
           listas={listas}
           areas={areas}
+          handleToggleItem={handleToggleItem}
+          handleResetar={handleResetar}
         />
       )}
     </div>

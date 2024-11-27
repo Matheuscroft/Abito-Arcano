@@ -18,7 +18,7 @@ const ItemLista = ({ listas, user, item, onEdit, lista, onDelete, onToggle, onSa
                 <input
                   type="checkbox"
                   checked={item.completed}
-                  onChange={() => onToggle(item.id)}
+                  onChange={() => onToggle(lista, item.id)}
                 />
                 <span style={{ textDecoration: item.completed ? 'line-through' : 'none' }}>
                   {item.nome}
