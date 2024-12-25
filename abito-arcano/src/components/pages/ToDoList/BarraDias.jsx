@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { inserirDias } from '../auth/firebaseDiasHoras.js';
-import { atualizarDiasLocalmenteENoFirebase } from './todoUtils.js';
+import { inserirDias } from '../../../auth/firebaseDiasHoras.js';
+import { atualizarDiasLocalmenteENoFirebase } from '../../todoUtils.js';
+import BotaoDia from './BotaoDia.jsx';
 
 const BarraDias = ({ user, dias, setDias, setDiaVisualizado, resetarListaDeDias, setDataAtual, tarefasGerais, setTarefasPorDia, diaVisualizado, dataAtual }) => {
     const containerRef = useRef(null);
@@ -76,19 +77,13 @@ const BarraDias = ({ user, dias, setDias, setDiaVisualizado, resetarListaDeDias,
                     }}
                 >
                     {dias.map((dia) => (
-                        <button
-                            key={dia.data}
-                            onClick={() => setDiaVisualizado(dia.data)}
-                            style={{
-                                margin: '0 5px',
-                                padding: '10px',
-                                backgroundColor: diaVisualizado === dia.data ? '#ddd' : '#fff',
-                                border: diaVisualizado === dia.data ? '2px solid #000' : '1px solid #ccc',
-                                borderRadius: '5px',
-                            }}
-                        >
-                            {dia.data}
-                        </button>
+                        <BotaoDia
+                        key={dia.data}
+                        data={dia.data}
+                        diaSemana={dia.diaSemana}
+                        isSelecionado={diaVisualizado === dia.data}
+                        onClick={() => setDiaVisualizado(dia.data)}
+                      />
                     ))}
                 </div>
             </div>

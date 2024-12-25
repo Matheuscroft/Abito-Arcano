@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { setarCorAreaETexto } from './utils';
-import FormBotoesEditarEDelete from '../components/componentes/forms/FormBotoesEditarEDelete/FormBotoesEditarEDelete'
-import FormSetasOrdenar from './componentes/forms/FormSetasOrdenar/FormSetasOrdenar';
+import { setarCorAreaETexto } from '../../utils';
+import FormBotoesEditarEDelete from '../../componentes/forms/FormBotoesEditarEDelete/FormBotoesEditarEDelete'
+import FormSetasOrdenar from '../../componentes/forms/FormSetasOrdenar/FormSetasOrdenar';
 
 function Tarefa({ tarefa, onEdit, onDelete, onToggle, areas, index, lista, onMove }) {
   const [corArea, setCorArea] = useState('#000');
   const [corTexto, setCorTexto] = useState('#fff');
 
   useEffect(() => {
+
     if (Array.isArray(areas) && tarefa.areaId) {
+
 
       setarCorAreaETexto(tarefa, areas, setCorArea, setCorTexto)
 
@@ -33,7 +35,7 @@ function Tarefa({ tarefa, onEdit, onDelete, onToggle, areas, index, lista, onMov
       </div>
       <div className="right-content">
         <FormBotoesEditarEDelete item={tarefa} onEdit={onEdit} onDelete={onDelete} index={areas} />
-        <FormSetasOrdenar onMove={onMove} index={index} lista={lista}/>
+        <FormSetasOrdenar onMove={onMove} item={tarefa} lista={lista}/>
       </div>
     </div>
   );

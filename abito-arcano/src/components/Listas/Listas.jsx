@@ -144,6 +144,7 @@ const Listas = ({ user }) => {
 
   const moveLista = async (listaId, direction) => {
     const index = listas.findIndex((lista) => lista.id === listaId);
+
     if (index < 0) return;
 
     const newIndex = index + direction;
@@ -154,6 +155,7 @@ const Listas = ({ user }) => {
     updatedListas.splice(newIndex, 0, removedLista);
 
     console.log(updatedListas)
+    setListasLocal(updatedListas)
     await setListas(user.uid, updatedListas);
   };
 

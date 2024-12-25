@@ -10,7 +10,9 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
   const [diasSemana, setDiasSemana] = useState(item.diasSemana || []);
   
 
-  const diasOpcoes = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  const diasOpcoes = [0, 1, 2, 3, 4, 5, 6];
+
+  const diasNomes = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
 
 
@@ -22,6 +24,8 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
   }, [area, areas]);
 
   useEffect(() => {
+    console.log("item")
+    console.log(item)
     console.log("item.diasSemana")
     console.log(item.diasSemana)
   }, []);
@@ -33,7 +37,7 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
 
     const subareaEncontrada = areaEncontrada?.subareas.find(s => s.nome === subarea);
 
-    let nomeSubarea = subareaEncontrada ? subareaEncontrada.nome : ""
+    const nomeSubarea = subareaEncontrada ? subareaEncontrada.nome : ""
 
    
     const areaId = areaEncontrada ? areaEncontrada.id : null;
@@ -86,14 +90,14 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
       {tipo === 'tarefa' && (
         <div>
           <h4>Selecione os dias da semana:</h4>
-          {diasOpcoes.map((dia, index) => (
-            <label key={index}>
+          {diasOpcoes.map((dia) => (
+            <label key={dia}>
               <input
                 type="checkbox"
                 checked={diasSemana.includes(dia)}
                 onChange={() => handleDiaSemanaChange(dia)}
               />
-              {dia}
+              {diasNomes[dia]}
             </label>
           ))}
         </div>

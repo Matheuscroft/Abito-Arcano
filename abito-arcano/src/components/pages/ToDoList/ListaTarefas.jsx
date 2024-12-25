@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Tarefa from './Tarefa';
-import EditorItem from './EditorItem';
-import { addItem, updateItem, toggleFinalizada, deleteItem, atualizarDiasLocalmenteENoFirebase } from './todoUtils';
-import { substituirTarefasGerais } from '../auth/firebaseTarefas.js';
-import { getDias, inserirDias } from '../auth/firebaseDiasHoras.js';
+import Tarefa from './Tarefa.jsx';
+import EditorItem from '../../EditorItem.jsx';
+import { addItem, updateItem, toggleFinalizada, deleteItem, atualizarDiasLocalmenteENoFirebase } from '../../todoUtils.js';
+import { substituirTarefasGerais } from '../../../auth/firebaseTarefas.js';
+import { getDias, inserirDias } from '../../../auth/firebaseDiasHoras.js';
 
 function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaVisualizado }) {
   const [nomeNovaTarefa, setNomeNovaTarefa] = useState('');
@@ -52,23 +52,42 @@ function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaV
 
     if (nomeNovaTarefa.trim() === '') return;
 
-    addItem(nomeNovaTarefa, 'tarefa', null, tarefas, user.uid, areas, setDias, dias)
+    addItem(nomeNovaTarefa, 'tarefa', null, tarefas, user.uid, areas, setDias, dias, diaVisualizado)
 
     setNomeNovaTarefa('');
   };
 
 
-  const moveItem = async (index, direction, userId, tarefas, setDias, dias) => {
+  const moveItem = async (itemId, direction, userId, tarefas, setDias, dias) => {
+
+    console.log('moveItem - itemId:', itemId, 'direction:', direction, 'userId:', userId);
+    console.log('moveItem - Tarefas iniciais:', tarefas);
+    console.log('moveItem - Dias iniciais:', dias);
 
     const tarefasNaoFinalizadas = tarefas.filter(tarefa => !tarefa.finalizada);
+    
 
-    const targetIndex = index + direction;
+    const index = tarefasNaoFinalizadas.findIndex((tarefa) => tarefa.id === itemId);
 
-    if (targetIndex >= 0 && targetIndex < tarefasNaoFinalizadas.length) {
+    console.log("index")
+    console.log(index)
+
+    if (index < 0) return;
+
+    const newIndex = index + direction;
+
+    console.log("newIndex")
+    console.log(newIndex)
+
+
+
+    if (newIndex >= 0 && newIndex < tarefasNaoFinalizadas.length) {
 
       const temp = tarefasNaoFinalizadas[index];
-      tarefasNaoFinalizadas[index] = tarefasNaoFinalizadas[targetIndex];
-      tarefasNaoFinalizadas[targetIndex] = temp;
+      tarefasNaoFinalizadas[index] = tarefasNaoFinalizadas[newIndex];
+      tarefasNaoFinalizadas[newIndex] = temp;
+
+      console.log('moveItem - Tarefas reordenadas:', tarefasNaoFinalizadas);
 
 
       let tarefaNaoFinalizadaIndex = 0;
@@ -88,14 +107,6 @@ function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaV
       await substituirTarefasGerais(userId, tarefasAtualizadas);
 
 
-      /* const diasAtualizados = dias.map(dia => {
-         const tarefasDoDiaAtualizadas = tarefasAtualizadas.filter(tarefaGeralAtualizada => {
-             return dia.tarefas.some(tarefaDoDia => tarefaDoDia.id === tarefaGeralAtualizada.id);
-         });
-     
-         return { ...dia, tarefas: tarefasDoDiaAtualizadas };
-     });*/
-
       const diasAtualizados = dias.map(dia => {
         const tarefasDoDiaAtualizadas = tarefasAtualizadas.map(tarefaGeralAtualizada => {
           const tarefaDoDia = dia.tarefas.find(tarefaDoDia => tarefaDoDia.id === tarefaGeralAtualizada.id);
@@ -107,16 +118,14 @@ function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaV
           }
         });
 
-        console.log("dia", dia.data);
-        console.log("tarefasDoDiaAtualizadas", tarefasDoDiaAtualizadas);
+        console.log('moveItem - Tarefas do dia atualizadas para dia:', dia.data, tarefasDoDiaAtualizadas);
 
         return { ...dia, tarefas: tarefasDoDiaAtualizadas };
       });
 
 
 
-      console.log("diasAtualizados")
-      console.log(diasAtualizados)
+      console.log('moveItem - Dias atualizados:', diasAtualizados);
 
 
       atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
@@ -148,26 +157,26 @@ function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaV
             <Tarefa
               tarefa={tarefa}
               onEdit={() => setItemEditando(tarefa)}
-              onDelete={() => deleteItem(tarefa.id, 'tarefa', null, tarefas, user.uid, setDias, dias)}
+              onDelete={() => deleteItem(tarefa, 'tarefa', null, tarefas, user.uid, setDias, dias, diaVisualizado)}
               onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, null, setPontuacoes, user.uid, diaVisualizado, dias, setDias)}
               areas={areas}
               index={index}
               lista={tarefas}
-              onMove={(index, direction) => moveItem(index, direction, user.uid, tarefas, setDias, dias)}
+              onMove={(itemId, direction) => moveItem(itemId, direction, user.uid, tarefas, setDias, dias)}
             />
+
+            {itemEditando && itemEditando === tarefa && (
+              <EditorItem
+                item={itemEditando}
+                tipo={"tarefa"}
+                setItemEditando={setItemEditando}
+                onSave={(nome, numero, area, subarea, areaId, subareaId, diasSemana) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', null, tarefas, user.uid, setDias, dias, diasSemana, diaVisualizado)}
+                areas={areas}
+              />
+            )}
           </li>
         ))}
       </ul>
-
-      {itemEditando && (
-        <EditorItem
-          item={itemEditando}
-          tipo={"tarefa"}
-          setItemEditando={setItemEditando}
-          onSave={(nome, numero, area, subarea, areaId, subareaId, diasSemana) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', null, tarefas, user.uid, setDias, dias, diasSemana)}
-          areas={areas}
-        />
-      )}
 
 
       <h2>Finalizadas</h2>
@@ -177,11 +186,21 @@ function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaV
             <Tarefa
               tarefa={tarefa}
               onEdit={() => setItemEditando(tarefa)}
-              onDelete={() => deleteItem(tarefa.id, 'tarefa', null, tarefas, user.uid, setDias, dias)}
+              onDelete={() => deleteItem(tarefa, 'tarefa', null, tarefas, user.uid, setDias, dias, diaVisualizado)}
               onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, null, setPontuacoes, user.uid, diaVisualizado, dias, setDias)}
               areas={areas}
-              onMove={(direction) => moveItem(index, direction)}
+              onMove={(itemId, direction) => moveItem(itemId, direction, user.uid, tarefas, setDias, dias)}
             />
+
+{itemEditando && itemEditando === tarefa && (
+              <EditorItem
+                item={itemEditando}
+                tipo={"tarefa"}
+                setItemEditando={setItemEditando}
+                onSave={(nome, numero, area, subarea, areaId, subareaId, diasSemana) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', null, tarefas, user.uid, setDias, dias, diasSemana, diaVisualizado)}
+                areas={areas}
+              />
+            )}
           </li>
         ))}
       </ul>

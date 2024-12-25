@@ -3,11 +3,13 @@ import { getPontuacoes, updatePontuacoes } from '../../../auth/firebasePontuacoe
 import { getListaAtividades, setListaAtividades } from '../../../auth/firebaseAtividades.js';
 import BarraPontuacoes from '../../BarraPontuacoes';
 import ListaAtividades from '../../ListaAtividades.jsx';
-import Diarias from '../../Diarias';
+import Diarias from './Diarias.jsx';
 import { useNavigate } from 'react-router-dom';
 import { getAreas, updateAreas } from '../../../auth/firebaseAreaSubarea.js';
-import { getDias } from '../../../auth/firebaseDiasHoras.js';
+import { corrigirDiasDuplicados, getDias } from '../../../auth/firebaseDiasHoras.js';
 import { v4 as uuidv4 } from 'uuid';
+
+import { getUsuarios } from '../../../services/api.js';
 
 function ToDoList({ user }) {
   const [atividades, setAtividades] = useState([]);
@@ -16,7 +18,6 @@ function ToDoList({ user }) {
   const [areas, setAreas] = useState({});
   const [dataAtual, setDataAtual] = useState('');
   const navigate = useNavigate();
-
 
   useEffect(() => {
     if (!user) {
@@ -31,10 +32,20 @@ function ToDoList({ user }) {
     console.log(atividades)
   }, [atividades]);*/
 
+  const att = async () =>
+  {
+    //await corrigirDiasDuplicados(user.uid);
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       //await resetarListaAreas(user.uid)
       if (user && user.uid) {
+
+        
+        const usuariosData = await getUsuarios();  // Chama o serviço para buscar os usuários
+        console.log("usuariosData");
+        console.log(usuariosData);
 
 
         let atividades = await getListaAtividades(user.uid);
@@ -203,6 +214,7 @@ function ToDoList({ user }) {
   return (
     <div>
       <h1>To-Do List</h1>
+      <button onClick={att}>CORRIGIR</button>
 
       <BarraPontuacoes pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} resetarListaPontuacoes={() => resetarListaPontuacoes(user, areas, dias)} user={user} resetarListaAreas={() => resetarListaAreas(user.uid)} />
 
