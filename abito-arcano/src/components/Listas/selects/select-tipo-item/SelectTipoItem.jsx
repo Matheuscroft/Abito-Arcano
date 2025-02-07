@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../../listas.css";
-import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react";
+import { Field, NativeSelectField, NativeSelectRoot } from "@chakra-ui/react";
 
 function SelectTipoItem({ tipo, setTipo }) {
   console.log("tipo q chegou");
