@@ -1,35 +1,51 @@
-import React from 'react';
+import { Card, Heading } from "@chakra-ui/react";
+import React, { useEffect, useRef } from "react";
 
 const BotaoDia = ({ data, diaSemana, isSelecionado, onClick }) => {
-  // Formatar o nome do dia da semana para a versão abreviada
+
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    if (isSelecionado && cardRef.current) {
+      cardRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [isSelecionado]);
+
   const formatarDiaSemana = (diaSemana) => {
     const abreviacoes = {
-      'segunda-feira': 'SEG',
-      'terça-feira': 'TER',
-      'quarta-feira': 'QUA',
-      'quinta-feira': 'QUI',
-      'sexta-feira': 'SEX',
-      'sábado': 'SAB',
-      'domingo': 'DOM',
+      "segunda-feira": "SEG",
+      "terça-feira": "TER",
+      "quarta-feira": "QUA",
+      "quinta-feira": "QUI",
+      "sexta-feira": "SEX",
+      sábado: "SAB",
+      domingo: "DOM",
     };
     return abreviacoes[diaSemana.toLowerCase()] || diaSemana;
   };
 
   return (
-    <button
-      onClick={onClick}
-      style={{
-        margin: '0 5px',
-        padding: '8px',
-        backgroundColor: isSelecionado ? '#ddd' : '#fff',
-        border: isSelecionado ? '2px solid #000' : '1px solid #ccc',
-        borderRadius: '5px',
-        textAlign: 'center',
-      }}
-    >
-      <div>{data}</div>
-      <div style={{fontSize: '9px'}}>{formatarDiaSemana(diaSemana)}</div>
-    </button>
+    <div ref={cardRef}>
+      <Card.Root
+        size="sm"
+        onClick={onClick}
+        style={{
+          cursor: "pointer",
+          backgroundColor: isSelecionado ? "#711515" : "#683939",
+          border: isSelecionado ? "2px solid #000" : "1px solid #ccc",
+          textAlign: "center",
+        }}
+      >
+        <Card.Body>
+          <Heading size="sm">{data}</Heading>
+          <div style={{ fontSize: "9px" }}>{formatarDiaSemana(diaSemana)}</div>
+        </Card.Body>
+      </Card.Root>
+    </div>
   );
 };
 

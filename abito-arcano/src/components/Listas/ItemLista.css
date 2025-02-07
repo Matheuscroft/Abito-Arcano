@@ -8,8 +8,7 @@
   
   .left-content {
     flex-grow: 1;
-    background-color: pink;
-    width: 400px;
+    width: 50%;
   }
   
   .right-content {
@@ -41,6 +40,7 @@
     display: inline-block;
     border: solid coral 2px;
     border-radius: 3%;
+    width: 100%;
 
   }
   

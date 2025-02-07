@@ -7,6 +7,8 @@ import RelogioCron from "../../RelogioCron.jsx";
 import BarraDias from "./BarraDias.jsx";
 import { updatePontuacoes } from "../../../auth/firebasePontuacoes.js";
 import { atualizarDiasLocalmenteENoFirebase } from "../../todoUtils.js";
+import { buscarTarefaRecursivamente, expandirTarefasDosDias } from "./tarefaUtils.js";
+import { Container, Heading } from "@chakra-ui/react";
 
 const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtual }) => {
   const [tarefasGerais, setTarefasGerais] = useState([]);
@@ -22,21 +24,14 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
     const fetchData = async () => {
       if (user && user.uid) {
         let diasSalvos = await getDias(user.uid);
-
         const tarefasGerais = await getListaTarefas(user.uid);
         setTarefasGerais(tarefasGerais);
 
         console.log("tarefasGerais fetchdata");
         console.log(tarefasGerais);
+        console.log("diasSalvos get dias do diarias");
+          console.log(diasSalvos);
 
-        /* if (diasSalvos.length === 0) {
-                     await resetarListaDeDias();
-                     diasSalvos = await getDias(user.uid);
-                 }*/
-        // console.log("diasSalvos fetchdata")
-        //console.log(diasSalvos)
-
-        let tarefasPorDiaTemp = {};
 
         const hoje = new Date().toLocaleDateString("pt-BR");
         const diaAtual =
@@ -48,34 +43,8 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
           const novosDias = await resetarListaDeDias();
           setDataAtual(novosDias[0].data);
         } else {
-          /* console.log("else")
-                    for (const dia of diasSalvos) {
-                        tarefasPorDiaTemp[dia.data] = dia.tarefas.length === 0
-                            ? tarefasGerais.map(tarefa => ({ ...tarefa, finalizada: false }))
-                            : dia.tarefas;
-                    }
-
-                    setDataAtual(diaAtual);*/
-          console.log("diasSalvos get dias do diarias");
-          console.log(diasSalvos);
-
-          const diasExpandidos = diasSalvos.map((dia) => {
-            const tarefasDetalhadas = dia.tarefas.map((tarefaDia) => {
-              const tarefaGerais = tarefasGerais.find(
-                (tarefa) => tarefa.id === tarefaDia.id
-              );
-              // Se a tarefa não for encontrada em tarefasGerais, cria um objeto com id e nome padrão
-              const tarefaDetalhada = tarefaGerais || {
-                id: tarefaDia.id,
-                nome: "Tarefa não encontrada",
-              };
-
-              // Retorna a tarefa detalhada, substituindo apenas o campo `finalizado` com o valor de `tarefaDia`
-              return { ...tarefaDetalhada, finalizada: tarefaDia.finalizada };
-            });
-
-            return { ...dia, tarefas: tarefasDetalhadas };
-          });
+          
+          const diasExpandidos = expandirTarefasDosDias(diasSalvos, tarefasGerais);
 
           console.log("diasExpandidos get dias do diarias");
           console.log(diasExpandidos);
@@ -217,13 +186,13 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
      }, [diaVisualizado]);
  */
   useEffect(() => {
-    console.log("Estado atualizado - dias da diarias:");
+    console.log("Dias da diarias:");
     console.log(dias);
   }, [dias]);
 
   return (
     <div>
-      <h1>Diárias</h1>
+      <Heading>Tarefas Diárias</Heading>
       <div>
         <RelogioCron trocarDia={trocarDia} user={user} />
         <BarraDias

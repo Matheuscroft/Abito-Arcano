@@ -1,20 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import Tarefa from './Tarefa.jsx';
-import EditorItem from '../../EditorItem.jsx';
-import { addItem, updateItem, toggleFinalizada, deleteItem, atualizarDiasLocalmenteENoFirebase } from '../../todoUtils.js';
-import { substituirTarefasGerais } from '../../../auth/firebaseTarefas.js';
-import { getDias, inserirDias } from '../../../auth/firebaseDiasHoras.js';
+import React, { useState, useEffect } from "react";
+import Tarefa from "./Tarefa.jsx";
+import EditorItem from "../../EditorItem.jsx";
+import {
+  addItem,
+  updateItem,
+  toggleFinalizada,
+  deleteItem,
+  atualizarDiasLocalmenteENoFirebase,
+  atualizarDias,
+} from "../../todoUtils.js";
+import {
+  getListaTarefas,
+  substituirTarefasGerais,
+} from "../../../auth/firebaseTarefas.js";
+import { getDias, inserirDias } from "../../../auth/firebaseDiasHoras.js";
+import ItemLista from "../../Listas/ItemLista.jsx";
+import { Button, HStack, Input, Text } from "@chakra-ui/react";
 
-function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaVisualizado }) {
-  const [nomeNovaTarefa, setNomeNovaTarefa] = useState('');
+function ListaTarefas({
+  user,
+  tarefas,
+  setPontuacoes,
+  setDias,
+  dias,
+  areas,
+  diaVisualizado,
+}) {
+  const [nomeNovaTarefa, setNomeNovaTarefa] = useState("");
   const [itemEditando, setItemEditando] = useState(null);
 
   useEffect(() => {
     console.log("Estado atualizadOOOOOO lusta tarefas - dias:");
-    console.log(dias)
+    console.log(dias);
     console.log("Estado atualizadOOOOOO lusta tarefas - tarefas:");
-    console.log(tarefas)
-  }, []);
+    console.log(tarefas);
+  }, [tarefas]);
 
   const resetarListaDeTarefasGerais = async (userId) => {
     try {
@@ -24,18 +44,19 @@ function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaV
 
       const dias = await getDias(userId);
 
-      console.log("dias")
-      console.log(dias)
+      console.log("dias");
+      console.log(dias);
 
-      const diasAtualizados = dias.map(dia => ({
+      const diasAtualizados = dias.map((dia) => ({
         ...dia,
-        tarefas: []
+        tarefas: [],
       }));
 
-      console.log("Lista de tarefas gerais e tarefas de todos os dias resetadas com sucesso.");
+      console.log(
+        "Lista de tarefas gerais e tarefas de todos os dias resetadas com sucesso."
+      );
       console.log("diasAtualizados");
       console.log(diasAtualizados);
-
 
       atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
 
@@ -49,160 +70,301 @@ function ListaTarefas({ user, tarefas, setPontuacoes, setDias, dias, areas, diaV
   };
 
   const handleAdicionarItem = async () => {
+    if (nomeNovaTarefa.trim() === "") return;
 
-    if (nomeNovaTarefa.trim() === '') return;
+    addItem(
+      nomeNovaTarefa,
+      "tarefa",
+      null,
+      tarefas,
+      user.uid,
+      areas,
+      setDias,
+      dias,
+      diaVisualizado
+    );
 
-    addItem(nomeNovaTarefa, 'tarefa', null, tarefas, user.uid, areas, setDias, dias, diaVisualizado)
-
-    setNomeNovaTarefa('');
+    setNomeNovaTarefa("");
   };
 
+  const moveItem = async (
+    item,
+    direction,
+    userId,
+    tarefas,
+    setDias,
+    dias,
+    diaVisualizado
+  ) => {
+    //Tarefas
+    const tarefasGerais = await getListaTarefas(userId);
 
-  const moveItem = async (itemId, direction, userId, tarefas, setDias, dias) => {
+    const indexGeral = tarefasGerais.findIndex(
+      (tarefa) => tarefa.id === item.id
+    );
+    if (indexGeral < 0) return;
 
-    console.log('moveItem - itemId:', itemId, 'direction:', direction, 'userId:', userId);
-    console.log('moveItem - Tarefas iniciais:', tarefas);
-    console.log('moveItem - Dias iniciais:', dias);
+    const newIndexGeral = indexGeral + direction;
+    if (newIndexGeral >= 0 && newIndexGeral < tarefasGerais.length) {
+      const tempGeral = tarefasGerais[indexGeral];
+      tarefasGerais[indexGeral] = tarefasGerais[newIndexGeral];
+      tarefasGerais[newIndexGeral] = tempGeral;
 
-    const tarefasNaoFinalizadas = tarefas.filter(tarefa => !tarefa.finalizada);
-    
+      await substituirTarefasGerais(userId, tarefasGerais);
+    }
 
-    const index = tarefasNaoFinalizadas.findIndex((tarefa) => tarefa.id === itemId);
+    //Dias
+    const diasAtualizados = atualizarDias(
+      dias,
+      diaVisualizado,
+      "mover",
+      item,
+      direction
+    );
 
-    console.log("index")
-    console.log(index)
+    atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
+  };
 
-    if (index < 0) return;
-
-    const newIndex = index + direction;
-
-    console.log("newIndex")
-    console.log(newIndex)
-
-
-
-    if (newIndex >= 0 && newIndex < tarefasNaoFinalizadas.length) {
-
-      const temp = tarefasNaoFinalizadas[index];
-      tarefasNaoFinalizadas[index] = tarefasNaoFinalizadas[newIndex];
-      tarefasNaoFinalizadas[newIndex] = temp;
-
-      console.log('moveItem - Tarefas reordenadas:', tarefasNaoFinalizadas);
-
-
-      let tarefaNaoFinalizadaIndex = 0;
-      const tarefasAtualizadas = tarefas.map(tarefa => {
-        if (tarefa.finalizada) {
-          return tarefa;
-        }
-        const tarefaAtualizada = tarefasNaoFinalizadas[tarefaNaoFinalizadaIndex];
-        tarefaNaoFinalizadaIndex++;
-        return tarefaAtualizada;
-      });
-
-      console.log("tarefasAtualizadas")
-      console.log(tarefasAtualizadas)
-
-
-      await substituirTarefasGerais(userId, tarefasAtualizadas);
-
-
-      const diasAtualizados = dias.map(dia => {
-        const tarefasDoDiaAtualizadas = tarefasAtualizadas.map(tarefaGeralAtualizada => {
-          const tarefaDoDia = dia.tarefas.find(tarefaDoDia => tarefaDoDia.id === tarefaGeralAtualizada.id);
-
-          if (tarefaDoDia) {
-            return { ...tarefaGeralAtualizada, finalizada: tarefaDoDia.finalizada };
-          } else {
-            return { ...tarefaGeralAtualizada, finalizada: false };
-          }
-        });
-
-        console.log('moveItem - Tarefas do dia atualizadas para dia:', dia.data, tarefasDoDiaAtualizadas);
-
-        return { ...dia, tarefas: tarefasDoDiaAtualizadas };
-      });
-
-
-
-      console.log('moveItem - Dias atualizados:', diasAtualizados);
-
-
-      atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
+  const encontrarItemEExecutar = async (
+    item,
+    items,
+    setItems,
+    setPontuacoes,
+    userId,
+    dataPontuacao,
+    dias,
+    setDias
+  ) => {
+    if (item.tipo === "tarefa") {
+      await toggleFinalizada(
+        item.id,
+        item.tipo,
+        items,
+        setItems,
+        setPontuacoes,
+        userId,
+        dataPontuacao,
+        dias,
+        setDias
+      );
     }
   };
 
-
-
-
   return (
     <div>
-      <h1>Tarefas</h1>
-      <button onClick={() => resetarListaDeTarefasGerais(user.uid)}>Resetar Lista de Tarefas Gerais</button>
-      <input
-        type="text"
-        value={nomeNovaTarefa}
-        onChange={(e) => setNomeNovaTarefa(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            handleAdicionarItem();
-          }
-        }}
-        placeholder="Digite o nome da tarefa"
-      />
-      <button onClick={handleAdicionarItem}>Adicionar Tarefa</button>
+      <Text fontSize="2xl" fontWeight="bold" mb={4}>
+        Tarefas
+      </Text>
+      <HStack spacing={4} align="center" mb={4}>
+        <Button
+          size="xs"
+          variant="outline"
+          onClick={() => resetarListaDeTarefasGerais(user.uid)}
+          colorPalette="red"
+        >
+          Resetar Lista de Tarefas Gerais
+        </Button>
+        <Input
+          type="text"
+          value={nomeNovaTarefa}
+          onChange={(e) => setNomeNovaTarefa(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleAdicionarItem();
+            }
+          }}
+          placeholder="Digite o nome da tarefa"
+          width="200px"
+        />
+        <Button size="xs" onClick={handleAdicionarItem}>
+          Adicionar Tarefa
+        </Button>
+      </HStack>
+
+
       <ul>
-        {tarefas.filter(tarefa => !tarefa.finalizada).map((tarefa, index) => (
-          <li key={tarefa.id}>
-            <Tarefa
-              tarefa={tarefa}
-              onEdit={() => setItemEditando(tarefa)}
-              onDelete={() => deleteItem(tarefa, 'tarefa', null, tarefas, user.uid, setDias, dias, diaVisualizado)}
-              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, null, setPontuacoes, user.uid, diaVisualizado, dias, setDias)}
-              areas={areas}
-              index={index}
-              lista={tarefas}
-              onMove={(itemId, direction) => moveItem(itemId, direction, user.uid, tarefas, setDias, dias)}
-            />
+        {tarefas
+          .filter((tarefa) => !tarefa.finalizada)
+          .map((tarefa, index) => (
+            <li key={tarefa.id}>
+              {tarefa && (
+                <ItemLista
+                  user={user}
+                  item={tarefa}
+                  index={index}
+                  lista={tarefas}
+                  onEdit={() => setItemEditando(tarefa)}
+                  onDelete={() =>
+                    deleteItem(
+                      tarefa,
+                      "tarefa",
+                      null,
+                      tarefas,
+                      user.uid,
+                      setDias,
+                      dias,
+                      diaVisualizado
+                    )
+                  }
+                  onToggle={() =>
+                    encontrarItemEExecutar(
+                      tarefa,
+                      tarefas,
+                      null,
+                      setPontuacoes,
+                      user.uid,
+                      diaVisualizado,
+                      dias,
+                      setDias
+                    )
+                  }
+                  onMove={(item, direction) =>
+                    moveItem(
+                      item,
+                      direction,
+                      user.uid,
+                      tarefas,
+                      setDias,
+                      dias,
+                      diaVisualizado
+                    )
+                  }
+                  areas={areas}
+                  isTarefas={true}
+                  tarefa={tarefa}
+                  setItems={null}
+                  dias={dias}
+                  setDias={setDias}
+                  diaVisualizado={diaVisualizado}
+                  setPontuacoes={setPontuacoes}
+                />
+              )}
 
-            {itemEditando && itemEditando === tarefa && (
-              <EditorItem
-                item={itemEditando}
-                tipo={"tarefa"}
-                setItemEditando={setItemEditando}
-                onSave={(nome, numero, area, subarea, areaId, subareaId, diasSemana) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', null, tarefas, user.uid, setDias, dias, diasSemana, diaVisualizado)}
-                areas={areas}
-              />
-            )}
-          </li>
-        ))}
+              {itemEditando && itemEditando === tarefa && (
+                <EditorItem
+                  item={itemEditando}
+                  tipo={"tarefa"}
+                  setItemEditando={setItemEditando}
+                  onSave={(
+                    nome,
+                    numero,
+                    area,
+                    subarea,
+                    areaId,
+                    subareaId,
+                    diasSemana,
+                    tipo
+                  ) =>
+                    updateItem(
+                      itemEditando.id,
+                      nome,
+                      numero,
+                      area,
+                      subarea,
+                      areaId,
+                      subareaId,
+                      tipo,
+                      null,
+                      tarefas,
+                      user.uid,
+                      setDias,
+                      dias,
+                      diasSemana,
+                      diaVisualizado
+                    )
+                  }
+                  areas={areas}
+                />
+              )}
+            </li>
+          ))}
       </ul>
-
 
       <h2>Finalizadas</h2>
       <ul>
-        {tarefas.filter(tarefa => tarefa.finalizada).map((tarefa, index) => (
-          <li key={tarefa.id} style={{ textDecoration: 'line-through' }}>
-            <Tarefa
-              tarefa={tarefa}
-              onEdit={() => setItemEditando(tarefa)}
-              onDelete={() => deleteItem(tarefa, 'tarefa', null, tarefas, user.uid, setDias, dias, diaVisualizado)}
-              onToggle={() => toggleFinalizada(tarefa.id, 'tarefa', tarefas, null, setPontuacoes, user.uid, diaVisualizado, dias, setDias)}
-              areas={areas}
-              onMove={(itemId, direction) => moveItem(itemId, direction, user.uid, tarefas, setDias, dias)}
-            />
-
-{itemEditando && itemEditando === tarefa && (
-              <EditorItem
-                item={itemEditando}
-                tipo={"tarefa"}
-                setItemEditando={setItemEditando}
-                onSave={(nome, numero, area, subarea, areaId, subareaId, diasSemana) => updateItem(itemEditando.id, nome, numero, area, subarea, areaId, subareaId, 'tarefa', null, tarefas, user.uid, setDias, dias, diasSemana, diaVisualizado)}
+        {tarefas
+          .filter((tarefa) => tarefa.finalizada)
+          .map((tarefa, index) => (
+            <li key={tarefa.id} style={{ textDecoration: "line-through" }}>
+              <Tarefa
+                tarefa={tarefa}
+                onEdit={() => setItemEditando(tarefa)}
+                onDelete={() =>
+                  deleteItem(
+                    tarefa,
+                    "tarefa",
+                    null,
+                    tarefas,
+                    user.uid,
+                    setDias,
+                    dias,
+                    diaVisualizado
+                  )
+                }
+                onToggle={() =>
+                  toggleFinalizada(
+                    tarefa.id,
+                    "tarefa",
+                    tarefas,
+                    null,
+                    setPontuacoes,
+                    user.uid,
+                    diaVisualizado,
+                    dias,
+                    setDias
+                  )
+                }
                 areas={areas}
+                onMove={(item, direction) =>
+                  moveItem(
+                    item,
+                    direction,
+                    user.uid,
+                    tarefas,
+                    setDias,
+                    dias,
+                    diaVisualizado
+                  )
+                }
               />
-            )}
-          </li>
-        ))}
+
+              {itemEditando && itemEditando === tarefa && (
+                <EditorItem
+                  item={itemEditando}
+                  tipo={"tarefa"}
+                  setItemEditando={setItemEditando}
+                  onSave={(
+                    nome,
+                    numero,
+                    area,
+                    subarea,
+                    areaId,
+                    subareaId,
+                    diasSemana
+                  ) =>
+                    updateItem(
+                      itemEditando.id,
+                      nome,
+                      numero,
+                      area,
+                      subarea,
+                      areaId,
+                      subareaId,
+                      "tarefa",
+                      null,
+                      tarefas,
+                      user.uid,
+                      setDias,
+                      dias,
+                      diasSemana,
+                      diaVisualizado
+                    )
+                  }
+                  areas={areas}
+                />
+              )}
+            </li>
+          ))}
       </ul>
     </div>
   );

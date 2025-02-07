@@ -130,7 +130,7 @@ const ListaModal = ({ listas, user, lista, onClose, setListasLocal, updateListas
     <div className="modal">
       <CabecalhoListaModal lista={lista} onSave={handleSaveLista} areas={areas}/>
 
-      <FormAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas} />
+      <FormAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas} areas={areas} />
       <button onClick={() => handleResetar(lista)}>Resetar checklists</button>
       <ul>
         {lista.itens && lista.itens.map((item, index) => (

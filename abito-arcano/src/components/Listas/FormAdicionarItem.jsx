@@ -1,45 +1,60 @@
-import React, { useState } from 'react';
-import { updateLocalList } from './listaUtils';
-import { v4 as uuidv4 } from 'uuid';
-import InputAdicionarNome from '../componentes/inputs/InputAdicionarNome/InputAdicionarNome'
+import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import InputAdicionarNome from "../componentes/inputs/InputAdicionarNome/InputAdicionarNome";
+import { buscarIdsAreaESubarea, updateItem } from "../todoUtils";
+import {
+  Button,
+  NativeSelectField,
+  NativeSelectRoot,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectRoot,
+  SelectTrigger,
+  SelectValueText,
+  HStack,
+} from "@chakra-ui/react";
 
-const FormAdicionarItem = ({ listas, user, lista, setListasLocal, updateListas, listaAninhada = null }) => {
-  const [nomeNovoItem, setNomeNovoItem] = useState('');
-  const [tipoItem, setTipoItem] = useState('checklist');
-  const [listaLocal, setListaLocal] = useState(lista);
+const FormAdicionarItem = ({
+  user,
+  listas,
+  lista,
+  setListasLocal,
+  updateListas,
+  listaAninhada = null,
+  isTarefas = false, // Flag para determinar o ambiente
+  tarefa,
+  setItems,
+  dias,
+  setDias,
+  diaVisualizado,
+  areas,
+}) => {
+  const [nomeNovoItem, setNomeNovoItem] = useState("");
+  const [tipoItem, setTipoItem] = useState("checklist");
 
-  /*const handleAddItem = () => {
-    if (nomeNovoItem.trim()) {
-      let novoChecklistItem;
-
-      if (tipoItem === 'checklist') {
-        novoChecklistItem = {
-          id: uuidv4(),
-          nome: nomeNovoItem,
-          completed: false,
-          tipo: 'checklist',
-        };
-      } else if (tipoItem === 'paragrafo') {
-        novoChecklistItem = {
-          id: uuidv4(),
-          nome: nomeNovoItem,
-          tipo: 'paragrafo',
-        };
-      } else if (tipoItem === 'lista') {
-        novoChecklistItem = {
-          id: uuidv4(),
-          nome: nomeNovoItem,
-          tipo: 'lista',
-          itens: [],
-        };
-      }
-
-      updateListas(user.uid, lista.id, listas, setListasLocal, novoChecklistItem);
-      const listaAtualizada = updateLocalList(listaLocal, novoChecklistItem, null);
-      setListaLocal(listaAtualizada);
-      setNomeNovoItem('');
+  const addNestedItemToTask = (tarefa, targetId, novoItem) => {
+    if (tarefa.id === targetId) {
+      return {
+        ...tarefa,
+        itens: [...(tarefa.itens || []), novoItem],
+      };
     }
-  };*/
+
+    if (tarefa.itens && tarefa.itens.length > 0) {
+      const itensAtualizados = tarefa.itens.map((subItem) =>
+        addNestedItemToTask(subItem, targetId, novoItem)
+      );
+
+      return {
+        ...tarefa,
+        itens: itensAtualizados,
+      };
+    }
+
+    return tarefa;
+  };
 
   const addItemToList = (lista, targetId, novoItem) => {
     if (lista.id === targetId) {
@@ -48,57 +63,122 @@ const FormAdicionarItem = ({ listas, user, lista, setListasLocal, updateListas, 
         itens: [...(lista.itens || []), novoItem],
       };
     }
-  
+
     if (lista.itens && lista.itens.length > 0) {
       return {
         ...lista,
-        itens: lista.itens.map((subItem) => addItemToList(subItem, targetId, novoItem)),
+        itens: lista.itens.map((subItem) =>
+          addItemToList(subItem, targetId, novoItem)
+        ),
       };
     }
-  
+
     return lista;
   };
 
-  const handleAddItem = () => {
-
+  const handleAddItem = async () => {
     if (nomeNovoItem.trim()) {
+      const { areaId, subareaId } = await buscarIdsAreaESubarea(
+        areas,
+        "SEM CATEGORIA",
+        ""
+      );
 
       const novoChecklistItem = {
         id: uuidv4(),
         nome: nomeNovoItem,
-        completed: tipoItem === 'checklist' ? false : undefined,
-        tipo: tipoItem,
-        itens: tipoItem === 'lista' ? [] : undefined,
+        numero: 1,
+        area: "SEM CATEGORIA",
+        subarea: "",
+        areaId,
+        subareaId,
+        diasSemana: [1, 2, 3, 4, 5, 6, 7],
+        //completed: tipoItem === "checklist" ? false : undefined,
+        finalizada: tipoItem === "checklist" || "tarefa" ? false : undefined,
+        tipo: isTarefas ? "tarefa" : tipoItem,
+        itens: tipoItem === "lista" ? [] : null,
       };
 
+      const novoItem = {
+        //
+      };
 
-      let listaAtualizada;
+      if (isTarefas) {
+        console.log("lista daqui");
+        console.log(lista);
 
-      if (listaAninhada) {
-        listaAtualizada = addItemToList(lista, listaAninhada.id, novoChecklistItem);
-      } else {
-        listaAtualizada = addItemToList(lista, lista.id, novoChecklistItem);
+        console.log("tarefa");
+        console.log(tarefa);
+        const tarefaAtualizada = addNestedItemToTask(
+          tarefa,
+          tarefa.id,
+          novoChecklistItem
+        );
+
+        console.log("tarefaAtualizada");
+        console.log(tarefaAtualizada);
+        await updateItem(
+          tarefaAtualizada.id,
+          tarefaAtualizada.nome,
+          tarefaAtualizada.numero,
+          tarefaAtualizada.area,
+          tarefaAtualizada.subarea,
+          tarefaAtualizada.areaId,
+          tarefaAtualizada.subareaId,
+          tarefaAtualizada.tipo,
+          setItems,
+          lista,
+          user.uid,
+          setDias,
+          dias,
+          tarefaAtualizada.diasSemana,
+          diaVisualizado,
+          tarefaAtualizada
+        );
+      } else if (listas) {
+        let listaAtualizada;
+
+        if (listaAninhada) {
+          listaAtualizada = addItemToList(
+            lista,
+            listaAninhada.id,
+            novoChecklistItem
+          );
+        } else {
+          listaAtualizada = addItemToList(lista, lista.id, novoChecklistItem);
+        }
+
+        console.log("Lista Principal Atualizada:", listaAtualizada);
+
+        updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
       }
 
-      console.log("Lista Principal Atualizada:", listaAtualizada);
-
-      updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
-
-      setNomeNovoItem('');
+      setNomeNovoItem("");
     }
   };
 
   return (
-    <div>
-      <InputAdicionarNome placeholder="Adicionar item" nomeNovo={nomeNovoItem} setNomeNovo={setNomeNovoItem} handleAddItem={handleAddItem} />
+    <HStack spacing={3} align="stretch" width="100%" alignItems="center">
+      <InputAdicionarNome
+        placeholder="Adicionar item"
+        nomeNovo={nomeNovoItem}
+        setNomeNovo={setNomeNovoItem}
+        handleAddItem={handleAddItem}
+      />
 
-      <select value={tipoItem} onChange={(e) => setTipoItem(e.target.value)}>
-        <option value="checklist">Checklist</option>
-        <option value="paragrafo">Parágrafo</option>
-        <option value="lista">Lista</option>
-      </select>
-      <button onClick={handleAddItem}>Adicionar Item</button>
-    </div>
+      <NativeSelectRoot size="sm" width="140px">
+        <NativeSelectField onChange={(e) => setTipoItem(e.target.value)}>
+          <option value="tarefa">Tarefa</option>
+          <option value="checklist">Checklist</option>
+          <option value="paragrafo">Parágrafo</option>
+          <option value="lista">Lista</option>
+        </NativeSelectField>
+      </NativeSelectRoot>
+
+      <Button onClick={handleAddItem} size="xs">
+        Adicionar Item
+      </Button>
+    </HStack>
   );
 };
 

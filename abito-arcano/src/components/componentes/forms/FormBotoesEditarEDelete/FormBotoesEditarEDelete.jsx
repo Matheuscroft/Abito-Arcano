@@ -1,30 +1,61 @@
-import React, { useState } from 'react';
-import './FormBotoesEditarEDelete.css';
+import React, { useState } from "react";
+import "./FormBotoesEditarEDelete.css";
+import {
+  Button,
+  Icon,
+  IconButton,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuRoot,
+  MenuTrigger,
+} from "@chakra-ui/react";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 const FormBotoesEditarEDelete = ({ item, onEdit, onDelete, index }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setIsOpen(!isOpen);
   };
 
   return (
-    <div className='form-item-lista-div'>
-      {item && index !== undefined && (
-        <>
-          {/* Botão de três pontos */}
-          <button onClick={toggleMenu} className="menu-button">⋮</button>
-          
-          {/* Modal de menu com os botões de edição e exclusão */}
-          {isMenuOpen && (
-            <div className="menu-modal">
-              <button onClick={() => { onEdit(index, -1); toggleMenu(); }}>Editar</button>
-              <button className='form-botoes-editar-delete-button-delete' onClick={() => { onDelete(item.id, { listaId: item.id }); toggleMenu(); }}>Excluir</button>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+    <MenuRoot isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <MenuTrigger asChild>
+        <Button
+          variant="ghost"
+          onClick={() => setIsOpen(!isOpen)}
+          as={IconButton}
+          aria-label="Opções"
+          size="xs"
+        >
+          <Icon color="pink.700">
+            <BsThreeDotsVertical color="pink.700" />
+          </Icon>
+        </Button>
+      </MenuTrigger>
+      <MenuContent>
+        <MenuItem
+        value="editar"
+          onClick={() => {
+            onEdit(index, -1);
+            setIsOpen(false);
+          }}
+        >
+          Editar
+        </MenuItem>
+        <MenuItem
+        value="excluir"
+          onClick={() => {
+            onDelete(item.id, { listaId: item.id });
+            setIsOpen(false);
+          }}
+          color="red.500"
+        >
+          Excluir
+        </MenuItem>
+      </MenuContent>
+    </MenuRoot>
   );
 };
 

@@ -1,7 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { resetPontuacao, getPontuacoes, updatePontuacoes } from '../auth/firebasePontuacoes.js';
+import React, { useState, useEffect } from "react";
+import {
+  resetPontuacao,
+  getPontuacoes,
+  updatePontuacoes,
+} from "../auth/firebasePontuacoes.js";
+import { Box, Button, ButtonGroup, Card, Flex, Text } from "@chakra-ui/react";
 
-function BarraPontuacoes({ pontuacoes, setPontuacoes, areas, setAreas, resetarListaPontuacoes, user, resetarListaAreas }) {
+function BarraPontuacoes({
+  pontuacoes,
+  setPontuacoes,
+  areas,
+  setAreas,
+  resetarListaPontuacoes,
+  user,
+  resetarListaAreas,
+}) {
   const [mostrarSubareas, setMostrarSubareas] = useState(false);
 
   useEffect(() => {
@@ -15,18 +28,18 @@ function BarraPontuacoes({ pontuacoes, setPontuacoes, areas, setAreas, resetarLi
 
   const calcularPontuacaoTotal = (pontuacoes, areaId, subareaId = null) => {
     if (!Array.isArray(pontuacoes)) {
-      console.error('Pontuações inválidas:', pontuacoes);
+      console.error("Pontuações inválidas:", pontuacoes);
       return 0;
     }
-  
+
     let total = 0;
-  
-    pontuacoes.forEach(pontuacao => {
+
+    pontuacoes.forEach((pontuacao) => {
       if (pontuacao && Array.isArray(pontuacao.areas)) {
-        pontuacao.areas.forEach(area => {
+        pontuacao.areas.forEach((area) => {
           if (area.areaId === areaId) {
             if (subareaId) {
-              area.subareas.forEach(subarea => {
+              area.subareas.forEach((subarea) => {
                 if (subarea.subareaId === subareaId) {
                   total += subarea.pontos;
                 }
@@ -38,91 +51,133 @@ function BarraPontuacoes({ pontuacoes, setPontuacoes, areas, setAreas, resetarLi
         });
       }
     });
-  
+
     return total;
   };
-  
-  
-  
-  
 
   const resetPontuacaoAreas = async () => {
-    let currentPontuacoes = await getPontuacoes(user.uid); 
+    let currentPontuacoes = await getPontuacoes(user.uid);
 
-    const updatedPontuacoes = currentPontuacoes.map(pontuacao => ({
+    const updatedPontuacoes = currentPontuacoes.map((pontuacao) => ({
       ...pontuacao,
-      areas: pontuacao.areas.map(area => ({
+      areas: pontuacao.areas.map((area) => ({
         ...area,
-        pontos: 0
-      }))
+        pontos: 0,
+      })),
     }));
 
-    await updatePontuacoes(user.uid, updatedPontuacoes); 
+    await updatePontuacoes(user.uid, updatedPontuacoes);
     setPontuacoes(updatedPontuacoes);
   };
 
   const resetPontuacaoSubareas = async () => {
-    let currentPontuacoes = await getPontuacoes(user.uid); 
+    let currentPontuacoes = await getPontuacoes(user.uid);
 
-    const updatedPontuacoes = currentPontuacoes.map(pontuacao => ({
+    const updatedPontuacoes = currentPontuacoes.map((pontuacao) => ({
       ...pontuacao,
-      areas: pontuacao.areas.map(area => ({
+      areas: pontuacao.areas.map((area) => ({
         ...area,
-        subareas: area.subareas.map(subarea => ({
+        subareas: area.subareas.map((subarea) => ({
           ...subarea,
-          pontos: 0
-        }))
-      }))
+          pontos: 0,
+        })),
+      })),
     }));
 
-    await updatePontuacoes(user.uid, updatedPontuacoes); 
+    await updatePontuacoes(user.uid, updatedPontuacoes);
     setPontuacoes(updatedPontuacoes);
   };
 
   return (
-    <div>
-      <div>
-      <button onClick={resetarListaPontuacoes}>Resetar Lista de Pontuações</button>
-        <button onClick={resetPontuacaoAreas}>Resetar Pontuação das Áreas</button>
-        <button onClick={resetPontuacaoSubareas}>Resetar Pontuação das Subáreas</button>
-        <button onClick={resetarListaAreas}>Resetar Lista das Áreas</button>
-      </div>
-      <div className="barra-pontuacoes">
+    <Box>
+      <ButtonGroup size="sm" variant="outline" mb={4}>
+        <Button size="xs" onClick={resetarListaPontuacoes}>
+          Resetar Lista de Pontuações
+        </Button>
+        <Button size="xs" onClick={resetPontuacaoAreas}>
+          Resetar Pontuação das Áreas
+        </Button>
+        <Button size="xs" onClick={resetPontuacaoSubareas}>
+          Resetar Pontuação das Subáreas
+        </Button>
+        <Button size="xs" onClick={resetarListaAreas}>
+          Resetar Lista das Áreas
+        </Button>
+      </ButtonGroup>
+
+      <Flex wrap="wrap" gap="10px" mb="20px">
         {areas && Array.isArray(areas) && areas.length > 0 ? (
           areas.map((area) => (
-            <div key={area.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
-              <div>{area.nome}</div>
-              <div>{calcularPontuacaoTotal(pontuacoes, area.id)}</div>
-            </div>
+            <Card.Root
+              key={area.id}
+              bg={area.cor}
+              color="white"
+              flex="0 1 120px"
+              height="100px"
+            >
+              {" "}
+              <Card.Body
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                textAlign="center"
+              >
+                <Text fontWeight="bold" fontSize="sm">
+                  {area.nome}
+                </Text>
+                <Text fontSize="sm">
+                  {calcularPontuacaoTotal(pontuacoes, area.id)}
+                </Text>
+              </Card.Body>
+            </Card.Root>
           ))
         ) : (
           <p>Carregando áreas...</p>
         )}
-      </div>
+      </Flex>
 
-      <button onClick={() => setMostrarSubareas(!mostrarSubareas)}>
-        {mostrarSubareas ? 'Esconder Subáreas' : 'Mostrar Subáreas'}
-      </button>
+      <Button onClick={() => setMostrarSubareas(!mostrarSubareas)} mt={4} mb={4}>
+        {mostrarSubareas ? "Esconder Subáreas" : "Mostrar Subáreas"}
+      </Button>
 
       {mostrarSubareas && (
-        <div className="barra-pontuacoes">
+        <Flex direction="row" wrap="wrap" gap="10px" mt={4}>
           {areas && Array.isArray(areas) && areas.length > 0 ? (
-            areas.map((area) => (
-              <div key={area.id} style={{ marginBottom: '10px', display: 'flex' }}>
-                {area.subareas.map((subarea) => (
-                  <div key={subarea.id} className="card-pontuacao" style={{ backgroundColor: area.cor }}>
-                    <div>{subarea.nome}</div>
-                    <div>{calcularPontuacaoTotal(pontuacoes, area.id, subarea.id)}</div>
-                  </div>
-                ))}
-              </div>
-            ))
+            areas.map((area) =>
+              area.subareas.map((subarea) => (
+                <Card.Root
+                  key={subarea.id}
+                  bg={area.cor}
+                  color="white"
+                  flex="0 1 120px"
+                  height="100px"
+                  overflow="hidden"
+                >
+                  <Card.Body
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="flex-start"
+                    textAlign="center"
+                    
+                  >
+                    <Text fontWeight="bold" fontSize="xs" isTruncated>
+                      {subarea.nome}
+                    </Text>
+                    <Text fontSize="sm">
+                      {calcularPontuacaoTotal(pontuacoes, area.id, subarea.id)}
+                    </Text>
+                  </Card.Body>
+                </Card.Root>
+              ))
+            )
           ) : (
-            <p>Carregando subáreas...</p>
+            <Text>Carregando subáreas...</Text>
           )}
-        </div>
+        </Flex>
       )}
-    </div>
+    </Box>
   );
 }
 

@@ -6,10 +6,11 @@ import ListaAtividades from '../../ListaAtividades.jsx';
 import Diarias from './Diarias.jsx';
 import { useNavigate } from 'react-router-dom';
 import { getAreas, updateAreas } from '../../../auth/firebaseAreaSubarea.js';
-import { corrigirDiasDuplicados, getDias } from '../../../auth/firebaseDiasHoras.js';
+import { getDias } from '../../../auth/firebaseDiasHoras.js';
 import { v4 as uuidv4 } from 'uuid';
 
 import { getUsuarios } from '../../../services/api.js';
+import { Heading } from '@chakra-ui/react';
 
 function ToDoList({ user }) {
   const [atividades, setAtividades] = useState([]);
@@ -32,10 +33,6 @@ function ToDoList({ user }) {
     console.log(atividades)
   }, [atividades]);*/
 
-  const att = async () =>
-  {
-    //await corrigirDiasDuplicados(user.uid);
-  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -213,8 +210,7 @@ function ToDoList({ user }) {
 
   return (
     <div>
-      <h1>To-Do List</h1>
-      <button onClick={att}>CORRIGIR</button>
+      <Heading mt={4}>To-Do List</Heading>
 
       <BarraPontuacoes pontuacoes={pontuacoes} setPontuacoes={setPontuacoes} areas={areas} setAreas={setAreas} resetarListaPontuacoes={() => resetarListaPontuacoes(user, areas, dias)} user={user} resetarListaAreas={() => resetarListaAreas(user.uid)} />
 

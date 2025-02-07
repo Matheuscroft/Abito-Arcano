@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './listas.css';
+import SelectTipoItem from './selects/select-tipo-item/SelectTipoItem';
+import { Box, Button, Heading, HStack, Input } from '@chakra-ui/react';
 
 function EditorItemLista({ item, onSave, setItemEditando }) {
     const [nome, setNome] = useState(item.nome);
@@ -18,23 +20,24 @@ function EditorItemLista({ item, onSave, setItemEditando }) {
 
 
     return (
-        <div className='editor-item-lista-div'>
-            <h4>Editar Item</h4>
-            <input
+        <Box p="6">
+            <Heading>Editar Item</Heading>
+            <HStack>
+            <Input
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder={`Digite o nome da `}
+                width="150px"
+                size="xs"
             />
-            <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-                <option value="">Selecione um tipo</option>
-                <option value="checklist">Checklist</option>
-                <option value="texto">Texto</option>
-                <option value="lista">Lista</option>
-            </select>
 
-            <button onClick={handleSave}>Salvar</button>
-        </div>
+            <SelectTipoItem tipo={tipo} setTipo={setTipo}/>
+
+            <Button size="xs" onClick={handleSave} >Salvar</Button>
+            <Button size="xs" onClick={() => setItemEditando(false)} variant="outline" colorPalette="red">Cancelar</Button>
+            </HStack>
+        </Box>
     );
 }
 

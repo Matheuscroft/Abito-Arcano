@@ -1,69 +1,263 @@
-import React, { useEffect, useState } from 'react';
-import './ItemLista.css'
-import FormAdicionarItem from './FormAdicionarItem';
-import ItemLista from './ItemLista';
-import EditorItemLista from './EditorItemLista';
+"use client";
 
-const ListaAninhada = ({ listas, user, item, lista, onToggle, setListasLocal, updateListas, index, onSave, onDelete, onMove }) => {
+import React, { useEffect, useState } from "react";
+import "./ItemLista.css";
+import FormAdicionarItem from "./FormAdicionarItem";
+import ItemLista from "./ItemLista";
+import EditorItemLista from "./EditorItemLista";
+import { setarCorAreaETexto } from "../utils";
+import { toggleFinalizada } from "../todoUtils";
 
-  const [itemEditando, setItemEditando] = useState()
+import {
+  Stack,
+  Text,
+  Box,
+  Flex,
+  Badge,
+  IconButton,
+  Button,
+  Center,
+  Icon,
+} from "@chakra-ui/react";
+import { Checkbox } from "../ui/checkbox";
+import { FaClipboardList, FaPlus } from "react-icons/fa6";
 
- /* useEffect(() => {
+const ListaAninhada = ({
+  listas,
+  user,
+  item,
+  lista,
+  onToggle,
+  setListasLocal,
+  updateListas,
+  index,
+  onSave,
+  onDelete,
+  onMove,
+  areas,
+  isTarefas = null,
+  tarefa = null,
+  setItems = null,
+  dias = null,
+  setDias = null,
+  diaVisualizado = null,
+  setPontuacoes,
+}) => {
+  const [itemEditando, setItemEditando] = useState();
+  const [corArea, setCorArea] = useState("#000");
+  const [corTexto, setCorTexto] = useState("#fff");
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isIndeterminate, setIsIndeterminate] = useState(false);
+
+  useEffect(() => {
+    if (Array.isArray(areas) && item.areaId) {
+      setarCorAreaETexto(item, areas, setCorArea, setCorTexto);
+    } else {
+      console.log("areas não é um array ou item não possui areaId");
+    }
+  }, [item.areaId, areas]);
+
+  /* useEffect(() => {
     console.log("Estado atualizadOOOOOO - item:");
     console.log(item)
   }, [item]);*/
 
+  useEffect(() => {
+    if (item.itens && item.itens.length > 0) {
+      const completedItems = item.itens.filter(
+        (subItem) => subItem.finalizada || subItem.completed
+      ).length;
+
+      setIsIndeterminate(
+        completedItems > 0 && completedItems < item.itens.length
+      );
+    }
+  }, [item.itens]);
+
+  const handleToggleLista = async (lista, itemId) => {
+    console.log("lista handleToggleLista");
+    console.log(lista);
+    console.log("itemId handleToggleLista");
+    console.log(itemId);
+
+    const listaAtualizada = {
+      ...lista,
+      itens: findAndToggleItem(lista.itens, itemId),
+    };
+
+    console.log("listaAtualizada");
+    console.log(listaAtualizada);
+
+    await toggleFinalizada(
+      itemId,
+      "lista",
+      lista.itens,
+      null,
+      setPontuacoes,
+      user.uid,
+      diaVisualizado,
+      dias,
+      setDias,
+      lista.id
+    );
+
+    //updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
+  };
+
+  const findAndToggleItem = (itens, targetId, toggleState) => {
+    return itens.map((item) => {
+      if (item.id === targetId) {
+        const newCompletedState =
+          toggleState !== undefined ? toggleState : !item.finalizada;
+        return {
+          ...item,
+          finalizada: newCompletedState,
+          itens: item.itens
+            ? findAndToggleItem(item.itens, null, newCompletedState)
+            : item.itens,
+        };
+      } else if (item.itens) {
+        const updatedSubItems = findAndToggleItem(
+          item.itens,
+          targetId,
+          toggleState
+        );
+        const allSubItemsCompleted = updatedSubItems.every(
+          (subItem) => subItem.finalizada
+        );
+        return {
+          ...item,
+          finalizada: allSubItemsCompleted,
+          itens: updatedSubItems,
+        };
+      }
+      return item;
+    });
+  };
+
   return (
-    <div className='lista-aninhada'>
-      <label>
-        <input
-          type="checkbox"
-          checked={item.completed}
+    <Stack
+      spacing={2}
+      p={1}
+      border="2px solid coral"
+      borderRadius="md"
+      width="100%"
+    >
+      <Flex align="center" gap={3}>
+        <Checkbox
+          isChecked={item.completed}
           onChange={() => onToggle(lista, item.id)}
         />
-        <span style={{ textDecoration: item.completed ? 'line-through' : 'none' }}>
-          {item.nome}
-        </span>
-      </label>
-      <FormAdicionarItem listas={listas} user={user} lista={lista} setListasLocal={setListasLocal} updateListas={updateListas} listaAninhada={item} />
 
+        <Text
+          as="button"
+          fontWeight="bold"
+          fontSize="md"
+          color="blue.200"
+          _hover={{ textDecoration: "underline", cursor: "pointer" }}
+          onClick={() => console.log("Clicou no nome!")}
+        >
+          {item.nome}
+        </Text>
+
+        <Badge
+          bg={corArea}
+          color={corTexto}
+          px={2}
+          py={1}
+          borderRadius="md"
+          fontSize="sm"
+        >
+          +{item.numero} {item.area}
+        </Badge>
+
+        <Badge
+          bg={corArea}
+          color="white"
+          px={2}
+          py={1}
+          borderRadius="full"
+          fontSize="sm"
+        >
+          +1
+        </Badge>
+      </Flex>
+      <Flex align="center" gap={2} mt={1}>
+        <IconButton
+          size="xs"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="Adicionar Item"
+        >
+          <FaPlus />
+        </IconButton>
+
+        {isOpen && (
+          <FormAdicionarItem
+            listas={listas}
+            user={user}
+            lista={lista}
+            setListasLocal={setListasLocal}
+            updateListas={updateListas}
+            listaAninhada={item}
+            isTarefas={isTarefas}
+            tarefa={tarefa}
+            setItems={setItems}
+            dias={dias}
+            setDias={setDias}
+            diaVisualizado={diaVisualizado}
+            areas={areas}
+          />
+        )}
+      </Flex>
       <ul>
         {Array.isArray(item.itens) && item.itens.length === 0 ? (
-          <li>Lista vazia, adicione um item</li>
+          <Center flexDirection="column" py={4} color="gray.500">
+          <Icon as={FaClipboardList} boxSize={8} mb={2} />
+          <Text fontSize="md" fontWeight="medium">
+            Nenhum item adicionado
+          </Text>
+          <Text fontSize="sm">Clique no "+" para adicionar um item</Text>
+        </Center>
         ) : (
-          item.itens && item.itens.map((item, index) => (
-            <li key={item.id}>
+          item.itens &&
+          item.itens.map((subItem, index) => (
+            <li key={subItem.id}>
               <ItemLista
                 listas={listas}
                 user={user}
-                item={item}
+                item={subItem}
                 index={index}
                 lista={lista}
-                onEdit={() => setItemEditando(item)}
+                onEdit={() => setItemEditando(subItem)}
                 onDelete={onDelete}
-                onToggle={onToggle}
+                onToggle={() => handleToggleLista(item, subItem.id)}
                 onMove={onMove}
                 setListasLocal={setListasLocal}
                 updateListas={updateListas}
                 onSave={onSave}
+                isTarefas={isTarefas}
+                tarefa={tarefa}
+                setItems={setItems}
+                dias={dias}
+                setDias={setDias}
+                diaVisualizado={diaVisualizado}
+                setPontuacoes={setPontuacoes}
+                isAninhado={true}
               />
 
-              {itemEditando && itemEditando === item && (
+              {itemEditando && itemEditando === subItem && (
                 <EditorItemLista
                   item={itemEditando}
                   setItemEditando={setItemEditando}
                   onSave={(nome, tipo) => onSave(itemEditando, nome, tipo)}
                 />
               )}
-
             </li>
           ))
         )}
       </ul>
-
-
-
-    </div>
+    </Stack>
   );
 };
 
