@@ -15,7 +15,7 @@ import {
 } from "../../../auth/firebaseTarefas.js";
 import { getDias, inserirDias } from "../../../auth/firebaseDiasHoras.js";
 import ItemLista from "../../Listas/ItemLista.jsx";
-import { Button, HStack, Input, Text } from "@chakra-ui/react";
+import { Button, Heading, HStack, Input, Text } from "@chakra-ui/react";
 
 function ListaTarefas({
   user,
@@ -280,53 +280,62 @@ function ListaTarefas({
           ))}
       </ul>
 
-      <h2>Finalizadas</h2>
+      <Heading mt="6" mb="3">Finalizadas</Heading>
       <ul>
         {tarefas
           .filter((tarefa) => tarefa.finalizada)
           .map((tarefa, index) => (
             <li key={tarefa.id} style={{ textDecoration: "line-through" }}>
-              <Tarefa
-                tarefa={tarefa}
-                onEdit={() => setItemEditando(tarefa)}
-                onDelete={() =>
-                  deleteItem(
-                    tarefa,
-                    "tarefa",
-                    null,
-                    tarefas,
-                    user.uid,
-                    setDias,
-                    dias,
-                    diaVisualizado
-                  )
-                }
-                onToggle={() =>
-                  toggleFinalizada(
-                    tarefa.id,
-                    "tarefa",
-                    tarefas,
-                    null,
-                    setPontuacoes,
-                    user.uid,
-                    diaVisualizado,
-                    dias,
-                    setDias
-                  )
-                }
-                areas={areas}
-                onMove={(item, direction) =>
-                  moveItem(
-                    item,
-                    direction,
-                    user.uid,
-                    tarefas,
-                    setDias,
-                    dias,
-                    diaVisualizado
-                  )
-                }
-              />
+              <ItemLista
+                  user={user}
+                  item={tarefa}
+                  index={index}
+                  lista={tarefas}
+                  onEdit={() => setItemEditando(tarefa)}
+                  onDelete={() =>
+                    deleteItem(
+                      tarefa,
+                      "tarefa",
+                      null,
+                      tarefas,
+                      user.uid,
+                      setDias,
+                      dias,
+                      diaVisualizado
+                    )
+                  }
+                  onToggle={() =>
+                    encontrarItemEExecutar(
+                      tarefa,
+                      tarefas,
+                      null,
+                      setPontuacoes,
+                      user.uid,
+                      diaVisualizado,
+                      dias,
+                      setDias
+                    )
+                  }
+                  onMove={(item, direction) =>
+                    moveItem(
+                      item,
+                      direction,
+                      user.uid,
+                      tarefas,
+                      setDias,
+                      dias,
+                      diaVisualizado
+                    )
+                  }
+                  areas={areas}
+                  isTarefas={true}
+                  tarefa={tarefa}
+                  setItems={null}
+                  dias={dias}
+                  setDias={setDias}
+                  diaVisualizado={diaVisualizado}
+                  setPontuacoes={setPontuacoes}
+                />
 
               {itemEditando && itemEditando === tarefa && (
                 <EditorItem

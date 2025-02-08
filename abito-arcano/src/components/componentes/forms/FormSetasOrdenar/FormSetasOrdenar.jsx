@@ -5,8 +5,8 @@ import { IoChevronDownCircle, IoChevronUpCircle } from "react-icons/io5";
 import { LuSearch } from "react-icons/lu";
 const FormSetasOrdenar = ({ onMove, item, lista }) => {
   useEffect(() => {
-    console.log("CONSOLE LOG DO FORMSETASORDENAR. ITEM:");
-    console.log(item);
+    //console.log("CONSOLE LOG DO FORMSETASORDENAR. ITEM:");
+    //console.log(item);
   }, [item]);
 
   return (

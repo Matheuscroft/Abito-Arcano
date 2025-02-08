@@ -118,12 +118,15 @@ export const updateItem = async (
   diaVisualizado,
   tarefa
 ) => {
+
+  console.log("teste");
+  console.log(id);
   if (tipo === "atividade") {
     console.log("else, sou atividade");
 
     const atividadesAtualizadas = items.map((atividade) =>
       atividade.id === id
-        ? { ...atividade, nome, numero, area, subarea, areaId, subareaId }
+        ? { ...atividade, nome, numero, area, subarea, areaId, subareaId, tipo }
         : atividade
     );
 

@@ -73,7 +73,7 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
     console.log("item.diasSemana");
     console.log(item.diasSemana);
 
-    if (typeof item.diasSemana[0] === "string") {
+    if (item.diasSemana && typeof item.diasSemana[0] === "string") {
       console.log("entrei aoer");
       setDiasSemana((prevDias) => {
         return prevDias.filter((d) => typeof d !== "string");
@@ -107,7 +107,7 @@ function EditorItem({ item, onSave, tipo, setItemEditando, areas }) {
         tipoNovo
       );
     } else {
-      onSave(nome, numero, areaNome, nomeSubarea, areaId, subareaId);
+      onSave(nome, numero, areaNome, nomeSubarea, areaId, subareaId, "atividade");
     }
   };
 

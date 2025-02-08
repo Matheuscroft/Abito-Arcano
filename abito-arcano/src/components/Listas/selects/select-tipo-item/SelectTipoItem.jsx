@@ -5,6 +5,12 @@ import { Field, NativeSelectField, NativeSelectRoot } from "@chakra-ui/react";
 function SelectTipoItem({ tipo, setTipo }) {
   console.log("tipo q chegou");
   console.log(tipo);
+  if(tipo === undefined){
+    tipo = 'atividade'
+  }
+
+  console.log("tipo depois");
+  console.log(tipo);
 
   return (
     <NativeSelectRoot size="sm" width="100px">
@@ -18,6 +24,7 @@ function SelectTipoItem({ tipo, setTipo }) {
         <option value="checklist">Checklist</option>
         <option value="texto">Texto</option>
         <option value="lista">Lista</option>
+        <option value="atividade">Atividade</option>
       </NativeSelectField>
     </NativeSelectRoot>
   );
