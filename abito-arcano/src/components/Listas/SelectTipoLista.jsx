@@ -1,4 +1,5 @@
-import React from 'react';
+import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react";
+import React from "react";
 
 const SelectTipoLista = ({ tipo, setTipo, onSave }) => {
   const handleChange = (e) => {
@@ -10,11 +11,18 @@ const SelectTipoLista = ({ tipo, setTipo, onSave }) => {
   };
 
   return (
-    <select value={tipo} onChange={handleChange}>
-      <option value="lista">Lista</option>
-      <option value="treino">Treino</option>
-      <option value="checklist">Checklist</option>
-    </select>
+    <NativeSelectRoot size="sm" width="100px">
+      <NativeSelectField
+        placeholder="Selecione um tipo"
+        onChange={handleChange}
+        value={tipo}
+        width="100px"
+      >
+        <option value="lista">Lista</option>
+        <option value="treino">Treino</option>
+        <option value="checklist">Checklist</option>
+      </NativeSelectField>
+    </NativeSelectRoot>
   );
 };
 

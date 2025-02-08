@@ -2,38 +2,52 @@ import React, { useState, useEffect } from 'react';
 import InputAdicionarNome from '../componentes/inputs/InputAdicionarNome/InputAdicionarNome';
 import SelectTipoLista from './SelectTipoLista';
 import SelectAreaLista from './SelectAreaLista';
+import { Box, Button, Flex, Heading } from '@chakra-ui/react';
 
 const ListaForm = ({ addLista, areas }) => {
   const [nome, setNome] = useState('');
   const [tipo, setTipo] = useState('lista');
-  const [areaId, setAreaId] = useState(null);
+  const [area, setArea] = useState(["SEM CATEGORIA"]);
 
   useEffect(() => {
-    // Inicializa o areaId com a área "SEM CATEGORIA" ou o primeiro item das áreas
+    console.log("areassss do ")
+      console.log(areas)
     if (areas && areas.length > 0) {
       const areaSemCategoria = areas.find(area => area.nome === 'SEM CATEGORIA');
-      setAreaId(areaSemCategoria ? areaSemCategoria.id : areas[0].id);
+      setArea([areaSemCategoria?.nome || areas[0].nome]);
+
+      
+      console.log("areaSemCategoria do usetg")
+      console.log(areaSemCategoria)
+      console.log("area do usetg")
+      console.log(area)
     }
   }, [areas]);
 
   const handleSubmit = () => {
-    //e.preventDefault();
     if (nome.trim()) {
-      addLista({ nome, tipo, areaId });
+      console.log("area do submit")
+      console.log(area)
+      console.log("area[0][0]")
+      console.log(area[0][0])
+      addLista({ nome, tipo, area: area[0][0] });
       setNome('');
       setTipo('lista')
-      setAreaId(areas[0].id)
+      setArea(areas[0])
     }
   };
 
   return (
-    <div>
+    <Box mt={5}>
+      <Heading>Adicionar nova lista</Heading>
+    <Flex mt={5} gap={3}>
       <InputAdicionarNome placeholder="Nome da lista" nomeNovo={nome} setNomeNovo={setNome} handleAddItem={handleSubmit}/>
       <SelectTipoLista tipo={tipo} setTipo={setTipo}/>
-      <SelectAreaLista areaId={areaId} setAreaId={setAreaId} areas={areas}/>
+      <SelectAreaLista area={area} setArea={setArea} areas={areas}/>
       
-      <button onClick={handleSubmit}>Criar Lista</button>
-    </div>
+      <Button size="xs" variant="surface" onClick={handleSubmit}>Criar Lista</Button>
+    </Flex>
+    </Box>
   );
 };
 

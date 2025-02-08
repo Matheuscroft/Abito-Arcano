@@ -66,7 +66,10 @@ const Listas = ({ user }) => {
 
 
   const addLista = async (novaLista) => {
-    const novasListas = [...listas, { id: uuidv4(), ...novaLista, itens: [] }];
+    console.log("novaLista addLista")
+    console.log(novaLista)
+    const areaId = areas.find(area => area.nome === novaLista.area).id;
+    const novasListas = [...listas, { id: uuidv4(), ...novaLista, areaId, itens: [] }];
     setListasLocal(novasListas);
     await setListas(user.uid, novasListas);
   };

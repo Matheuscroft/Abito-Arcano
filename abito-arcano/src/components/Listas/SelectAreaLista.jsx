@@ -1,32 +1,47 @@
-import React, { useEffect } from 'react';
+"use client"
 
-const SelectAreaLista = ({ areaId, setAreaId, onSave, areas }) => {
+import { createListCollection } from "@chakra-ui/react"
+import {
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectRoot,
+  SelectTrigger,
+  SelectValueText,
+} from "@chakra-ui/react"
 
-  useEffect(() => {
-    console.log("Estado atualizado - areaId:", areaId);
-  }, [areaId]);
+const SelectAreaLista = ({ area, setArea, areas = [] }) => {
 
-  const handleChange = (e) => {
-    const novaAreaId = e.target.value;
-    setAreaId(novaAreaId); // Atualiza apenas o ID da área
-    if (onSave) {
-      onSave(novaAreaId); // Salva apenas o ID, não o objeto completo
-    }
-  };
+  
+  if (!areas.length) return null;
+
+  console.log("arearecebide")
+  console.log(area)
+
+  const areaCollection = createListCollection({
+    items: areas.map((a) => ({ label: a.nome, value: a.nome, cor: a.cor })),
+  })
 
   return (
-    <select value={areaId || ''} onChange={handleChange}>
-      {areas && areas.length > 0 ? (
-        areas.map((item) => (
-          <option key={item.id} value={item.id}>
-            {item.nome}
-          </option>
-        ))
-      ) : (
-        <option disabled>Não há áreas disponíveis</option>
-      )}
-    </select>
-  );
-};
+    <SelectRoot
+      collection={areaCollection}
+      width="180px"
+      value={area}
+      onValueChange={(e) => setArea([e.value])}
+      size="xs"
+    >
+      <SelectTrigger>
+        <SelectValueText placeholder={area[0] || "Selecione uma área"} />
+      </SelectTrigger>
+      <SelectContent>
+        {areaCollection.items.map((a) => (
+          <SelectItem key={a.value} item={a} style={{ backgroundColor: a.cor }}>
+            {a.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </SelectRoot>
+  )
+}
 
-export default SelectAreaLista;
+export default SelectAreaLista
