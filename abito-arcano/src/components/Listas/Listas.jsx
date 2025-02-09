@@ -9,6 +9,7 @@ import { updateListas } from './listaUtils';
 import { getAreas } from '../../auth/firebaseAreaSubarea';
 import FiltroAreasListas from './FiltroAreasListas';
 import FiltroTiposListas from './FiltroTiposListas';
+import { Box, Button, Flex } from '@chakra-ui/react';
 
 const Listas = ({ user }) => {
   const [listas, setListasLocal] = useState([]);
@@ -83,48 +84,6 @@ const Listas = ({ user }) => {
     await setListas(user.uid, novasListas);  // Atualiza o Firebase
   };
 
-  const reformarItensComTipo = async (listas) => {
-    // Percorre cada lista
-
-    console.log("listas entru")
-    console.log(listas)
-
-    const listasAtualizadas = listas.map((lista) => {
-
-      const itensReformados = lista.itens.map((item) => {
-        if (!item.tipo) {
-          let tipo;
-          tipo = "checklist"
-  
-  
-          return {
-            ...item,
-            tipo, 
-          };
-        }
-  
-        return item;
-      });
-
-      return {
-        ...lista,
-        itens: itensReformados
-      }
-
-    });
-
-
-    console.log("listasAtualizadas")
-    console.log(listasAtualizadas)
-
-    setListasLocal(listasAtualizadas); 
-
-    
-
-    await setListas(user.uid, listasAtualizadas);
-  
-    return listasAtualizadas;
-  };
 
   const handleFilterChange = (selectedAreas) => {
     if (selectedAreas.length === 0) {
@@ -264,12 +223,11 @@ const Listas = ({ user }) => {
   return (
     <div>
       <ListaForm addLista={addLista} areas={areas} />
-      <button onClick={() => reformarItensComTipo(listas)}>reformarItensComTipo</button>
 
       <FiltroAreasListas areas={areas} onFilterChange={handleFilterChange} />
       <FiltroTiposListas listas={listas} onFilterChangeTipo={handleFilterChangeTipo} />
 
-      <div className="listas-container">
+      <Flex wrap="wrap" gap={10}>
         {Array.isArray(filteredListas) && filteredListas.length > 0 ? (
           filteredListas.map((lista) => (
             <Lista
@@ -289,7 +247,7 @@ const Listas = ({ user }) => {
         ) : (
           <p>Nenhuma lista encontrada.</p>
         )}
-      </div>
+      </Flex>
 
       {selectedLista && (
         <ListaModal

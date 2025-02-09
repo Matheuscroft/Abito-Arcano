@@ -11,8 +11,6 @@ const CorDaArea = ({ areaId, areas }) => {
         height: '20px',
         borderRadius: '50%',
         backgroundColor: cor,
-        display: 'inline-block',
-        marginLeft: '10px'
       }}
     />
   );

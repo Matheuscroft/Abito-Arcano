@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Box, Button } from '@chakra-ui/react';
 
 const FiltroTiposListas = ({ listas, onFilterChangeTipo }) => {
   const [selectedTipos, setSelectedTipos] = useState([]);
@@ -21,25 +22,24 @@ const FiltroTiposListas = ({ listas, onFilterChangeTipo }) => {
   };
 
   return (
-    <div className="filtro-tipos-listas">
+    <Box my={5}>
       {tiposDisponiveis.map(tipo => (
-        <button
+        <Button
           key={tipo}
           onClick={() => toggleTipo(tipo)}
-          style={{
-            border: selectedTipos.includes(tipo) ? '2px solid #333' : '1px solid #ccc',
-            backgroundColor: selectedTipos.includes(tipo) ? '#333' : 'transparent',
-            color: selectedTipos.includes(tipo) ? '#fff' : '#000',
-            padding: '8px',
-            margin: '5px',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
+          border={selectedTipos.includes(tipo) ? '2px solid #333' : '1px solid #ccc'}
+          backgroundColor={selectedTipos.includes(tipo) ? '#333' : 'transparent'}
+          color={selectedTipos.includes(tipo) ? '#000' : '#fff'}
+          padding="8px"
+          margin="5px"
+          borderRadius="5px"
+          cursor="pointer"
+          _hover={{ opacity: 0.8 }}
         >
-          {tipo}
-        </button>
+          {tipo.toUpperCase()}
+        </Button>
       ))}
-    </div>
+    </Box>
   );
 };
 
