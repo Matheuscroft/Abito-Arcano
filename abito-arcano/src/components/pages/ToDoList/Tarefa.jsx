@@ -21,8 +21,6 @@ function Tarefa({
   const [corArea, setCorArea] = useState("#000");
   const [corTexto, setCorTexto] = useState("#fff");
 
-  const newPath = [...path, index];
-
   useEffect(() => {
     if (Array.isArray(areas) && tarefa.areaId) {
       setarCorAreaETexto(tarefa, areas, setCorArea, setCorTexto);

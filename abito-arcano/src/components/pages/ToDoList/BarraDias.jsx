@@ -80,13 +80,13 @@ const BarraDias = ({
     <div>
       <Heading>Dias</Heading>
       <ButtonGroup size="sm" variant="outline">
-        <Button size="xs" onClick={resetarListaDeDias}>
+        <Button size="xs" colorPalette="red" onClick={resetarListaDeDias}>
           Resetar Lista de Dias
         </Button>
-        <Button size="xs" onClick={resetarTarefasFuturas}>
+        <Button size="xs" colorPalette="red" onClick={resetarTarefasFuturas}>
           Resetar Tarefas Futuras
         </Button>
-        <Button size="xs" onClick={resetarDiaAtual}>
+        <Button size="xs" colorPalette="red" onClick={resetarDiaAtual}>
           Resetar Dia Atual
         </Button>
       </ButtonGroup>

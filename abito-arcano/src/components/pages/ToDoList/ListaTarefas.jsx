@@ -40,7 +40,7 @@ function ListaTarefas({
     try {
       const tarefasVazias = [];
       await substituirTarefasGerais(userId, tarefasVazias);
-      ////setTarefas(tarefasVazias)
+////setTarefas(tarefasVazias)
 
       const dias = await getDias(userId);
 
@@ -96,7 +96,7 @@ function ListaTarefas({
     dias,
     diaVisualizado
   ) => {
-    //Tarefas
+//Tarefas
     const tarefasGerais = await getListaTarefas(userId);
 
     const indexGeral = tarefasGerais.findIndex(
@@ -110,10 +110,11 @@ function ListaTarefas({
       tarefasGerais[indexGeral] = tarefasGerais[newIndexGeral];
       tarefasGerais[newIndexGeral] = tempGeral;
 
-      await substituirTarefasGerais(userId, tarefasGerais);
+      await substituirTarefasGerais(userId, tarefasGerais);//Dias
+
     }
 
-    //Dias
+//Dias
     const diasAtualizados = atualizarDias(
       dias,
       diaVisualizado,
@@ -150,6 +151,36 @@ function ListaTarefas({
     }
   };
 
+  const handleSave = async (
+    id,
+    nome,
+    numero,
+    area,
+    subarea,
+    areaId,
+    subareaId,
+    diasSemana,
+    tipo
+  ) => {
+    await updateItem(
+      id,
+      nome,
+      numero,
+      area,
+      subarea,
+      areaId,
+      subareaId,
+      tipo,
+      null,
+      tarefas,
+      user.uid,
+      setDias,
+      dias,
+      diasSemana,
+      diaVisualizado
+    );
+  };
+
   return (
     <div>
       <Text fontSize="2xl" fontWeight="bold" mb={4}>
@@ -180,7 +211,6 @@ function ListaTarefas({
           Adicionar Tarefa
         </Button>
       </HStack>
-
 
       <ul>
         {tarefas
@@ -255,7 +285,7 @@ function ListaTarefas({
                     diasSemana,
                     tipo
                   ) =>
-                    updateItem(
+                    handleSave(
                       itemEditando.id,
                       nome,
                       numero,
@@ -263,14 +293,8 @@ function ListaTarefas({
                       subarea,
                       areaId,
                       subareaId,
-                      tipo,
-                      null,
-                      tarefas,
-                      user.uid,
-                      setDias,
-                      dias,
                       diasSemana,
-                      diaVisualizado
+                      tipo
                     )
                   }
                   areas={areas}
@@ -327,6 +351,27 @@ function ListaTarefas({
                       diaVisualizado
                     )
                   }
+                  onSave={(
+                    nome,
+                    numero,
+                    area,
+                    subarea,
+                    areaId,
+                    subareaId,
+                    diasSemana
+                  ) =>
+                    handleSave(
+                      itemEditando.id,
+                      nome,
+                      numero,
+                      area,
+                      subarea,
+                      areaId,
+                      subareaId,
+                      diasSemana,
+                      "tarefa"
+                    )
+                  }
                   areas={areas}
                   isTarefas={true}
                   tarefa={tarefa}
@@ -351,7 +396,7 @@ function ListaTarefas({
                     subareaId,
                     diasSemana
                   ) =>
-                    updateItem(
+                    handleSave(
                       itemEditando.id,
                       nome,
                       numero,
@@ -359,14 +404,8 @@ function ListaTarefas({
                       subarea,
                       areaId,
                       subareaId,
-                      "tarefa",
-                      null,
-                      tarefas,
-                      user.uid,
-                      setDias,
-                      dias,
                       diasSemana,
-                      diaVisualizado
+                      "tarefa"
                     )
                   }
                   areas={areas}

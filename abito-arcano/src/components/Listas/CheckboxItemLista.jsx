@@ -1,12 +1,8 @@
 import React from "react";
-import FormItemLista from "../componentes/forms/FormItemLista/FormItemLista";
 import "./ItemLista.css";
-import ListaAninhada from "./ListaAninhada";
-import ParagrafoItemLista from "./ParagrafoItemLista";
-import Tarefa from "../pages/ToDoList/Tarefa";
 
+import { Flex, Text } from "@chakra-ui/react";
 import { Checkbox } from "../ui/checkbox";
-import { Text } from "@chakra-ui/react";
 
 const CheckboxItemLista = ({
   item,
@@ -15,24 +11,20 @@ const CheckboxItemLista = ({
 }) => {
 
   return (
-    <div>
-      {item.tipo === "checklist" && (
-        <label>
-          <Checkbox
-            checked={item.completed}
-            onCheckedChange={() => onToggle(lista, item.id)}
-            ms="6"
-          ></Checkbox>
-          <Text
-            as="span"
-            textDecoration={item.completed ? "line-through" : "none"}
-            ml={2}
-          >
-            {item.nome}
-          </Text>
-        </label>
-      )}
-    </div>
+    <Flex as="label" alignItems="center" width="100%">
+      <Checkbox
+        isChecked={item.completed}
+        onChange={() => onToggle(lista, item.id)}
+      />
+      <Text
+        as="span"
+        textDecoration={item.completed ? "line-through" : "none"}
+        ml={2}
+        flex="1"
+      >
+        {item.nome}
+      </Text>
+    </Flex>
   );
 };
 

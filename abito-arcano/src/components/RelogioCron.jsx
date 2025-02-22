@@ -89,10 +89,10 @@ const RelogioCron = ({ user, trocarDia }) => {
     </Flex>
 
       <ButtonGroup size="sm" variant="outline" mb={4}>
-        <Button size="xs" onClick={resetHoraTroca}>
+        <Button size="xs" colorPalette="red" onClick={resetHoraTroca}>
           Resetar Hora de Troca
         </Button>
-        <Button size="xs" onClick={trocarDia}>
+        <Button size="xs"  colorPalette="yellow" onClick={trocarDia}>
           Trocar Dia
         </Button>
       </ButtonGroup>
