@@ -31,7 +31,7 @@ function Tarefa({
 
   return (
     <Flex align="center" justify="space-between" width="100%">
-      <Flex align="center" gap={3} flex="1">
+      <Flex align="center" gap={3} flex="1" textDecoration={tarefa.finalizada ? 'line-through' : 'none'}>
         <Checkbox
           checked={tarefa.finalizada}
           onCheckedChange={onToggle}
@@ -43,6 +43,7 @@ function Tarefa({
           fontWeight="bold"
           fontSize="md"
           color="blue.200"
+          
           _hover={{ textDecoration: "underline", cursor: "pointer" }}
         >
           {tarefa.nome}
