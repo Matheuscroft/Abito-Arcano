@@ -121,30 +121,6 @@ const Listas = ({ user }) => {
     await setListas(user.uid, updatedListas);
   };
 
- /* const handleToggleItem = (lista, itemId) => {
-
-    console.log("to no handlet otggle")
-    const findAndToggleItem = (itens) => {
-      return itens.map(item => {
-        if (item.id === itemId) {
-          return { ...item, completed: !item.completed };
-        }
-        if (item.itens) {
-          return { ...item, itens: findAndToggleItem(item.itens) };
-        }
-        return item;
-      });
-    };
-
-    const listaAtualizada = {
-      ...lista,
-      itens: findAndToggleItem(lista.itens)
-    };
-
-    console.log("listaAtualizada", listaAtualizada);
-    updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
-  };*/
-
   const handleToggleItem = (lista, itemId) => {
     const findAndToggleItem = (itens, targetId, toggleState) => {
       console.log("entrei")
@@ -155,23 +131,23 @@ const Listas = ({ user }) => {
           console.log("if (item.id === targetId)")
           console.log("item.nome")
           console.log(item.nome)
-          // Inverte o estado de "completed" do item e propaga para todos os itens internos
-          const newCompletedState = toggleState !== undefined ? toggleState : !item.completed;
+          // Inverte o estado de "finalizada" do item e propaga para todos os itens internos
+          const newFinalizadaState = toggleState !== undefined ? toggleState : !item.finalizada;
           return {
             ...item,
-            completed: newCompletedState,
-            itens: item.itens ? findAndToggleItem(item.itens, null, newCompletedState) : item.itens
+            finalizada: newFinalizadaState,
+            itens: item.itens ? findAndToggleItem(item.itens, null, newFinalizadaState) : item.itens
           };
         } else if (item.itens) {
           console.log("else if")
           // Verifica se todos os itens internos estão marcados e ajusta o estado do item pai
           const updatedSubItems = findAndToggleItem(item.itens, targetId, toggleState);
-          const allSubItemsCompleted = updatedSubItems.every(subItem => subItem.completed);
+          const allSubItemsFinalizada = updatedSubItems.every(subItem => subItem.finalizada);
           console.log("updatedSubItems")
           console.log(updatedSubItems)
           return {
             ...item,
-            completed: allSubItemsCompleted,
+            finalizada: allSubItemsFinalizada,
             itens: updatedSubItems
           };
         }
@@ -191,19 +167,19 @@ const Listas = ({ user }) => {
 
   const handleResetar = async (lista) => {
     console.log(" lista:", lista);
-    const resetCompletedInItems = (itens) => {
+    const resetFinalizadaInItems = (itens) => {
       return itens.map(item => {
-        const itemResetado = { ...item, completed: false };
+        const itemResetado = { ...item, finalizada: false };
 
         if (item.itens && Array.isArray(item.itens)) {
-          itemResetado.itens = resetCompletedInItems(item.itens);
+          itemResetado.itens = resetFinalizadaInItems(item.itens);
         }
 
         return itemResetado;
       });
     };
 
-    const itensResetados = resetCompletedInItems(lista.itens);
+    const itensResetados = resetFinalizadaInItems(lista.itens);
 
     console.log("Itens Resetados:", itensResetados);
 

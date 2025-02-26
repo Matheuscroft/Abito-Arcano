@@ -233,7 +233,7 @@ export const updateLocalList = (listaLocal, novoItem = null, toggleItem = null, 
 
     if (!lista || !Array.isArray(lista.itens)) {
       console.error('Lista ou itens não definidos ou não é um array');
-      return lista; // Retorne a lista inalterada
+      return lista;
     }
 
     if (novoItem) {
@@ -246,7 +246,7 @@ export const updateLocalList = (listaLocal, novoItem = null, toggleItem = null, 
         ...lista,
         itens: lista.itens.map((item) =>
           item.id === toggleItem.id
-            ? { ...item, completed: !item.completed }
+            ? { ...item, finalizada: !item.finalizada }
             : item.itens
               ? { ...item, itens: atualizarLista(item).itens }
               : item

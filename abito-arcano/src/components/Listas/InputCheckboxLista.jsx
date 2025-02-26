@@ -4,9 +4,9 @@ import { Checkbox } from '../ui/checkbox';
 
 const InputCheckboxLista = ({ item, onToggle }) => {
   return (
-    <Flex alignItems="flex-start" mb={2} textDecoration={item.completed ? 'line-through' : 'none'}>
+    <Flex alignItems="flex-start" mb={2} textDecoration={item.finalizada ? 'line-through' : 'none'}>
       <Checkbox
-        isChecked={item.completed}
+        isChecked={item.finalizada}
         onChange={onToggle}
         colorScheme="pink"
         mr={2}

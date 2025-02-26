@@ -93,7 +93,6 @@ const FormAdicionarItem = ({
         areaId,
         subareaId,
         diasSemana: [1, 2, 3, 4, 5, 6, 7],
-        //completed: tipoItem === "checklist" ? false : undefined,
         finalizada: tipoItem === "checklist" || "tarefa" ? false : undefined,
         tipo: isTarefas ? "tarefa" : tipoItem,
         itens: tipoItem === "lista" ? [] : null,

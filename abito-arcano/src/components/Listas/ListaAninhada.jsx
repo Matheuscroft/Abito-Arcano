@@ -65,12 +65,12 @@ const ListaAninhada = ({
 
   useEffect(() => {
     if (item.itens && item.itens.length > 0) {
-      const completedItems = item.itens.filter(
-        (subItem) => subItem.finalizada || subItem.completed
+      const finalizadaItems = item.itens.filter(
+        (subItem) => subItem.finalizada || subItem.finalizada
       ).length;
 
       setIsIndeterminate(
-        completedItems > 0 && completedItems < item.itens.length
+        finalizadaItems > 0 && finalizadaItems < item.itens.length
       );
     }
   }, [item.itens]);
@@ -108,13 +108,13 @@ const ListaAninhada = ({
   const findAndToggleItem = (itens, targetId, toggleState) => {
     return itens.map((item) => {
       if (item.id === targetId) {
-        const newCompletedState =
+        const newFinalizadaState =
           toggleState !== undefined ? toggleState : !item.finalizada;
         return {
           ...item,
-          finalizada: newCompletedState,
+          finalizada: newFinalizadaState,
           itens: item.itens
-            ? findAndToggleItem(item.itens, null, newCompletedState)
+            ? findAndToggleItem(item.itens, null, newFinalizadaState)
             : item.itens,
         };
       } else if (item.itens) {
@@ -123,12 +123,12 @@ const ListaAninhada = ({
           targetId,
           toggleState
         );
-        const allSubItemsCompleted = updatedSubItems.every(
+        const allSubItemsFinalizada = updatedSubItems.every(
           (subItem) => subItem.finalizada
         );
         return {
           ...item,
-          finalizada: allSubItemsCompleted,
+          finalizada: allSubItemsFinalizada,
           itens: updatedSubItems,
         };
       }
@@ -146,7 +146,7 @@ const ListaAninhada = ({
     >
       <Flex align="center" gap={3}>
         <Checkbox
-          isChecked={item.completed}
+          isChecked={item.finalizada}
           onChange={() => onToggle(lista, item.id)}
         />
 

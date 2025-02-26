@@ -13,12 +13,12 @@ const CheckboxItemLista = ({
   return (
     <Flex as="label" alignItems="center" width="100%">
       <Checkbox
-        isChecked={item.completed}
+        isChecked={item.finalizada}
         onChange={() => onToggle(lista, item.id)}
       />
       <Text
         as="span"
-        textDecoration={item.completed ? "line-through" : "none"}
+        textDecoration={item.finalizada ? "line-through" : "none"}
         ml={2}
         flex="1"
       >

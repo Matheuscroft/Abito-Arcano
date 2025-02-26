@@ -612,18 +612,18 @@ const atualizarPontuacao = async (
 const findAndToggleItemAninhado = (itens, targetId, toggleState) => {
   return itens.map((item) => {
     if (item.id === targetId) {
-      const newCompletedState = toggleState !== undefined ? toggleState : !item.finalizada;
+      const newFinalizadaState = toggleState !== undefined ? toggleState : !item.finalizada;
       return {
         ...item,
-        finalizada: newCompletedState,
-        itens: item.itens ? findAndToggleItemAninhado(item.itens, null, newCompletedState) : item.itens,
+        finalizada: newFinalizadaState,
+        itens: item.itens ? findAndToggleItemAninhado(item.itens, null, newFinalizadaState) : item.itens,
       };
     } else if (item.itens) {
       const updatedSubItems = findAndToggleItemAninhado(item.itens, targetId, toggleState);
-      const allSubItemsCompleted = updatedSubItems.every((subItem) => subItem.finalizada);
+      const allSubItemsFinalizada = updatedSubItems.every((subItem) => subItem.finalizada);
       return {
         ...item,
-        finalizada: allSubItemsCompleted,
+        finalizada: allSubItemsFinalizada,
         itens: updatedSubItems,
       };
     }
