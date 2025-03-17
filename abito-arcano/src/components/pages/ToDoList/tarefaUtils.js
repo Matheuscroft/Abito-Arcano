@@ -14,7 +14,10 @@ export const buscarTarefaRecursivamente = (id, lista) => {
   export const expandirTarefa = (tarefaDia, tarefasGerais) => {
     const tarefaDetalhada = buscarTarefaRecursivamente(tarefaDia.id, tarefasGerais);
   
-    if (tarefaDetalhada.tipo === "lista") {
+    console.log("tarefaDetalhada");
+    console.log(tarefaDetalhada);
+
+    if (tarefaDetalhada !== null && tarefaDetalhada.tipo === "lista") {
       return {
         ...tarefaDetalhada,
         finalizada: tarefaDia.finalizada, 

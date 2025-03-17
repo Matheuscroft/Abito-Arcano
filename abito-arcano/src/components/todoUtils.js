@@ -218,7 +218,7 @@ export const deleteItem = async (
 };
 
 export const atualizarDias = (dias, diaVisualizado, operacao, item, direction = null) => {
-  
+
   const [diaVisStr, mesVisStr, anoVisStr] = diaVisualizado.split("/");
   const dataVisualizada = new Date(anoVisStr, mesVisStr - 1, diaVisStr);
   dataVisualizada.setHours(0, 0, 0, 0);
@@ -231,36 +231,39 @@ export const atualizarDias = (dias, diaVisualizado, operacao, item, direction = 
     dataDia.setHours(0, 0, 0, 0);
 
     if (dataDia >= dataVisualizada) {
-          
       switch (operacao) {
         case "adicionar":
           return {
             ...dia,
             tarefas: [...dia.tarefas, item],
           };
-      
+
         case "atualizar": {
           const diaSemana = dataDia.getDay() + 1;
-      
+
           console.log("dataDia DO DIA");
           console.log(dataDia);
-      
+
           const tarefasAtualizadas = dia.tarefas
             .filter(
               (tarefa) => tarefa.id !== item.id || diasSemanaSet.has(diaSemana)
             )
             .map((tarefa) => (tarefa.id === item.id ? item : tarefa));
-      
+
           if (
             diasSemanaSet.has(diaSemana) &&
             !tarefasAtualizadas.some((tarefa) => tarefa.id === item.id)
           ) {
             tarefasAtualizadas.push(item);
           }
-      
+
+          const tarefasComHierarquiaAtualizada = findAndUpdateItemInHierarchy(tarefasAtualizadas, item.id, item);
+
+          console.log("tarefasComHierarquiaAtualizada")
+          console.log(tarefasComHierarquiaAtualizada)
           return {
             ...dia,
-            tarefas: tarefasAtualizadas,
+            tarefas: tarefasComHierarquiaAtualizada,
           };
         }
 
@@ -274,8 +277,8 @@ export const atualizarDias = (dias, diaVisualizado, operacao, item, direction = 
             (tarefa) => tarefa.id === item.id
           );
 
-          console.log("index da nova")
-          console.log(index)
+          console.log("index da nova");
+          console.log(index);
 
           if (index < 0) return dia; // Item não encontrado
 
@@ -308,19 +311,69 @@ export const atualizarDias = (dias, diaVisualizado, operacao, item, direction = 
           }
           return dia;
         }
-      
+
         case "excluir":
           return {
             ...dia,
             tarefas: dia.tarefas.filter((tarefa) => tarefa.id !== item.id),
           };
-      
+
         default:
           return dia;
       }
     }
     return dia;
   });
+};
+
+const findAndUpdateItemAninhado = (itens, targetId, updatedItem) => {
+  return itens.map((item) => {
+    if (item.id === targetId) {
+      return {
+        ...item,
+        ...updatedItem,
+        itens: item.itens ? findAndUpdateItemAninhado(item.itens, null, updatedItem) : item.itens,
+      };
+    } else if (item.itens) {
+      const updatedSubItems = findAndUpdateItemAninhado(item.itens, targetId, updatedItem);
+      return {
+        ...item,
+        itens: updatedSubItems,
+      };
+    }
+    return item;
+  });
+};
+
+const findAndUpdateItemInHierarchy = (itens, targetId, updatedItem) => {
+  let found = false;
+
+  console.log("targetId do find and update")
+  console.log(targetId)
+
+  const updatedItens = itens.map((item) => {
+    if (item.id === targetId) {
+      console.log("item.id === targetId")
+      found = true;
+      return updatedItem;
+    } else if (item.itens) {
+      console.log("else if (item.itens)")
+      const updatedSubItems = findAndUpdateItemInHierarchy(item.itens, targetId, updatedItem);
+      if (updatedSubItems !== item.itens) {
+        found = true;
+        return {
+          ...item,
+          itens: updatedSubItems,
+        };
+      }
+    }
+    return item;
+  });
+  console.log("updatedItens desse carai")
+  console.log(updatedItens)
+  console.log("itens desse carai")
+  console.log(itens)
+  return found ? updatedItens : itens;
 };
 
 export const atualizarTarefasGerais = async (item, userId, operacao) => {
@@ -338,9 +391,7 @@ export const atualizarTarefasGerais = async (item, userId, operacao) => {
       break;
 
     case "atualizar":
-      tarefasGerais = tarefasGerais.map((tarefa) =>
-        tarefa.id === item.id ? item : tarefa
-      );
+      tarefasGerais = findAndUpdateItemInHierarchy(tarefasGerais, item.id, item);
       break;
 
     case "excluir":
@@ -348,7 +399,7 @@ export const atualizarTarefasGerais = async (item, userId, operacao) => {
       break;
 
     default:
-      throw new Error("Operação inválida. Use 'add', 'update' ou 'delete'.");
+      throw new Error("Operação inválida. Use 'adicionar', 'atualizar' ou 'excluir'.");
   }
 
   console.log(`Operação: ${operacao}`);
@@ -435,6 +486,22 @@ export const atualizarDiasLocalmenteENoFirebase = async (
     "atualizarDiasLocalmenteENoFirebase - Dias simplificados para o Firebase:",
     diasSimplificados
   );
+
+  // Verificação final antes de enviar para o Firestore
+  diasSimplificados.forEach((dia, diaIndex) => {
+    dia.tarefas.forEach((tarefa, tarefaIndex) => {
+      if (tarefa.id === undefined || tarefa.id === null) {
+        console.error(`Tarefa com ID inválido encontrada no dia ${diaIndex}, tarefa ${tarefaIndex}: ${JSON.stringify(tarefa)}`);
+      }
+      if (tarefa.itens) {
+        tarefa.itens.forEach((subItem, subItemIndex) => {
+          if (subItem.id === undefined || subItem.id === null) {
+            console.error(`SubItem com ID inválido encontrado no dia ${diaIndex}, tarefa ${tarefaIndex}, subItem ${subItemIndex}: ${JSON.stringify(subItem)}`);
+          }
+        });
+      }
+    });
+  });
 
   await inserirDias(userId, diasSimplificados);
 };

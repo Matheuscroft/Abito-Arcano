@@ -9,10 +9,7 @@ import {
   atualizarDiasLocalmenteENoFirebase,
   atualizarDias,
 } from "../../todoUtils.js";
-import {
-  getListaTarefas,
-  substituirTarefasGerais,
-} from "../../../auth/firebaseTarefas.js";
+import { getListaTarefas, substituirTarefasGerais } from "../../../auth/firebaseTarefas.js";
 import { getDias, inserirDias } from "../../../auth/firebaseDiasHoras.js";
 import ItemLista from "../../Listas/ItemLista.jsx";
 import { Button, Heading, HStack, Input, Text } from "@chakra-ui/react";
@@ -40,12 +37,8 @@ function ListaTarefas({
     try {
       const tarefasVazias = [];
       await substituirTarefasGerais(userId, tarefasVazias);
-////setTarefas(tarefasVazias)
 
       const dias = await getDias(userId);
-
-      console.log("dias");
-      console.log(dias);
 
       const diasAtualizados = dias.map((dia) => ({
         ...dia,
@@ -59,8 +52,6 @@ function ListaTarefas({
       console.log(diasAtualizados);
 
       atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
-
-      //setTarefasPorDia({});
 
       return { tarefas: tarefasVazias, dias: diasAtualizados };
     } catch (error) {
@@ -110,8 +101,7 @@ function ListaTarefas({
       tarefasGerais[indexGeral] = tarefasGerais[newIndexGeral];
       tarefasGerais[newIndexGeral] = tempGeral;
 
-      await substituirTarefasGerais(userId, tarefasGerais);//Dias
-
+      await substituirTarefasGerais(userId, tarefasGerais);
     }
 
 //Dias
@@ -259,6 +249,7 @@ function ListaTarefas({
                       diaVisualizado
                     )
                   }
+                  onSave={handleSave}
                   areas={areas}
                   isTarefas={true}
                   tarefa={tarefa}
@@ -351,27 +342,7 @@ function ListaTarefas({
                       diaVisualizado
                     )
                   }
-                  onSave={(
-                    nome,
-                    numero,
-                    area,
-                    subarea,
-                    areaId,
-                    subareaId,
-                    diasSemana
-                  ) =>
-                    handleSave(
-                      itemEditando.id,
-                      nome,
-                      numero,
-                      area,
-                      subarea,
-                      areaId,
-                      subareaId,
-                      diasSemana,
-                      "tarefa"
-                    )
-                  }
+                  onSave={handleSave}
                   areas={areas}
                   isTarefas={true}
                   tarefa={tarefa}
@@ -394,7 +365,8 @@ function ListaTarefas({
                     subarea,
                     areaId,
                     subareaId,
-                    diasSemana
+                    diasSemana,
+                    tipo
                   ) =>
                     handleSave(
                       itemEditando.id,
@@ -405,7 +377,7 @@ function ListaTarefas({
                       areaId,
                       subareaId,
                       diasSemana,
-                      "tarefa"
+                      tipo
                     )
                   }
                   areas={areas}

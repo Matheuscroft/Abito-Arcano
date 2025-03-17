@@ -21,6 +21,7 @@ import {
 } from "@chakra-ui/react";
 import { Checkbox } from "../ui/checkbox";
 import { FaClipboardList, FaPlus } from "react-icons/fa6";
+import EditorItem from "../EditorItem";
 
 const ListaAninhada = ({
   listas,
@@ -30,7 +31,6 @@ const ListaAninhada = ({
   onToggle,
   setListasLocal,
   updateListas,
-  index,
   onSave,
   onDelete,
   onMove,
@@ -247,11 +247,40 @@ const ListaAninhada = ({
               />
 
               {itemEditando && itemEditando === subItem && (
+                <div>
                 <EditorItemLista
                   item={itemEditando}
                   setItemEditando={setItemEditando}
-                  onSave={(nome, tipo) => onSave(itemEditando, nome, tipo)}
+                  onSave={(nome, tipo) => onSave(itemEditando.id, nome, tipo)}
                 />
+                <EditorItem
+                  item={itemEditando}
+                  tipo={itemEditando.tipo}
+                  setItemEditando={setItemEditando}
+                  onSave={(
+                    nome,
+                    numero,
+                    area,
+                    subarea,
+                    areaId,
+                    subareaId,
+                    diasSemana,
+                    tipo
+                  ) =>
+                    onSave(
+                      itemEditando.id,
+                      nome,
+                      numero,
+                      area,
+                      subarea,
+                      areaId,
+                      subareaId,
+                      diasSemana,
+                      tipo
+                    )}
+                  areas={areas}
+                />
+                </div>
               )}
             </li>
           ))
