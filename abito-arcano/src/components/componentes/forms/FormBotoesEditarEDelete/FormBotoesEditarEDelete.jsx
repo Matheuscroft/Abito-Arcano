@@ -36,18 +36,18 @@ const FormBotoesEditarEDelete = ({ item, onEdit, onDelete, index }) => {
       </MenuTrigger>
       <MenuContent>
         <MenuItem
-        value="editar"
+          value="editar"
           onClick={() => {
-            onEdit(index, -1);
+            onEdit(item);
             setIsOpen(false);
           }}
         >
           Editar
         </MenuItem>
         <MenuItem
-        value="excluir"
+          value="excluir"
           onClick={() => {
-            onDelete(item.id, { listaId: item.id });
+            onDelete();
             setIsOpen(false);
           }}
           color="red.500"

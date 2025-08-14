@@ -1,12 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import FormItemLista from "../componentes/forms/FormItemLista/FormItemLista";
 import "./ItemLista.css";
 import ListaAninhada from "./ListaAninhada";
 import ParagrafoItemLista from "./ParagrafoItemLista";
 import Tarefa from "../pages/ToDoList/Tarefa";
-
-import { Checkbox } from "../ui/checkbox";
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import CheckboxItemLista from "./CheckboxItemLista";
 import Atividade from "../Atividade";
 
@@ -36,12 +34,8 @@ const ItemLista = ({
 }) => {
   const newPath = [...path, index];
 
-  if(item.tipo === "atividade")
-  {
-
-    console.log("chegiei item")
-    console.log(item)
-  }
+  useEffect(() => {
+    }, [item]);
 
   return (
     <Flex
@@ -53,15 +47,15 @@ const ItemLista = ({
       {item && index !== undefined && (
         <>
           <Flex flex="1" minWidth="50%">
-            {item.tipo === "checklist" && (
+            {item.type === "checklist" && (
               <CheckboxItemLista
                 item={item}
                 lista={lista}
                 onToggle={onToggle}
               />
             )}
-            {item.tipo === "texto" && <ParagrafoItemLista item={item} />}
-            {item.tipo === "lista" && (
+            {item.type === "text" && <ParagrafoItemLista item={item} />}
+            {item.type === "list" && (
               <ListaAninhada
                 listas={listas}
                 user={user}
@@ -86,7 +80,7 @@ const ItemLista = ({
                 setPontuacoes={setPontuacoes}
               />
             )}
-            {item.tipo === "tarefa" && (
+            {item.type === "task" && (
               <Tarefa
                 tarefa={item}
                 areas={areas}
@@ -96,7 +90,7 @@ const ItemLista = ({
                 isAninhado={isAninhado}
               />
             )}
-            {item.tipo === "atividade" && (
+            {item.type === "activity" && (
               <Atividade
                 atividade={item}
                 areas={areas}

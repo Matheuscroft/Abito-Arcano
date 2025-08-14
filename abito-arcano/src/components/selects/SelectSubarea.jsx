@@ -8,27 +8,28 @@ import {
   SelectRoot,
   SelectTrigger,
   SelectValueText,
-} from "../../ui/select";
+} from "../ui/select";
 
-const SelectSubarea = ({ subareas, subarea, setSubarea }) => {
+const SelectSubarea = ({ subareas, subareaId, setSubareaId }) => {
 
-    console.log("subarea q chegou");
-  console.log(subarea);
   const subareaCollection = createListCollection({
-    items: subareas.map((s) => ({ label: s.nome, value: s.nome })),
+    items: subareas.map((s) => ({ label: s.name, value: s.id })),
   });
 
   return (
     <SelectRoot
       collection={subareaCollection}
       width="180px"
-      value={subarea}
-      onValueChange={(e) => setSubarea(e.value)}
+      value={[subareaId]}
+      onValueChange={(e) => {
+        const value = Array.isArray(e.value) ? e.value[0] : e.value;
+        setSubareaId(value);
+      }}
       size="xs"
     >
       <SelectLabel>Selecione uma subárea</SelectLabel>
       <SelectTrigger>
-        <SelectValueText placeholder={subarea || "Selecione uma subárea"} />
+        <SelectValueText placeholder={subareaId || "Selecione uma subárea"} />
       </SelectTrigger>
       <SelectContent>
         {subareaCollection.items.map((s) => (

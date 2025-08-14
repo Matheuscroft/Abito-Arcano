@@ -2,7 +2,6 @@ import { Card, Heading } from "@chakra-ui/react";
 import React, { useEffect, useRef } from "react";
 
 const BotaoDia = ({ data, diaSemana, isSelecionado, onClick }) => {
-
   const cardRef = useRef(null);
 
   useEffect(() => {
@@ -15,17 +14,14 @@ const BotaoDia = ({ data, diaSemana, isSelecionado, onClick }) => {
     }
   }, [isSelecionado]);
 
-  const formatarDiaSemana = (diaSemana) => {
-    const abreviacoes = {
-      "segunda-feira": "SEG",
-      "terça-feira": "TER",
-      "quarta-feira": "QUA",
-      "quinta-feira": "QUI",
-      "sexta-feira": "SEX",
-      sábado: "SAB",
-      domingo: "DOM",
-    };
-    return abreviacoes[diaSemana.toLowerCase()] || diaSemana;
+  const formatarDiaSemana = (dayOfWeek) => {
+    const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    return dias[dayOfWeek - 1];
+  };
+
+  const formatarData = (dataIso) => {
+    const [ano, mes, dia] = dataIso.split("-");
+    return `${dia}/${mes}/${ano.slice(2)}`;
   };
 
   return (
@@ -41,7 +37,7 @@ const BotaoDia = ({ data, diaSemana, isSelecionado, onClick }) => {
         }}
       >
         <Card.Body>
-          <Heading size="sm">{data}</Heading>
+          <Heading size="sm">{formatarData(data)}</Heading>
           <div style={{ fontSize: "9px" }}>{formatarDiaSemana(diaSemana)}</div>
         </Card.Body>
       </Card.Root>

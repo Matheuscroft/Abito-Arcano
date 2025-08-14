@@ -1,22 +1,33 @@
 import React, { useState, useEffect } from "react";
-import Tarefa from "./Tarefa.jsx";
 import EditorItem from "../../EditorItem.jsx";
 import {
-  addItem,
-  updateItem,
-  toggleFinalizada,
-  deleteItem,
   atualizarDiasLocalmenteENoFirebase,
   atualizarDias,
 } from "../../todoUtils.js";
-import { getListaTarefas, substituirTarefasGerais } from "../../../auth/firebaseTarefas.js";
-import { getDias, inserirDias } from "../../../auth/firebaseDiasHoras.js";
+import {
+  getListaTarefas,
+  substituirTarefasGerais,
+} from "../../../auth/firebaseTarefas.js";
+import { getDias } from "../../../auth/firebaseDiasHoras.js";
 import ItemLista from "../../Listas/ItemLista.jsx";
-import { Button, Heading, HStack, Input, Text } from "@chakra-ui/react";
+import { Box, Button, Heading, HStack, Input, Text } from "@chakra-ui/react";
+import {
+  addTarefa,
+  deleteTarefa,
+  updateTarefa,
+} from "../../../services/tasksService.ts";
+import {
+  checkTarefa,
+  uncheckTarefa,
+} from "../../../services/completedTaskService.ts";
+import EmptyStateTasks from "../../../components/emptystates/EmptyStateTasks.jsx";
 
 function ListaTarefas({
   user,
   tarefas,
+  setTarefasDoDia,
+  completedTasks,
+  setCompletedTasks,
   setPontuacoes,
   setDias,
   dias,
@@ -27,11 +38,14 @@ function ListaTarefas({
   const [itemEditando, setItemEditando] = useState(null);
 
   useEffect(() => {
-    console.log("Estado atualizadOOOOOO lusta tarefas - dias:");
-    console.log(dias);
-    console.log("Estado atualizadOOOOOO lusta tarefas - tarefas:");
+    console.log("tarefas:");
     console.log(tarefas);
   }, [tarefas]);
+
+  useEffect(() => {
+    console.log("completedtasks:");
+    console.log(completedTasks);
+  }, [completedTasks]);
 
   const resetarListaDeTarefasGerais = async (userId) => {
     try {
@@ -60,22 +74,73 @@ function ListaTarefas({
     }
   };
 
-  const handleAdicionarItem = async () => {
+  const handleAddItem = async () => {
+    const token = localStorage.getItem("token");
     if (nomeNovaTarefa.trim() === "") return;
 
-    addItem(
-      nomeNovaTarefa,
-      "tarefa",
-      null,
-      tarefas,
-      user.uid,
-      areas,
-      setDias,
-      dias,
-      diaVisualizado
-    );
+    const tarefaDTO = {
+      title: nomeNovaTarefa,
+      score: 1,
+      type: "task",
+      daysOfTheWeek: [1, 2, 3, 4, 5, 6, 7],
+      areaId: null,
+      subareaId: null,
+    };
+
+    const tarefaTemporaria = {
+      ...tarefaDTO,
+      id: `temp-${Date.now()}`,
+    };
+    const novasTarefasLocais = [...tarefas, tarefaTemporaria];
+    setTarefasDoDia(novasTarefasLocais);
 
     setNomeNovaTarefa("");
+
+    try {
+      const novaTarefa = await addTarefa(tarefaDTO, diaVisualizado.id, token);
+
+      const dataAtual = new Date(diaVisualizado.date);
+      const novosDias = dias.map((d) => {
+        const dataDia = new Date(d.date);
+        if (dataDia >= dataAtual) {
+          const novasTarefas = [...(d.tarefasPrevistas || []), novaTarefa];
+          return { ...d, tarefasPrevistas: novasTarefas };
+        }
+        return d;
+      });
+
+      setDias(novosDias);
+    } catch (err) {
+      console.error("Erro ao adicionar tarefa:", err);
+    }
+  };
+
+  const handleDeleteItem = async (tarefa) => {
+    const token = localStorage.getItem("token");
+    console.log("[handleDeleteItem] Iniciando a exclusão da tarefa:", tarefa);
+
+    const tarefaId = tarefa.tarefaId || tarefa.id;
+    console.log("[handleDeleteItem] tarefaId:", tarefaId);
+    console.log("[handleDeleteItem] diaVisualizado:", diaVisualizado);
+
+    if (!token || !tarefaId || !diaVisualizado?.id) {
+      console.error("Token, tarefaId ou dia.id ausente");
+      return;
+    }
+
+    if (tarefa.tarefaId) {
+      setCompletedTasks((prev) => prev.filter((t) => t.tarefaId !== tarefaId));
+      setTarefasDoDia((prev) => prev.filter((t) => t.id !== tarefaId));
+    } else {
+      setTarefasDoDia((prev) => prev.filter((t) => t.id !== tarefaId));
+    }
+
+    try {
+      console.log("[handleDeleteItem] Deletando tarefa:", tarefa);
+      await deleteTarefa(tarefaId, diaVisualizado.id, token);
+    } catch (error) {
+      console.error("Erro ao deletar tarefa:", error);
+    }
   };
 
   const moveItem = async (
@@ -87,7 +152,7 @@ function ListaTarefas({
     dias,
     diaVisualizado
   ) => {
-//Tarefas
+    //Tarefas
     const tarefasGerais = await getListaTarefas(userId);
 
     const indexGeral = tarefasGerais.findIndex(
@@ -104,7 +169,7 @@ function ListaTarefas({
       await substituirTarefasGerais(userId, tarefasGerais);
     }
 
-//Dias
+    //Dias
     const diasAtualizados = atualizarDias(
       dias,
       diaVisualizado,
@@ -116,63 +181,136 @@ function ListaTarefas({
     atualizarDiasLocalmenteENoFirebase(userId, diasAtualizados, setDias);
   };
 
-  const encontrarItemEExecutar = async (
-    item,
-    items,
-    setItems,
-    setPontuacoes,
-    userId,
-    dataPontuacao,
-    dias,
-    setDias
-  ) => {
-    if (item.tipo === "tarefa") {
-      await toggleFinalizada(
-        item.id,
-        item.tipo,
-        items,
-        setItems,
-        setPontuacoes,
-        userId,
-        dataPontuacao,
-        dias,
-        setDias
+  const handleToggleCheckTarefa = async (tarefa) => {
+    const token = localStorage.getItem("token");
+    console.log("[handleToggleCheckTarefa] Iniciando:", tarefa);
+
+    const isCompleted = !!tarefa.tarefaId;
+
+    const tarefaId = tarefa.tarefaId || tarefa.id;
+    const dayId = diaVisualizado?.id;
+
+    if (!token || !tarefaId || !dayId) {
+      console.error(
+        "[handleToggleCheckTarefa] Token, tarefaId ou dayId ausente"
       );
+      return;
+    }
+
+    const dto = { tarefaId, dayId };
+
+    if (isCompleted) {
+      // === Desmarcar tarefa ===
+      console.log("[handleToggleCheckTarefa] Desmarcando tarefa concluída");
+
+      setCompletedTasks(
+        (prev) => prev.filter((t) => t.id !== tarefa.id)
+      );
+
+      try {
+        const { score } = await uncheckTarefa(dto, token);
+        setPontuacoes((prev) =>
+          atualizarPontuacoesLocais(prev, score, tarefa, isCompleted)
+        );
+
+        console.log("[handleToggleCheckTarefa] Tarefa desmarcada com sucesso");
+      } catch (err) {
+        console.error("[handleToggleCheckTarefa] Erro ao desmarcar:", err);
+      }
+    } else {
+      // === Marcar tarefa como concluída ===
+      console.log("[handleToggleCheckTarefa] Marcando tarefa como concluída");
+
+      try {
+        const completedTaskResponse = await checkTarefa(dto, token);
+        const { completedTask, score } = completedTaskResponse;
+
+        setCompletedTasks((prev) => [...prev, completedTask]);
+
+        setPontuacoes((prev) =>
+          atualizarPontuacoesLocais(prev, score, tarefa, isCompleted)
+        );
+
+        console.log(
+          "[handleToggleCheckTarefa] Tarefa marcada com sucesso:",
+          completedTaskResponse
+        );
+      } catch (err) {
+        console.error("[handleToggleCheckTarefa] Erro ao marcar:", err);
+      }
     }
   };
 
-  const handleSave = async (
-    id,
-    nome,
-    numero,
-    area,
-    subarea,
-    areaId,
-    subareaId,
-    diasSemana,
-    tipo
+  const atualizarPontuacoesLocais = (
+    prevPontuacoes,
+    score,
+    tarefa,
+    isCompleted
   ) => {
-    await updateItem(
-      id,
-      nome,
-      numero,
-      area,
-      subarea,
-      areaId,
-      subareaId,
-      tipo,
-      null,
-      tarefas,
-      user.uid,
-      setDias,
-      dias,
-      diasSemana,
-      diaVisualizado
+    if (!score) {
+      return prevPontuacoes.filter(
+        (s) =>
+          !(
+            s.areaId === tarefa.areaId &&
+            s.subareaId === tarefa.subareaId &&
+            s.date === tarefa.date
+          )
+      );
+    }
+
+    const existente = prevPontuacoes.find(
+      (s) =>
+        s.areaId === score.areaId &&
+        s.subareaId === score.subareaId &&
+        s.date === score.date
     );
+
+    if (existente) {
+      return prevPontuacoes.map((s) =>
+        s.scoreId === score.scoreId ? { ...s, score: score.score } : s
+      );
+    } else {
+      return [...prevPontuacoes, score];
+    }
   };
 
+  const handleSave = async (id, tarefaDTO) => {
+
+    const token = localStorage.getItem("token");
+
+    const pertenceAoDia = tarefaDTO.daysOfTheWeek.includes(diaVisualizado.dayOfTheWeek);
+
+    let novasTarefasLocais;
+
+    if (pertenceAoDia) {
+      novasTarefasLocais = tarefas.map((t) =>
+        t.id === id ? { ...t, ...tarefaDTO } : t
+      );
+    } else {
+      novasTarefasLocais = tarefas.filter((t) => t.id !== id);
+    }
+
+    setTarefasDoDia(novasTarefasLocais);
+
+    try {
+      const resposta = await updateTarefa(
+        id,
+        tarefaDTO,
+        diaVisualizado.id,
+        token
+      );
+      console.log("Tarefa atualizada com sucesso:", resposta);
+    } catch (err) {
+      console.error("Erro ao atualizar tarefa:", err);
+    }
+  };
+
+  const tarefasNaoConcluidas = tarefas.filter(
+    (tarefa) => !completedTasks.some((ct) => ct.tarefaId === tarefa.id)
+  );
+
   return (
-    <div>
+    <Box pb={20}>
       <Text fontSize="2xl" fontWeight="bold" mb={4}>
         Tarefas
       </Text>
@@ -191,21 +329,23 @@ function ListaTarefas({
           onChange={(e) => setNomeNovaTarefa(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              handleAdicionarItem();
+              handleAddItem();
             }
           }}
           placeholder="Digite o nome da tarefa"
           width="200px"
         />
-        <Button size="xs" onClick={handleAdicionarItem}>
+        <Button size="xs" onClick={handleAddItem}>
           Adicionar Tarefa
         </Button>
       </HStack>
-
-      <ul>
-        {tarefas
-          .filter((tarefa) => !tarefa.finalizada)
-          .map((tarefa, index) => (
+      {tarefasNaoConcluidas.length === 0 ? (
+        <EmptyStateTasks
+          tipo={tarefas.length === 0 ? "nenhumaCriada" : "todasConcluidas"}
+        />
+      ) : (
+        <ul>
+          {tarefasNaoConcluidas.map((tarefa, index) => (
             <li key={tarefa.id}>
               {tarefa && (
                 <ItemLista
@@ -214,30 +354,8 @@ function ListaTarefas({
                   index={index}
                   lista={tarefas}
                   onEdit={() => setItemEditando(tarefa)}
-                  onDelete={() =>
-                    deleteItem(
-                      tarefa,
-                      "tarefa",
-                      null,
-                      tarefas,
-                      user.uid,
-                      setDias,
-                      dias,
-                      diaVisualizado
-                    )
-                  }
-                  onToggle={() =>
-                    encontrarItemEExecutar(
-                      tarefa,
-                      tarefas,
-                      null,
-                      setPontuacoes,
-                      user.uid,
-                      diaVisualizado,
-                      dias,
-                      setDias
-                    )
-                  }
+                  onDelete={() => handleDeleteItem(tarefa)}
+                  onToggle={() => handleToggleCheckTarefa(tarefa)}
                   onMove={(item, direction) =>
                     moveItem(
                       item,
@@ -266,127 +384,67 @@ function ListaTarefas({
                   item={itemEditando}
                   tipo={"tarefa"}
                   setItemEditando={setItemEditando}
-                  onSave={(
-                    nome,
-                    numero,
-                    area,
-                    subarea,
-                    areaId,
-                    subareaId,
-                    diasSemana,
-                    tipo
-                  ) =>
-                    handleSave(
-                      itemEditando.id,
-                      nome,
-                      numero,
-                      area,
-                      subarea,
-                      areaId,
-                      subareaId,
-                      diasSemana,
-                      tipo
-                    )
-                  }
+                  onSave={handleSave}
                   areas={areas}
                 />
               )}
             </li>
           ))}
-      </ul>
-
-      <Heading mt="6" mb="3">Finalizadas</Heading>
-      <ul>
-        {tarefas
-          .filter((tarefa) => tarefa.finalizada)
-          .map((tarefa, index) => (
-            <li key={tarefa.id} style={{ textDecoration: "line-through" }}>
+        </ul>
+      )}
+      <Heading mt="6" mb="3">
+        Finalizadas
+      </Heading>
+      {completedTasks.length === 0 ? (
+        <EmptyStateTasks tipo="nenhumaFinalizada" />
+      ) : (
+        <ul>
+          {completedTasks.map((tarefa, index) => (
+            <li key={tarefa.id}>
               <ItemLista
-                  user={user}
-                  item={tarefa}
-                  index={index}
-                  lista={tarefas}
-                  onEdit={() => setItemEditando(tarefa)}
-                  onDelete={() =>
-                    deleteItem(
-                      tarefa,
-                      "tarefa",
-                      null,
-                      tarefas,
-                      user.uid,
-                      setDias,
-                      dias,
-                      diaVisualizado
-                    )
-                  }
-                  onToggle={() =>
-                    encontrarItemEExecutar(
-                      tarefa,
-                      tarefas,
-                      null,
-                      setPontuacoes,
-                      user.uid,
-                      diaVisualizado,
-                      dias,
-                      setDias
-                    )
-                  }
-                  onMove={(item, direction) =>
-                    moveItem(
-                      item,
-                      direction,
-                      user.uid,
-                      tarefas,
-                      setDias,
-                      dias,
-                      diaVisualizado
-                    )
-                  }
-                  onSave={handleSave}
-                  areas={areas}
-                  isTarefas={true}
-                  tarefa={tarefa}
-                  setItems={null}
-                  dias={dias}
-                  setDias={setDias}
-                  diaVisualizado={diaVisualizado}
-                  setPontuacoes={setPontuacoes}
-                />
+                user={user}
+                item={tarefa}
+                index={index}
+                lista={tarefas}
+                onEdit={() => setItemEditando(tarefa)}
+                onDelete={() => handleDeleteItem(tarefa)}
+                onToggle={() => handleToggleCheckTarefa(tarefa)}
+                onMove={(item, direction) =>
+                  moveItem(
+                    item,
+                    direction,
+                    user.uid,
+                    tarefas,
+                    setDias,
+                    dias,
+                    diaVisualizado
+                  )
+                }
+                onSave={handleSave}
+                areas={areas}
+                isTarefas={true}
+                tarefa={tarefa}
+                setItems={null}
+                dias={dias}
+                setDias={setDias}
+                diaVisualizado={diaVisualizado}
+                setPontuacoes={setPontuacoes}
+              />
 
               {itemEditando && itemEditando === tarefa && (
                 <EditorItem
                   item={itemEditando}
                   tipo={"tarefa"}
                   setItemEditando={setItemEditando}
-                  onSave={(
-                    nome,
-                    numero,
-                    area,
-                    subarea,
-                    areaId,
-                    subareaId,
-                    diasSemana,
-                    tipo
-                  ) =>
-                    handleSave(
-                      itemEditando.id,
-                      nome,
-                      numero,
-                      area,
-                      subarea,
-                      areaId,
-                      subareaId,
-                      diasSemana,
-                      tipo
-                    )
-                  }
+                  onSave={handleSave}
                   areas={areas}
                 />
               )}
             </li>
           ))}
-      </ul>
-    </div>
+        </ul>
+      )}
+    </Box>
   );
 }
 

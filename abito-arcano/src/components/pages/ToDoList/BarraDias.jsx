@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { inserirDias } from "../../../auth/firebaseDiasHoras.js";
 import { atualizarDiasLocalmenteENoFirebase } from "../../todoUtils.js";
 import BotaoDia from "./BotaoDia.jsx";
@@ -8,18 +8,15 @@ const BarraDias = ({
   user,
   dias,
   setDias,
+  diaVisualizado,
   setDiaVisualizado,
-  resetarListaDeDias,
-  setDataAtual,
   tarefasGerais,
   setTarefasPorDia,
-  diaVisualizado,
-  dataAtual,
+  resetarListaDeDias,
 }) => {
-  const containerRef = useRef(null);
 
   const resetarTarefasFuturas = async () => {
-    try {
+    /*try {
       const tarefasGeraisLimpa = tarefasGerais.map((tarefa) => ({
         ...tarefa,
         finalizada: false,
@@ -50,11 +47,11 @@ const BarraDias = ({
       });
     } catch (error) {
       console.error("Erro ao resetar tarefas futuras:", error);
-    }
+    }*/
   };
 
   const resetarDiaAtual = async () => {
-    try {
+   /* try {
       const hoje = new Date().toLocaleDateString("pt-BR");
       const diasSalvos = dias.map((dia) =>
         dia.data === hoje
@@ -67,7 +64,7 @@ const BarraDias = ({
       setDiaVisualizado(hoje);
     } catch (error) {
       console.error("Erro ao resetar o dia atual:", error);
-    }
+    }*/
   };
 
   useEffect(() => {
@@ -102,11 +99,11 @@ const BarraDias = ({
           <Stack direction="row" spacing={4} flexWrap="nowrap">
             {dias.map((dia) => (
               <BotaoDia
-                key={dia.data}
-                data={dia.data}
-                diaSemana={dia.diaSemana}
-                isSelecionado={diaVisualizado === dia.data}
-                onClick={() => setDiaVisualizado(dia.data)}
+                key={dia.date}
+                data={dia.date}
+                diaSemana={dia.dayOfWeek}
+                isSelecionado={diaVisualizado.id === dia.id}
+                onClick={() => setDiaVisualizado(dia)}
               />
             ))}
           </Stack>

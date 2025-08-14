@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { updateLocalList } from "./listaUtils";
-import { v4 as uuidv4 } from "uuid";
 import EditorItemLista from "./EditorItemLista";
 import ItemLista from "./ItemLista";
-import FormAdicionarItem from "./FormAdicionarItem";
-import { setListas } from "../../auth/firebaseListas.mjs";
 import CabecalhoListaModal from "./CabecalhoListaModal";
-import { Box, Button, Card, CloseButton, Flex } from "@chakra-ui/react";
+import { Button, Card, CloseButton, Flex } from "@chakra-ui/react";
+import FormAdicionarItem from "./FormAdicionarItem";
 
 const ListaModal = ({
   listas,

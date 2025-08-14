@@ -21,38 +21,19 @@ function BarraPontuacoes({
     console.log("Estado atual - areas:", areas);
   }, [areas]);
 
-  /*useEffect(() => {
-    console.log("Areas received: ", areas);
+  useEffect(() => {
     console.log("Pontuacoes received: ", pontuacoes);
-  }, [areas, pontuacoes]);*/
+  }, [pontuacoes]);
 
   const calcularPontuacaoTotal = (pontuacoes, areaId, subareaId = null) => {
-    if (!Array.isArray(pontuacoes)) {
-      console.error("Pontuações inválidas:", pontuacoes);
-      return 0;
-    }
+    if (!Array.isArray(pontuacoes)) return 0;
 
-    let total = 0;
-
-    pontuacoes.forEach((pontuacao) => {
-      if (pontuacao && Array.isArray(pontuacao.areas)) {
-        pontuacao.areas.forEach((area) => {
-          if (area.areaId === areaId) {
-            if (subareaId) {
-              area.subareas.forEach((subarea) => {
-                if (subarea.subareaId === subareaId) {
-                  total += subarea.pontos;
-                }
-              });
-            } else {
-              total += area.pontos;
-            }
-          }
-        });
-      }
-    });
-
-    return total;
+    return pontuacoes
+      .filter(
+        (p) =>
+          p.areaId === areaId && (subareaId ? p.subareaId === subareaId : true)
+      )
+      .reduce((acc, p) => acc + p.score, 0);
   };
 
   const resetPontuacaoAreas = async () => {
@@ -110,7 +91,7 @@ function BarraPontuacoes({
           areas.map((area) => (
             <Card.Root
               key={area.id}
-              bg={area.cor}
+              bg={area.color}
               color="white"
               flex="0 1 120px"
               height="100px"
@@ -124,7 +105,7 @@ function BarraPontuacoes({
                 textAlign="center"
               >
                 <Text fontWeight="bold" fontSize="sm">
-                  {area.nome}
+                  {area.name.toUpperCase()}
                 </Text>
                 <Text fontSize="sm">
                   {calcularPontuacaoTotal(pontuacoes, area.id)}
@@ -137,7 +118,11 @@ function BarraPontuacoes({
         )}
       </Flex>
 
-      <Button onClick={() => setMostrarSubareas(!mostrarSubareas)} mt={4} mb={4}>
+      <Button
+        onClick={() => setMostrarSubareas(!mostrarSubareas)}
+        mt={4}
+        mb={4}
+      >
         {mostrarSubareas ? "Esconder Subáreas" : "Mostrar Subáreas"}
       </Button>
 
@@ -160,10 +145,9 @@ function BarraPontuacoes({
                     alignItems="center"
                     justifyContent="flex-start"
                     textAlign="center"
-                    
                   >
                     <Text fontWeight="bold" fontSize="xs" isTruncated>
-                      {subarea.nome}
+                      {subarea.name}
                     </Text>
                     <Text fontSize="sm">
                       {calcularPontuacaoTotal(pontuacoes, area.id, subarea.id)}

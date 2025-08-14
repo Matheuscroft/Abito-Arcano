@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -6,44 +6,55 @@ import {
   Link,
   Navigate,
 } from "react-router-dom";
-import ToDoList from "./components/pages/ToDoList/ToDoList";
-import Areas from "./components/Areas";
+import ToDoList from "./pages/ToDoList";
+import Areas from "./pages/Areas";
 import Projeto from "./components/Projeto";
-import Login from "./components/Login";
-import Cadastro from "./components/Cadastro";
+import Login from "./pages/Login";
+import Cadastro from "./pages/Cadastro";
 import Oficina from "./components/Oficina";
 import Brainstorm from "./components/Brainstorm";
 import Listas from "./components/Listas/Listas";
 import Mes from "./components/pages/mes/Mes";
 import "./App.css";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, signOut } from "./auth/firebase";
 import { Button, ButtonGroup, Container } from "@chakra-ui/react";
+import Subareas from "./pages/Subareas";
+import { validarToken } from './services/authService.ts';
+import Subarea from "./pages/Subarea";
 
 function App() {
-  const [user, loading] = useAuthState(auth);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [verificandoToken, setVerificandoToken] = useState(true);
 
-  if (loading) {
-    return <div>Carregando...</div>;
-  }
+  useEffect(() => {
+    const verificarToken = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const valido = await validarToken(token);
+        setIsAuthenticated(valido);
+      } else {
+        setIsAuthenticated(false);
+      }
+      setVerificandoToken(false);
+    };
+
+    verificarToken();
+  }, []);
 
   function handleLogout() {
-    signOut(auth)
-      .then(() => {
-        console.log("Usuário desconectado");
-      })
-      .catch((error) => {
-        console.error("Erro ao desconectar: ", error);
-      });
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+    window.location.href = "/login";
   }
+
+  if (verificandoToken) return <p>Verificando autenticação...</p>;
 
   return (
     <Router>
       <Container maxW="container.xl" py={4}>
         <div className="App">
-          {!user ? (
+          {!isAuthenticated ? (
             <Routes>
-              <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<Login setAuth={setIsAuthenticated} />} />
               <Route path="/cadastro" element={<Cadastro />} />
               <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
@@ -85,8 +96,10 @@ function App() {
               </div>
               <div className="main-content">
                 <Routes>
-                  <Route path="/tarefas" element={<ToDoList user={user} />} />
-                  <Route path="/areas" element={<Areas user={user} />} />
+                  <Route path="/tarefas" element={<ToDoList />} />
+                  <Route path="/areas" element={<Areas />} />
+                  <Route path="/areas/:id" element={<Subareas />} />
+                  <Route path="/subareas/:id" element={<Subarea />} />
                   <Route
                     path="/projetos"
                     element={<div>Componentes de Projetos</div>}
@@ -100,13 +113,13 @@ function App() {
                     element={<div>Componentes de Quests</div>}
                   />
                   <Route path="/projeto/:nomeProjeto" element={<Projeto />} />
-                  <Route path="/oficina" element={<Oficina user={user} />} />
+                  <Route path="/oficina" element={<Oficina />} />
                   <Route
                     path="/brainstorm"
-                    element={<Brainstorm user={user} />}
+                    element={<Brainstorm />}
                   />
-                  <Route path="/listas" element={<Listas user={user} />} />
-                  <Route path="/mes" element={<Mes user={user} />} />
+                  <Route path="/listas" element={<Listas />} />
+                  <Route path="/mes" element={<Mes />} />
                   <Route path="/" element={<ToDoList />} />
                   <Route path="*" element={<Navigate to="/tarefas" />} />
                 </Routes>

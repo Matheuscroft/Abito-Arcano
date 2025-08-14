@@ -11,17 +11,17 @@ import { toggleFinalizada } from "../todoUtils";
 import {
   Stack,
   Text,
-  Box,
   Flex,
   Badge,
   IconButton,
-  Button,
   Center,
   Icon,
 } from "@chakra-ui/react";
 import { Checkbox } from "../ui/checkbox";
 import { FaClipboardList, FaPlus } from "react-icons/fa6";
 import EditorItem from "../EditorItem";
+
+
 
 const ListaAninhada = ({
   listas,

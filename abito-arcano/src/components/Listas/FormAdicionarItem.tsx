@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { v4 as uuidv4 } from "uuid";
 import InputAdicionarNome from "../componentes/inputs/InputAdicionarNome/InputAdicionarNome";
 import { buscarIdsAreaESubarea, updateItem } from "../todoUtils";
@@ -6,24 +6,43 @@ import {
   Button,
   NativeSelectField,
   NativeSelectRoot,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectLabel,
-  SelectRoot,
-  SelectTrigger,
-  SelectValueText,
   HStack,
 } from "@chakra-ui/react";
+import type { CompletedTaskResponseDTO, TarefaResponseDTO } from "@/types/task";
+import type { DayResponseDTO } from "@/types/day";
+import type { AreaResponseDTO } from "@/types/area";
 
-const FormAdicionarItem = ({
+const hStackProps = {
+  spacing: 3,
+  align: "stretch",
+  width: "100%",
+  alignItems: "center",
+} as const;
+
+interface FormAdicionarItemProps {
+  user: any;
+  listas?: any[];
+  lista: any;
+  setListasLocal: Dispatch<SetStateAction<any[]>>;
+  updateListas: (uid: string, lista: any, listas: any[], setListasLocal: Dispatch<SetStateAction<any[]>>, listaAtualizada: any) => void;
+  listaAninhada?: any | null;
+  isTarefas?: boolean;
+  tarefa?: TarefaResponseDTO | CompletedTaskResponseDTO;
+  setItems?: Dispatch<SetStateAction<any[]>>;
+  dias?: DayResponseDTO[] | null;
+  setDias?: Dispatch<SetStateAction<any[]>>;
+  diaVisualizado?: DayResponseDTO;
+  areas: AreaResponseDTO[];
+}
+
+const FormAdicionarItem: React.FC<FormAdicionarItemProps> = ({
   user,
   listas,
   lista,
   setListasLocal,
   updateListas,
   listaAninhada = null,
-  isTarefas = false, // Flag para determinar o ambiente
+  isTarefas = false,
   tarefa,
   setItems,
   dias,
@@ -34,7 +53,7 @@ const FormAdicionarItem = ({
   const [nomeNovoItem, setNomeNovoItem] = useState("");
   const [tipoItem, setTipoItem] = useState("checklist");
 
-  const addNestedItemToTask = (tarefa, targetId, novoItem) => {
+  const addNestedItemToTask = (tarefa: any, targetId: string, novoItem: any) => {
     if (tarefa.id === targetId) {
       return {
         ...tarefa,
@@ -43,7 +62,7 @@ const FormAdicionarItem = ({
     }
 
     if (tarefa.itens && tarefa.itens.length > 0) {
-      const itensAtualizados = tarefa.itens.map((subItem) =>
+      const itensAtualizados = tarefa.itens.map((subItem: any) =>
         addNestedItemToTask(subItem, targetId, novoItem)
       );
 
@@ -56,7 +75,7 @@ const FormAdicionarItem = ({
     return tarefa;
   };
 
-  const addItemToList = (lista, targetId, novoItem) => {
+  const addItemToList = (lista: any, targetId: string, novoItem: any) => {
     if (lista.id === targetId) {
       return {
         ...lista,
@@ -67,7 +86,7 @@ const FormAdicionarItem = ({
     if (lista.itens && lista.itens.length > 0) {
       return {
         ...lista,
-        itens: lista.itens.map((subItem) =>
+        itens: lista.itens.map((subItem: any) =>
           addItemToList(subItem, targetId, novoItem)
         ),
       };
@@ -84,7 +103,7 @@ const FormAdicionarItem = ({
         ""
       );
 
-      const novoChecklistItem = {
+      const novoChecklistItem: any = {
         id: uuidv4(),
         nome: nomeNovoItem,
         numero: 1,
@@ -93,29 +112,18 @@ const FormAdicionarItem = ({
         areaId,
         subareaId,
         diasSemana: [1, 2, 3, 4, 5, 6, 7],
-        finalizada: tipoItem === "checklist" || "tarefa" ? false : undefined,
+        finalizada: tipoItem === "checklist" || tipoItem === "tarefa" ? false : undefined,
         tipo: isTarefas ? "tarefa" : tipoItem,
         itens: tipoItem === "lista" ? [] : null,
       };
 
-      const novoItem = {
-        //
-      };
-
-      if (isTarefas) {
-        console.log("lista daqui");
-        console.log(lista);
-
-        console.log("tarefa");
-        console.log(tarefa);
+      if (isTarefas && tarefa && setItems && setDias) {
         const tarefaAtualizada = addNestedItemToTask(
           tarefa,
           tarefa.id,
           novoChecklistItem
         );
 
-        console.log("tarefaAtualizada");
-        console.log(tarefaAtualizada);
         await updateItem(
           tarefaAtualizada.id,
           tarefaAtualizada.nome,
@@ -129,7 +137,7 @@ const FormAdicionarItem = ({
           lista,
           user.uid,
           setDias,
-          dias,
+          dias || [],
           tarefaAtualizada.diasSemana,
           diaVisualizado,
           tarefaAtualizada
@@ -147,8 +155,6 @@ const FormAdicionarItem = ({
           listaAtualizada = addItemToList(lista, lista.id, novoChecklistItem);
         }
 
-        console.log("Lista Principal Atualizada:", listaAtualizada);
-
         updateListas(user.uid, lista, listas, setListasLocal, listaAtualizada);
       }
 
@@ -157,7 +163,7 @@ const FormAdicionarItem = ({
   };
 
   return (
-    <HStack spacing={3} align="stretch" width="100%" alignItems="center">
+    <HStack {...hStackProps}>
       <InputAdicionarNome
         placeholder="Adicionar item"
         nomeNovo={nomeNovoItem}

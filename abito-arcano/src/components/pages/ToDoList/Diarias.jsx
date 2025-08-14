@@ -1,26 +1,54 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ListaTarefas from "./ListaTarefas.jsx";
 
 import { getDias, inserirDias } from "../../../auth/firebaseDiasHoras.js";
-import { getListaTarefas } from "../../../auth/firebaseTarefas.js";
 import RelogioCron from "../../RelogioCron.jsx";
 import BarraDias from "./BarraDias.jsx";
 import { updatePontuacoes } from "../../../auth/firebasePontuacoes.js";
-import { atualizarDiasLocalmenteENoFirebase } from "../../todoUtils.js";
-import { buscarTarefaRecursivamente, expandirTarefasDosDias } from "./tarefaUtils.js";
-import { Container, Heading } from "@chakra-ui/react";
+import { Heading } from "@chakra-ui/react";
+import { getDiaById } from "../../../services/diasService.ts";
 
-const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtual }) => {
+const Diarias = ({
+  user,
+  setPontuacoes,
+  pontuacoes,
+  areas,
+  diaVisualizado,
+  setDiaVisualizado,
+  dias,
+  setDias,
+}) => {
   const [tarefasGerais, setTarefasGerais] = useState([]);
-  const [diaVisualizado, setDiaVisualizado] = useState("");
-  const [dias, setDias] = useState([]);
-
-  /* useEffect(() => {
-         console.log("Estado atualizadOOOOOO - tarefasGerais:");
-         console.log(tarefasGerais)
-     }, [tarefasGerais]);*/
+  const [tarefasDoDia, setTarefasDoDia] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
 
   useEffect(() => {
+    const fetchTarefasDoDia = async () => {
+      const token = localStorage.getItem("token");
+      console.log("diaVisualizado:");
+      console.log(diaVisualizado);
+      if (diaVisualizado) {
+        const diaDetalhado = await getDiaById(diaVisualizado.id, token);
+        console.log("Dia detalhado obtido:");
+        console.log(diaDetalhado);
+        if (diaDetalhado) {
+          setTarefasDoDia(diaDetalhado.tarefasPrevistas);
+          setCompletedTasks(diaDetalhado.completedTasks);
+          console.log("Tarefas do dia visualizado:");
+          console.log(diaDetalhado.tarefasPrevistas);
+          console.log("Tarefas concluídas do dia visualizado:");
+          console.log(diaDetalhado.completedTasks);
+        }
+      }
+    };
+
+    fetchTarefasDoDia();
+  }, [diaVisualizado, dias, user]);
+
+  
+
+
+  /*useEffect(() => {
     const fetchData = async () => {
       if (user && user.uid) {
         let diasSalvos = await getDias(user.uid);
@@ -30,8 +58,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
         console.log("tarefasGerais fetchdata");
         console.log(tarefasGerais);
         console.log("diasSalvos get dias do diarias");
-          console.log(diasSalvos);
-
+        console.log(diasSalvos);
 
         const hoje = new Date().toLocaleDateString("pt-BR");
         const diaAtual =
@@ -43,13 +70,14 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
           const novosDias = await resetarListaDeDias();
           setDataAtual(novosDias[0].data);
         } else {
-          
-          const diasExpandidos = expandirTarefasDosDias(diasSalvos, tarefasGerais);
+          const diasExpandidos = expandirTarefasDosDias(
+            diasSalvos,
+            tarefasGerais
+          );
 
           console.log("diasExpandidos get dias do diarias");
           console.log(diasExpandidos);
 
-          setDias(diasExpandidos);
           setDataAtual(diaAtual);
         }
 
@@ -58,7 +86,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
     };
 
     fetchData();
-  }, []);
+  }, []);*/
 
   const resetarListaDeDias = async () => {
     try {
@@ -85,9 +113,9 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
       console.log("novosDias");
       console.log(novosDias);
 
-      atualizarDiasLocalmenteENoFirebase(user.uid, novosDias, setDias);
+      //atualizarDiasLocalmenteENoFirebase(user.uid, novosDias, setDias);
 
-      setDataAtual(novosDias[0].data);
+      //setDataAtual(novosDias[0].data);
 
       /*const novasPontuacoes = pontuacoes.filter(pontuacao =>
                 novosDias.some(dia => dia.data === pontuacao.data)
@@ -113,7 +141,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
     try {
       console.log("Trocar dia");
 
-      const dataAtualDate = converterParaDate(dataAtual);
+      const dataAtualDate = converterParaDate(diaVisualizado.date);
       dataAtualDate.setDate(dataAtualDate.getDate() + 1);
       const novaDataStr = dataAtualDate.toLocaleDateString("pt-BR");
 
@@ -121,7 +149,7 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
       console.log("diasSalvos após troca", diasSalvos);
 
       diasSalvos = diasSalvos.map((dia) => {
-        if (dia.data === dataAtual) {
+        if (dia.data === diaVisualizado.date) {
           return { ...dia, dataAtual: false };
         } else if (dia.data === novaDataStr) {
           return { ...dia, dataAtual: true };
@@ -151,7 +179,6 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
 
       await inserirDias(user.uid, diasSalvos);
 
-      setDataAtual(novaDataStr);
       setDiaVisualizado(novaDataStr);
 
       const novaPontuacao = {
@@ -184,11 +211,12 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
          console.log("Estado atualizado - diaVisualizado:");
          console.log(diaVisualizado)
      }, [diaVisualizado]);
- */
+ 
   useEffect(() => {
     console.log("Dias da diarias:");
     console.log(dias);
   }, [dias]);
+*/
 
   return (
     <div>
@@ -196,23 +224,24 @@ const Diarias = ({ user, setPontuacoes, pontuacoes, areas, dataAtual, setDataAtu
       <div>
         <RelogioCron trocarDia={trocarDia} user={user} />
         <BarraDias
-          tarefasGerais={tarefasGerais}
-          setDiaVisualizado={setDiaVisualizado}
-          setDataAtual={setDataAtual}
-          setDias={setDias}
-          dataAtual={dataAtual}
-          diaVisualizado={diaVisualizado}
-          resetarListaDeDias={resetarListaDeDias}
-          dias={dias}
           user={user}
+          tarefasGerais={tarefasGerais}
+          diaVisualizado={diaVisualizado}
+          setDiaVisualizado={setDiaVisualizado}
+          dias={dias}
+          setDias={setDias}
+          resetarListaDeDias={resetarListaDeDias}
         />
       </div>
       <ListaTarefas
-        tarefas={dias.find((dia) => dia.data === diaVisualizado)?.tarefas || []}
-        setPontuacoes={setPontuacoes}
         user={user}
-        setDias={setDias}
+        tarefas={tarefasDoDia}
+        setTarefasDoDia={setTarefasDoDia}
+        completedTasks={completedTasks}
+        setCompletedTasks={setCompletedTasks}
+        setPontuacoes={setPontuacoes}
         dias={dias}
+        setDias={setDias}
         areas={areas}
         diaVisualizado={diaVisualizado}
       />
