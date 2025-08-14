@@ -1,6 +1,6 @@
 "use client";
 
-import { createListCollection } from "@chakra-ui/react";
+import { createListCollection, type ListCollection } from "@chakra-ui/react";
 import {
   SelectContent,
   SelectItem,
@@ -9,12 +9,23 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "../ui/select";
+import type { SubareaSimpleResponseDTO } from "@/types/area";
 
-const SelectSubarea = ({ subareas, subareaId, setSubareaId }) => {
+interface SelectSubareaProps {
+  subareas: SubareaSimpleResponseDTO[];
+  subareaId: string;
+  setSubareaId: React.Dispatch<React.SetStateAction<string>>;
+}
 
-  const subareaCollection = createListCollection({
-    items: subareas.map((s) => ({ label: s.name, value: s.id })),
-  });
+const SelectSubarea: React.FC<SelectSubareaProps> = ({
+  subareas,
+  subareaId,
+  setSubareaId,
+}) => {
+  const subareaCollection: ListCollection<{ label: string; value: string }> =
+    createListCollection({
+      items: subareas.map((s) => ({ label: s.name, value: s.id })),
+    });
 
   return (
     <SelectRoot
@@ -23,7 +34,7 @@ const SelectSubarea = ({ subareas, subareaId, setSubareaId }) => {
       value={[subareaId]}
       onValueChange={(e) => {
         const value = Array.isArray(e.value) ? e.value[0] : e.value;
-        setSubareaId(value);
+        setSubareaId(value ?? "");
       }}
       size="xs"
     >

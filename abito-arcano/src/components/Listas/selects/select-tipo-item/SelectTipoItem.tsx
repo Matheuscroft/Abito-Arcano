@@ -2,16 +2,21 @@ import React from "react";
 import "../../listas.css";
 import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react";
 
-function SelectTipoItem({ tipo, setTipo }) {
-  if(tipo === undefined){
-    tipo = 'atividade'
-  }
+type TipoItem = "task" | "checklist" | "text" | "list" | "activity";
 
-  return (
+interface SelectTipoItemProps {
+  tipo?: TipoItem;
+  setTipo: React.Dispatch<React.SetStateAction<TipoItem>>;
+}
+
+
+function SelectTipoItem({ tipo, setTipo }: SelectTipoItemProps) {
+
+   return (
     <NativeSelectRoot size="sm" width="100px">
       <NativeSelectField
         placeholder="Selecione um tipo"
-        onChange={(e) => setTipo(e.currentTarget.value)}
+        onChange={(e) => setTipo(e.currentTarget.value as TipoItem)}
         value={tipo}
         width="100px"
       >
