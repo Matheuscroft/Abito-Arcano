@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import "./ItemLista.css";
 import FormAdicionarItem from "./FormAdicionarItem";
 import ItemLista from "./ItemLista";
@@ -20,30 +25,74 @@ import {
 import { Checkbox } from "../ui/checkbox";
 import { FaClipboardList, FaPlus } from "react-icons/fa6";
 import EditorItem from "../EditorItem";
+import type {
+  CompletedTaskResponseDTO,
+  GenericItem,
+} from "@/types/task";
+import type { AreaResponseDTO } from "@/types/area";
+import type { DayResponseDTO } from "@/types/day";
+import type { ItemResponse, ListItem } from "@/types/item";
 
+const stackProps = {
+  spacing: 2,
+  p: 1,
+  border: "2px solid coral",
+  borderRadius: "md",
+  width: "100%",
+} as const;
 
+interface ListaAninhadaProps<T = ItemResponse | CompletedTaskResponseDTO> {
+  listas: GenericItem[];
+  user: { uid: string };
+  item: ListItem;
+  lista: any;
+  onToggle?: (lista: any, itemId: string) => void;
+  setListasLocal?: Dispatch<SetStateAction<any[]>>; 
+  updateListas?: (...args: any[]) => void;
+  onSave?: (item: T) => void;
+  onDelete?: () => void;
+  onMove?: (item: T, direction: number) => void;
+  areas: AreaResponseDTO[];
+  isTarefas?: boolean;
+  setItems?: Dispatch<SetStateAction<T[]>>;
+  dias?: DayResponseDTO[] | null;
+  setDias?: Dispatch<SetStateAction<DayResponseDTO[]>>;
+  diaVisualizado?: any;
+  setPontuacoes?: (...args: any[]) => void;
+  path?: (number | string)[];
+  index?: number;
+  onEdit?: (path?: (number | string)[]) => void;
+}
 
-const ListaAninhada = ({
-  listas,
-  user,
-  item,
-  lista,
-  onToggle,
-  setListasLocal,
-  updateListas,
-  onSave,
-  onDelete,
-  onMove,
-  areas,
-  isTarefas = null,
-  tarefa = null,
-  setItems = null,
-  dias = null,
-  setDias = null,
-  diaVisualizado = null,
-  setPontuacoes,
-}) => {
-  const [itemEditando, setItemEditando] = useState();
+type LegacyItem = {
+  itens?: { finalizada?: boolean }[];
+  finalizada?: boolean;
+};
+
+const ListaAninhada = <T extends ItemResponse | CompletedTaskResponseDTO>(
+  props: ListaAninhadaProps<T>
+) => {
+  const {
+    listas,
+    user,
+    item,
+    lista,
+    onToggle,
+    setListasLocal,
+    updateListas,
+    onSave,
+    onDelete,
+    onMove,
+    areas,
+    isTarefas = null,
+    setItems = null,
+    dias = null,
+    setDias = null,
+    diaVisualizado = null,
+    setPontuacoes,
+  } = props;
+
+  const [itemEditando, setItemEditando] = useState<T | null>(null);
   const [corArea, setCorArea] = useState("#000");
   const [corTexto, setCorTexto] = useState("#fff");
 
@@ -51,12 +100,12 @@ const ListaAninhada = ({
   const [isIndeterminate, setIsIndeterminate] = useState(false);
 
   useEffect(() => {
-    if (Array.isArray(areas) && item.areaId) {
+    if (Array.isArray(areas) && "areaId" in item && item.areaId) {
       setarCorAreaETexto(item, areas, setCorArea, setCorTexto);
     } else {
       console.log("areas não é um array ou item não possui areaId");
     }
-  }, [item.areaId, areas]);
+  }, [item, areas]);
 
   /* useEffect(() => {
     console.log("Estado atualizadOOOOOO - item:");
@@ -64,16 +113,18 @@ const ListaAninhada = ({
   }, [item]);*/
 
   useEffect(() => {
-    if (item.itens && item.itens.length > 0) {
-      const finalizadaItems = item.itens.filter(
-        (subItem) => subItem.finalizada || subItem.finalizada
+    const legacyItem = item as LegacyItem;
+
+    if (legacyItem.itens && legacyItem.itens.length > 0) {
+      const finalizadaItems = legacyItem.itens.filter(
+        (subItem) => subItem.finalizada
       ).length;
 
       setIsIndeterminate(
-        finalizadaItems > 0 && finalizadaItems < item.itens.length
+        finalizadaItems > 0 && finalizadaItems < legacyItem.itens.length
       );
     }
-  }, [item.itens]);
+  }, [item]);
 
   const handleToggleLista = async (lista, itemId) => {
     console.log("lista handleToggleLista");
@@ -83,7 +134,7 @@ const ListaAninhada = ({
 
     const listaAtualizada = {
       ...lista,
-      itens: findAndToggleItem(lista.itens, itemId),
+      itens: findAndToggleItem(lista.itens, itemId, undefined),
     };
 
     console.log("listaAtualizada");
@@ -137,17 +188,15 @@ const ListaAninhada = ({
   };
 
   return (
-    <Stack
-      spacing={2}
-      p={1}
-      border="2px solid coral"
-      borderRadius="md"
-      width="100%"
-    >
+    <Stack {...stackProps}>
       <Flex align="center" gap={3}>
         <Checkbox
-          isChecked={item.finalizada}
-          onChange={() => onToggle(lista, item.id)}
+          checked={("finalizada" in item ? item.finalizada : false) as boolean}
+          onChange={() => {
+            if (onToggle && item.id) {
+              onToggle(lista, item.id);
+            }
+          }}
         />
 
         <Text
@@ -158,7 +207,7 @@ const ListaAninhada = ({
           _hover={{ textDecoration: "underline", cursor: "pointer" }}
           onClick={() => console.log("Clicou no nome!")}
         >
-          {item.nome}
+          {item.title}
         </Text>
 
         <Badge
@@ -169,7 +218,8 @@ const ListaAninhada = ({
           borderRadius="md"
           fontSize="sm"
         >
-          +{item.numero} {item.area}
+          {item.score}{" "}
+          {item.areaId}
         </Badge>
 
         <Badge
@@ -192,7 +242,7 @@ const ListaAninhada = ({
           <FaPlus />
         </IconButton>
 
-        {isOpen && (
+        {isOpen && updateListas && setListasLocal && (
           <FormAdicionarItem
             listas={listas}
             user={user}
@@ -200,9 +250,8 @@ const ListaAninhada = ({
             setListasLocal={setListasLocal}
             updateListas={updateListas}
             listaAninhada={item}
-            isTarefas={isTarefas}
-            tarefa={tarefa}
-            setItems={setItems}
+            isTarefas={!!isTarefas}
+            setItems={setItems as unknown as Dispatch<SetStateAction<any[]>>}
             dias={dias}
             setDias={setDias}
             diaVisualizado={diaVisualizado}
@@ -211,17 +260,18 @@ const ListaAninhada = ({
         )}
       </Flex>
       <ul>
-        {Array.isArray(item.itens) && item.itens.length === 0 ? (
+        {Array.isArray((item as any).itens) &&
+        (item as any).itens.length === 0 ? (
           <Center flexDirection="column" py={4} color="gray.500">
-          <Icon as={FaClipboardList} boxSize={8} mb={2} />
-          <Text fontSize="md" fontWeight="medium">
-            Nenhum item adicionado
-          </Text>
-          <Text fontSize="sm">Clique no "+" para adicionar um item</Text>
-        </Center>
+            <Icon as={FaClipboardList} boxSize={8} mb={2} />
+            <Text fontSize="md" fontWeight="medium">
+              Nenhum item adicionado
+            </Text>
+            <Text fontSize="sm">Clique no "+" para adicionar um item</Text>
+          </Center>
         ) : (
-          item.itens &&
-          item.itens.map((subItem, index) => (
+          Array.isArray((item as any).itens) &&
+          (item as any).itens.map((subItem, index) => (
             <li key={subItem.id}>
               <ItemLista
                 listas={listas}
@@ -230,56 +280,46 @@ const ListaAninhada = ({
                 index={index}
                 lista={lista}
                 onEdit={() => setItemEditando(subItem)}
-                onDelete={onDelete}
+                onDelete={onDelete ?? (() => {})}
                 onToggle={() => handleToggleLista(item, subItem.id)}
-                onMove={onMove}
-                setListasLocal={setListasLocal}
-                updateListas={updateListas}
-                onSave={onSave}
+                onMove={onMove ?? (() => {})}
+                setListasLocal={setListasLocal ?? (() => {})}
+                updateListas={updateListas ?? (() => {})}
+                onSave={onSave ?? (() => {})}
                 isTarefas={isTarefas}
-                tarefa={tarefa}
-                setItems={setItems}
+                setItems={setItems ?? (() => {})}
                 dias={dias}
-                setDias={setDias}
+                setDias={setDias ?? (() => {})}
                 diaVisualizado={diaVisualizado}
-                setPontuacoes={setPontuacoes}
+                setPontuacoes={setPontuacoes ?? (() => {})}
                 isAninhado={true}
+                areas={areas}
               />
 
               {itemEditando && itemEditando === subItem && (
                 <div>
-                <EditorItemLista
-                  item={itemEditando}
-                  setItemEditando={setItemEditando}
-                  onSave={(nome, tipo) => onSave(itemEditando.id, nome, tipo)}
-                />
-                <EditorItem
-                  item={itemEditando}
-                  tipo={itemEditando.tipo}
-                  setItemEditando={setItemEditando}
-                  onSave={(
-                    nome,
-                    numero,
-                    area,
-                    subarea,
-                    areaId,
-                    subareaId,
-                    diasSemana,
-                    tipo
-                  ) =>
-                    onSave(
-                      itemEditando.id,
-                      nome,
-                      numero,
-                      area,
-                      subarea,
-                      areaId,
-                      subareaId,
-                      diasSemana,
-                      tipo
-                    )}
-                  areas={areas}
-                />
+                  <EditorItemLista
+                    item={itemEditando}
+                    setItemEditando={setItemEditando as React.Dispatch<React.SetStateAction<ItemResponse | CompletedTaskResponseDTO | null>>}
+                    onSave={(updatedItem) => {
+                      if (!onSave || !itemEditando) return;
+
+                      onSave(updatedItem as T);
+                    }}
+                  />
+                  <EditorItem
+                    item={{
+                      ...(itemEditando as any),
+                      id: String(itemEditando.id),
+                    }}
+                    setItemEditando={setItemEditando as React.Dispatch<React.SetStateAction<ItemResponse | CompletedTaskResponseDTO | null>>}
+                     onSave={(updatedItem) => {
+                      if (!onSave) return;
+
+                      onSave(updatedItem as T);
+                    }}
+                    areas={areas}
+                  />
                 </div>
               )}
             </li>

@@ -27,10 +27,10 @@ interface FormAdicionarItemProps {
   updateListas: (uid: string, lista: any, listas: any[], setListasLocal: Dispatch<SetStateAction<any[]>>, listaAtualizada: any) => void;
   listaAninhada?: any | null;
   isTarefas?: boolean;
-  tarefa?: TarefaResponseDTO | CompletedTaskResponseDTO;
+  tarefa?: TarefaResponseDTO | CompletedTaskResponseDTO | undefined;
   setItems?: Dispatch<SetStateAction<any[]>>;
   dias?: DayResponseDTO[] | null;
-  setDias?: Dispatch<SetStateAction<any[]>>;
+  setDias?: Dispatch<SetStateAction<DayResponseDTO[]>> | null;
   diaVisualizado?: DayResponseDTO;
   areas: AreaResponseDTO[];
 }

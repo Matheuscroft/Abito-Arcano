@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from "react";
-import EditorItem from "../../EditorItem.jsx";
+import React, {
+  useState,
+  useEffect,
+  type SetStateAction,
+  type Dispatch,
+} from "react";
+import EditorItem from "../../EditorItem";
 import {
   atualizarDiasLocalmenteENoFirebase,
   atualizarDias,
@@ -9,18 +14,48 @@ import {
   substituirTarefasGerais,
 } from "../../../auth/firebaseTarefas.js";
 import { getDias } from "../../../auth/firebaseDiasHoras.js";
-import ItemLista from "../../Listas/ItemLista.jsx";
+import ItemLista from "../../Listas/ItemLista";
 import { Box, Button, Heading, HStack, Input, Text } from "@chakra-ui/react";
 import {
   addTarefa,
   deleteTarefa,
   updateTarefa,
-} from "../../../services/tasksService.ts";
+} from "../../../services/tasksService";
 import {
   checkTarefa,
   uncheckTarefa,
-} from "../../../services/completedTaskService.ts";
-import EmptyStateTasks from "../../../components/emptystates/EmptyStateTasks.jsx";
+} from "../../../services/completedTaskService";
+import EmptyStateTasks from "../../emptystates/EmptyStateTasks.jsx";
+import type { CompletedTaskResponseDTO } from "@/types/task.js";
+import type { DayResponseDTO } from "@/types/day.js";
+import {
+  ItemType,
+  type ItemCreateDTO,
+  type ItemResponse,
+  type TaskItem,
+} from "../../../types/item";
+import type { AreaResponseDTO } from "@/types/area.js";
+import type { UserResponseDTO } from "@/types/user.js";
+import type { ScoreResponseDTO } from "@/types/score.js";
+
+const hStackProps = {
+  spacing: 4,
+  align: "center",
+  mb: 4,
+} as const;
+
+interface ListaTarefasProps {
+  user: UserResponseDTO;
+  tarefas: ItemResponse[];
+  setTarefasDoDia: Dispatch<SetStateAction<ItemResponse[]>>;
+  completedTasks: CompletedTaskResponseDTO[];
+  setCompletedTasks: Dispatch<SetStateAction<CompletedTaskResponseDTO[]>>;
+  setPontuacoes: Dispatch<SetStateAction<ScoreResponseDTO[]>>;
+  dias: DayResponseDTO[];
+  setDias: Dispatch<SetStateAction<DayResponseDTO[]>>;
+  areas: AreaResponseDTO[];
+  diaVisualizado: DayResponseDTO | null;
+}
 
 function ListaTarefas({
   user,
@@ -33,9 +68,11 @@ function ListaTarefas({
   dias,
   areas,
   diaVisualizado,
-}) {
-  const [nomeNovaTarefa, setNomeNovaTarefa] = useState("");
-  const [itemEditando, setItemEditando] = useState(null);
+}: ListaTarefasProps) {
+  const [nomeNovaTarefa, setNomeNovaTarefa] = useState<string>("");
+  const [itemEditando, setItemEditando] = useState<
+    ItemResponse | CompletedTaskResponseDTO | null
+  >(null);
 
   useEffect(() => {
     console.log("tarefas:");
@@ -78,38 +115,39 @@ function ListaTarefas({
     const token = localStorage.getItem("token");
     if (nomeNovaTarefa.trim() === "") return;
 
-    const tarefaDTO = {
+    const tarefaDTO: ItemCreateDTO = {
       title: nomeNovaTarefa,
       score: 1,
-      type: "task",
+      type: ItemType.TASK,
       daysOfTheWeek: [1, 2, 3, 4, 5, 6, 7],
       areaId: null,
       subareaId: null,
     };
 
-    const tarefaTemporaria = {
+    const tarefaTemporaria: TaskItem & { isTemporary: true } = {
       ...tarefaDTO,
+      type: ItemType.TASK,
       id: `temp-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      originalItemId: null,
+      isLatestVersion: true,
+      isTemporary: true,
     };
-    const novasTarefasLocais = [...tarefas, tarefaTemporaria];
-    setTarefasDoDia(novasTarefasLocais);
+
+    setTarefasDoDia((prev) => [...prev, tarefaTemporaria]);
 
     setNomeNovaTarefa("");
 
     try {
-      const novaTarefa = await addTarefa(tarefaDTO, diaVisualizado.id, token);
+      const novaTarefa: ItemResponse = await addTarefa(
+        tarefaDTO,
+        diaVisualizado?.id,
+        token
+      );
 
-      const dataAtual = new Date(diaVisualizado.date);
-      const novosDias = dias.map((d) => {
-        const dataDia = new Date(d.date);
-        if (dataDia >= dataAtual) {
-          const novasTarefas = [...(d.tarefasPrevistas || []), novaTarefa];
-          return { ...d, tarefasPrevistas: novasTarefas };
-        }
-        return d;
-      });
-
-      setDias(novosDias);
+      setTarefasDoDia((prev) =>
+        prev.map((t) => (t.id === tarefaTemporaria.id ? novaTarefa : t))
+      );
     } catch (err) {
       console.error("Erro ao adicionar tarefa:", err);
     }
@@ -203,9 +241,7 @@ function ListaTarefas({
       // === Desmarcar tarefa ===
       console.log("[handleToggleCheckTarefa] Desmarcando tarefa concluída");
 
-      setCompletedTasks(
-        (prev) => prev.filter((t) => t.id !== tarefa.id)
-      );
+      setCompletedTasks((prev) => prev.filter((t) => t.id !== tarefa.id));
 
       try {
         const { score } = await uncheckTarefa(dto, token);
@@ -274,17 +310,20 @@ function ListaTarefas({
     }
   };
 
-  const handleSave = async (id, tarefaDTO) => {
-
+  const handleSave = async (item: ItemResponse | CompletedTaskResponseDTO) => {
     const token = localStorage.getItem("token");
+    const id = item.id;
 
-    const pertenceAoDia = tarefaDTO.daysOfTheWeek.includes(diaVisualizado.dayOfTheWeek);
+    const pertenceAoDia =
+      "daysOfTheWeek" in item && diaVisualizado
+        ? item.daysOfTheWeek.includes(diaVisualizado.dayOfWeek)
+        : true;
 
     let novasTarefasLocais;
 
     if (pertenceAoDia) {
       novasTarefasLocais = tarefas.map((t) =>
-        t.id === id ? { ...t, ...tarefaDTO } : t
+        t.id === id ? { ...t, ...item } : t
       );
     } else {
       novasTarefasLocais = tarefas.filter((t) => t.id !== id);
@@ -293,12 +332,7 @@ function ListaTarefas({
     setTarefasDoDia(novasTarefasLocais);
 
     try {
-      const resposta = await updateTarefa(
-        id,
-        tarefaDTO,
-        diaVisualizado.id,
-        token
-      );
+      const resposta = await updateTarefa(id, item, diaVisualizado?.id, token);
       console.log("Tarefa atualizada com sucesso:", resposta);
     } catch (err) {
       console.error("Erro ao atualizar tarefa:", err);
@@ -314,11 +348,11 @@ function ListaTarefas({
       <Text fontSize="2xl" fontWeight="bold" mb={4}>
         Tarefas
       </Text>
-      <HStack spacing={4} align="center" mb={4}>
+      <HStack {...hStackProps}>
         <Button
           size="xs"
           variant="outline"
-          onClick={() => resetarListaDeTarefasGerais(user.uid)}
+          onClick={() => resetarListaDeTarefasGerais(user.id)}
           colorPalette="red"
         >
           Resetar Lista de Tarefas Gerais
@@ -348,7 +382,8 @@ function ListaTarefas({
           {tarefasNaoConcluidas.map((tarefa, index) => (
             <li key={tarefa.id}>
               {tarefa && (
-                <ItemLista
+                <ItemLista<ItemResponse>
+                  listas={[]}
                   user={user}
                   item={tarefa}
                   index={index}
@@ -360,7 +395,7 @@ function ListaTarefas({
                     moveItem(
                       item,
                       direction,
-                      user.uid,
+                      user.id,
                       tarefas,
                       setDias,
                       dias,
@@ -370,8 +405,7 @@ function ListaTarefas({
                   onSave={handleSave}
                   areas={areas}
                   isTarefas={true}
-                  tarefa={tarefa}
-                  setItems={null}
+                  setItems={setTarefasDoDia}
                   dias={dias}
                   setDias={setDias}
                   diaVisualizado={diaVisualizado}
@@ -382,7 +416,6 @@ function ListaTarefas({
               {itemEditando && itemEditando === tarefa && (
                 <EditorItem
                   item={itemEditando}
-                  tipo={"tarefa"}
                   setItemEditando={setItemEditando}
                   onSave={handleSave}
                   areas={areas}
@@ -401,11 +434,12 @@ function ListaTarefas({
         <ul>
           {completedTasks.map((tarefa, index) => (
             <li key={tarefa.id}>
-              <ItemLista
+              <ItemLista<CompletedTaskResponseDTO>
+                listas={[]}
                 user={user}
                 item={tarefa}
                 index={index}
-                lista={tarefas}
+                lista={completedTasks}
                 onEdit={() => setItemEditando(tarefa)}
                 onDelete={() => handleDeleteItem(tarefa)}
                 onToggle={() => handleToggleCheckTarefa(tarefa)}
@@ -413,7 +447,7 @@ function ListaTarefas({
                   moveItem(
                     item,
                     direction,
-                    user.uid,
+                    user.id,
                     tarefas,
                     setDias,
                     dias,
@@ -423,8 +457,11 @@ function ListaTarefas({
                 onSave={handleSave}
                 areas={areas}
                 isTarefas={true}
-                tarefa={tarefa}
-                setItems={null}
+                setItems={
+                  setCompletedTasks as Dispatch<
+                    SetStateAction<(CompletedTaskResponseDTO)[]>
+                  >
+                }
                 dias={dias}
                 setDias={setDias}
                 diaVisualizado={diaVisualizado}
@@ -434,7 +471,6 @@ function ListaTarefas({
               {itemEditando && itemEditando === tarefa && (
                 <EditorItem
                   item={itemEditando}
-                  tipo={"tarefa"}
                   setItemEditando={setItemEditando}
                   onSave={handleSave}
                   areas={areas}

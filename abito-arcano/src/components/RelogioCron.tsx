@@ -4,15 +4,21 @@ import {
   getHoraTrocaFirebase,
 } from "../auth/firebaseDiasHoras.js";
 import { Box, Button, ButtonGroup, Flex, Input, Text } from "@chakra-ui/react";
+import type { UserResponseDTO } from "@/types/user.js";
 
-const RelogioCron = ({ user, trocarDia }) => {
-  const [horaTroca, setHoraTroca] = useState("00:00:00");
-  const [horaAtual, setHoraAtual] = useState(new Date().toLocaleTimeString());
+interface RelogioCronProps {
+  user: UserResponseDTO;
+  trocarDia: () => void;
+}
+
+const RelogioCron: React.FC<RelogioCronProps> = ({ user, trocarDia }) => {
+  const [horaTroca, setHoraTroca] = useState<string>("00:00:00");
+  const [horaAtual, setHoraAtual] = useState<string>(new Date().toLocaleTimeString());
 
   useEffect(() => {
     const fetchHoraTroca = async () => {
-      if (user && user.uid) {
-        const horaSalva = await getHoraTrocaFirebase(user.uid);
+      if (user?.id) {
+        const horaSalva = await getHoraTrocaFirebase(user.id);
         if (horaSalva) {
           setHoraTroca(horaSalva);
         }
@@ -25,10 +31,10 @@ const RelogioCron = ({ user, trocarDia }) => {
     /*console.log("Estado atualizado - horaTroca:");
         console.log(horaTroca)*/
     if (user) {
-      console.log("user.uid");
-      console.log(user.uid);
+      console.log("user.id");
+      console.log(user.id);
     }
-  }, [horaTroca]);
+  }, [horaTroca, user]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -65,13 +71,13 @@ const RelogioCron = ({ user, trocarDia }) => {
     const novaHoraMinutos = e.target.value.slice(0, 5);
     const novaHoraTroca = `${novaHoraMinutos}:00`;
     setHoraTroca(novaHoraTroca);
-    await setHoraTrocaFirebase(user.uid, novaHoraTroca);
+    await setHoraTrocaFirebase(user.id, novaHoraTroca);
   };
 
   const resetHoraTroca = async () => {
     const defaultHoraTroca = "00:00:00";
     setHoraTroca(defaultHoraTroca);
-    await setHoraTrocaFirebase(user.uid, defaultHoraTroca);
+    await setHoraTrocaFirebase(user.id, defaultHoraTroca);
   };
 
   return (

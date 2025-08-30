@@ -1,26 +1,33 @@
 import React, { useState } from "react";
-import "./FormBotoesEditarEDelete.css";
 import {
   Button,
   Icon,
   IconButton,
-  Menu,
-  MenuContent,
-  MenuItem,
   MenuRoot,
   MenuTrigger,
+  MenuContent,
+  MenuItem,
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import type { ItemResponse } from "@/types/item";
+import type { CompletedTaskResponseDTO } from "@/types/task";
 
-const FormBotoesEditarEDelete = ({ item, onEdit, onDelete, index }) => {
+interface FormBotoesEditarEDeleteProps {
+  item: ItemResponse | CompletedTaskResponseDTO;
+  index?: number;
+  onEdit: (item: ItemResponse | CompletedTaskResponseDTO) => void;
+  onDelete: () => void;
+}
+
+function FormBotoesEditarEDelete({
+  item,
+  onEdit,
+  onDelete,
+}: FormBotoesEditarEDeleteProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-
   return (
-    <MenuRoot isOpen={isOpen} onClose={() => setIsOpen(false)}>
+    <MenuRoot>
       <MenuTrigger asChild>
         <Button
           variant="ghost"
@@ -29,11 +36,12 @@ const FormBotoesEditarEDelete = ({ item, onEdit, onDelete, index }) => {
           aria-label="Opções"
           size="xs"
         >
-          <Icon color="pink.700">
+          <Icon>
             <BsThreeDotsVertical color="pink.700" />
           </Icon>
         </Button>
       </MenuTrigger>
+
       <MenuContent>
         <MenuItem
           value="editar"
@@ -44,6 +52,7 @@ const FormBotoesEditarEDelete = ({ item, onEdit, onDelete, index }) => {
         >
           Editar
         </MenuItem>
+
         <MenuItem
           value="excluir"
           onClick={() => {
@@ -57,6 +66,6 @@ const FormBotoesEditarEDelete = ({ item, onEdit, onDelete, index }) => {
       </MenuContent>
     </MenuRoot>
   );
-};
+}
 
 export default FormBotoesEditarEDelete;

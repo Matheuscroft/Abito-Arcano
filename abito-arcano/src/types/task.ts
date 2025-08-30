@@ -1,11 +1,12 @@
+import type { ItemType } from "./item";
 import type { ScoreResponseDTO } from "./score";
 
 export interface TarefaDTO {
   title: string;
   score: number;
   type: string;
-  daysOfTheWeek: number[]; 
-  areaId: string; 
+  daysOfTheWeek: number[];
+  areaId: string;
   subareaId?: string | null;
 }
 
@@ -31,7 +32,7 @@ export interface CompletedTaskResponseDTO {
   score: number;
   areaId: string;
   subareaId?: string | null;
-  type: string;
+  type: ItemType;
   daysOfTheWeek: number[];
   isLatestVersion: boolean;
   originalTaskId?: string | null;
@@ -45,7 +46,7 @@ export interface CheckTarefaResponseDTO {
 export interface CompletedTaskWithScoreDTO {
   completedTaskId: string;
   tarefaId: string;
-  completedAt: string; // ou Date, dependendo de como você manipula datas
+  completedAt: string;
   scoreId: string;
   areaId: string;
   areaName: string;
@@ -58,4 +59,55 @@ export interface CompletedTaskWithScoreDTO {
 export interface UncheckTarefaResponseDTO {
   previouslyCompletedTask: CompletedTaskResponseDTO;
   score: ScoreResponseDTO;
+}
+
+export enum TipoItem {
+  Task = "task",
+  Checklist = "checklist",
+  Text = "text",
+  List = "list",
+  Activity = "activity",
+}
+
+export interface ChecklistItem {
+  id: string;
+  nome: string;
+  finalizada: boolean;
+  type: "checklist";
+}
+
+export interface TextItem {
+  id: string;
+  nome: string;
+  type: "text";
+}
+
+export interface AtividadeTemp {
+  id?: string;
+  nome: string;
+  finalizada: boolean;
+  areaId?: string;
+  subarea?: string;
+  numero?: number;
+  type: string;
+}
+
+export type GenericItem =
+  | TarefaResponseDTO
+  | CompletedTaskResponseDTO
+  | ChecklistItem
+  | TextItem
+  | AtividadeTemp
+  | {
+      id: string;
+      type: TipoItem;
+      [key: string]: any;
+    };
+
+export interface ListItem {
+  nome: string;
+  tipo: TipoItem;
+  id?: number;
+  title?: string;
+  type?: string;
 }

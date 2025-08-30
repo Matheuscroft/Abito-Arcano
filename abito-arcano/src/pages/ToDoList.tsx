@@ -1,34 +1,46 @@
 import React, { useState, useEffect } from "react";
-import { updatePontuacoes } from "../auth/firebasePontuacoes.js";
 import {
   getListaAtividades,
   setListaAtividades,
 } from "../auth/firebaseAtividades.js";
-import BarraPontuacoes from "../components/BarraPontuacoes.jsx";
-import ListaAtividades from "../components/ListaAtividades.jsx";
-import Diarias from "../components/pages/ToDoList/Diarias.jsx";
-import { useNavigate } from "react-router-dom";
-import { updateAreas } from "../auth/firebaseAreaSubarea.js";
-import { v4 as uuidv4 } from "uuid";
+import BarraPontuacoes from "../components/BarraPontuacoes";
+import ListaAtividades from "../components/ListaAtividades";
+import Diarias from "../components/pages/ToDoList/Diarias";
 
 import { Box, Heading, SimpleGrid } from "@chakra-ui/react";
-import { getDias } from "../services/diasService.ts";
-import { getAreas } from "../services/areasService.ts";
-import { getPontuacoes } from "../services/scoreService.ts";
+import { getDias } from "../services/diasService";
+import { getAreas } from "../services/areasService";
+import { getPontuacoes } from "../services/scoreService";
+import type { UserResponseDTO } from "@/types/user.ts";
+import type { ActivityItem } from "@/types/item.ts";
+import type { ScoreResponseDTO } from "@/types/score.ts";
+import type { DayResponseDTO } from "@/types/day.ts";
+import type { AreaResponseDTO } from "@/types/area.ts";
 
-function ToDoList({ user }) {
-  const [atividades, setAtividades] = useState([]);
-  const [pontuacoes, setPontuacoes] = useState({});
-  const [dias, setDias] = useState([]);
-  const [areas, setAreas] = useState({});
-  const [diaVisualizado, setDiaVisualizado] = useState(null);
-  const navigate = useNavigate();
+const simpleGridProps = {
+  columns: { base: 1, md: 2 },
+  spacingX: 60, // horizontal spacing
+  spacingY: 4,  // vertical spacing
+  mt: 4,
+} as const;
+
+interface ToDoListProps {
+  user: UserResponseDTO;
+}
+
+function ToDoList({ user }: ToDoListProps) {
+  const [atividades, setAtividades] = useState<ActivityItem[]>([]);
+  const [pontuacoes, setPontuacoes] = useState<ScoreResponseDTO[]>([]);
+  const [dias, setDias] = useState<DayResponseDTO[]>([]);
+  const [areas, setAreas] = useState<AreaResponseDTO[]>([]);
+  const [diaVisualizado, setDiaVisualizado] = useState<DayResponseDTO | null>(null);
+  //const navigate = useNavigate();
 
   /*useEffect(() => {
     if (!user) {
       navigate("/login");
     } else {
-      console.log("User ID:", user.uid);
+      console.log("User ID:", user.id);
     }
   }, [user, navigate]);*/
 
@@ -63,94 +75,34 @@ function ToDoList({ user }) {
       const pontuacoes = await getPontuacoes(token);
       setPontuacoes(pontuacoes);
 
-      if (user && user.uid) {
-        let atividades = await getListaAtividades(user.uid);
+      if (user && user.id) {
+        let atividades = await getListaAtividades(user.id);
 
         if (!atividades || atividades.atividades.length === 0) {
           console.log("if");
           atividades = await resetarListaAtividades();
         }
 
-        let pontuacoes = await getPontuacoes(user.uid);
+        let pontuacoes = await getPontuacoes(user.id);
 
         setAtividades(atividades.atividades);
         setPontuacoes(pontuacoes);
       }
     };
     fetchData();
-  }, []);
-
-  const resetarListaAreas = async (userId) => {
-    console.log("to no resetarListaAreas");
-
-    const areass = [
-      {
-        id: uuidv4(),
-        nome: "SEM CATEGORIA",
-        cor: "#000000",
-        subareas: [
-          {
-            id: uuidv4(),
-            nome: "SEM CATEGORIA",
-          },
-        ],
-      },
-    ];
-
-    await updateAreas(userId, areass);
-    console.log("Estrutura de áreas resetada:", areass);
-  };
+  }, [user]);
 
   const resetarListaAtividades = async () => {
     console.log("entrei no resetar lista atv");
-    const atividadesObjeto = { userId: user.uid, atividades: [] };
+    const atividadesObjeto = { userId: user.id, atividades: [] };
 
     console.log("atividadesObjeto");
     console.log(atividadesObjeto);
 
-    await setListaAtividades(user.uid, atividadesObjeto.atividades);
+    await setListaAtividades(user.id, atividadesObjeto.atividades);
     setAtividades(atividadesObjeto.atividades);
 
     return atividadesObjeto;
-  };
-
-  const resetarListaPontuacoes = async (user, areas, dias) => {
-    let pontuacoes = [];
-
-    //console.log("Iniciando resetarListaPontuacoes");
-
-    dias.forEach((dia) => {
-      const diaData = {
-        data: dia.data,
-        areas: [],
-      };
-
-      areas.forEach((area) => {
-        const areaData = {
-          areaId: area.id,
-          pontos: 0,
-          subareas: [],
-        };
-
-        area.subareas.forEach((subarea) => {
-          areaData.subareas.push({
-            subareaId: subarea.id,
-            pontos: 0,
-          });
-        });
-
-        diaData.areas.push(areaData);
-      });
-
-      pontuacoes.push(diaData);
-    });
-
-    await updatePontuacoes(user.uid, pontuacoes);
-
-    /*console.log("pontuacoes do final do reset");
-    console.log(pontuacoes);*/
-
-    return pontuacoes;
   };
 
   return (
@@ -162,19 +114,16 @@ function ToDoList({ user }) {
         setPontuacoes={setPontuacoes}
         areas={areas}
         setAreas={setAreas}
-        resetarListaPontuacoes={() => resetarListaPontuacoes(user, areas, dias)}
         user={user}
-        resetarListaAreas={() => resetarListaAreas(user.uid)}
       />
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={60} mt={4}>
+      <SimpleGrid {...simpleGridProps}>
         <Box>
           <Diarias
             user={user}
             pontuacoes={pontuacoes}
             setPontuacoes={setPontuacoes}
             areas={areas}
-            setAreas={setAreas}
             diaVisualizado={diaVisualizado}
             setDiaVisualizado={setDiaVisualizado}
             dias={dias}
@@ -196,14 +145,12 @@ function ToDoList({ user }) {
             user={user}
             atividades={atividades}
             setAtividades={setAtividades}
-            pontuacoes={pontuacoes}
             setPontuacoes={setPontuacoes}
             areas={areas}
-            setAreas={setAreas}
             dias={dias}
             setDias={setDias}
             resetarListaAtividades={resetarListaAtividades}
-            dataAtual={true}
+            dataAtual={""}
           />
         </Box>
       </SimpleGrid>

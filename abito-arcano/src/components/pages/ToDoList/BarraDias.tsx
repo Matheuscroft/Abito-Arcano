@@ -1,17 +1,36 @@
 import React, { useEffect } from "react";
-import { inserirDias } from "../../../auth/firebaseDiasHoras.js";
-import { atualizarDiasLocalmenteENoFirebase } from "../../todoUtils.js";
-import BotaoDia from "./BotaoDia.jsx";
+import BotaoDia from "./BotaoDia";
 import { Box, Button, ButtonGroup, Heading, Stack } from "@chakra-ui/react";
+import type { UserResponseDTO } from "@/types/user.js";
+import type { DayResponseDTO } from "@/types/day.js";
+import type { ItemResponse } from "@/types/item.js";
 
-const BarraDias = ({
+const stackProps = {
+  spacing: 4,
+  direction: "row",
+  flexWrap: "nowrap"
+} as const;
+    
+
+interface BarraDiasProps {
+  user: UserResponseDTO;
+  dias: DayResponseDTO[];
+  setDias: React.Dispatch<React.SetStateAction<DayResponseDTO[]>>;
+  diaVisualizado: DayResponseDTO | null;
+  setDiaVisualizado: React.Dispatch<React.SetStateAction<DayResponseDTO | null>>;
+  tarefasGerais: ItemResponse[];
+  setTarefasDoDia: React.Dispatch<React.SetStateAction<ItemResponse[]>>;
+  resetarListaDeDias: () => Promise<void>;
+}
+
+const BarraDias: React.FC<BarraDiasProps> = ({
   user,
   dias,
   setDias,
   diaVisualizado,
   setDiaVisualizado,
   tarefasGerais,
-  setTarefasPorDia,
+  setTarefasDoDia,
   resetarListaDeDias,
 }) => {
 
@@ -43,7 +62,7 @@ const BarraDias = ({
       atualizarDiasLocalmenteENoFirebase(user.uid, diasAtualizados, setDias);
 
       diasAtualizados.forEach((dia) => {
-        setTarefasPorDia((prev) => ({ ...prev, [dia.data]: dia.tarefas }));
+        setTarefasDoDia((prev) => ({ ...prev, [dia.data]: dia.tarefas }));
       });
     } catch (error) {
       console.error("Erro ao resetar tarefas futuras:", error);
@@ -71,7 +90,7 @@ const BarraDias = ({
     setDias(dias);
     console.log("dias do barra dias");
     console.log(dias);
-  }, [dias]);
+  }, [dias, setDias]);
 
   return (
     <div>
@@ -96,13 +115,13 @@ const BarraDias = ({
           mt="10px"
           mb="10px"
         >
-          <Stack direction="row" spacing={4} flexWrap="nowrap">
+          <Stack {...stackProps}>
             {dias.map((dia) => (
               <BotaoDia
                 key={dia.date}
-                data={dia.date}
-                diaSemana={dia.dayOfWeek}
-                isSelecionado={diaVisualizado.id === dia.id}
+                date={dia.date}
+                dayOfWeek={dia.dayOfWeek}
+                isSelected={diaVisualizado?.id === dia.id}
                 onClick={() => setDiaVisualizado(dia)}
               />
             ))}

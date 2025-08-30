@@ -10,7 +10,7 @@ import type { AreaResponseDTO } from "../../../types/area";
 
 interface Props {
   tarefa: TarefaResponseDTO | CompletedTaskResponseDTO;
-  onToggle: () => void;
+  onToggle?: (item: TarefaResponseDTO | CompletedTaskResponseDTO) => void;
   areas: AreaResponseDTO[];
   isAninhado?: boolean;
 }
@@ -48,7 +48,7 @@ function Tarefa({ tarefa, onToggle, areas, isAninhado = false }: Props) {
       <Flex align="center" gap={3} flex="1">
         <Checkbox
           checked={isCompleted}
-          onCheckedChange={onToggle}
+          onCheckedChange={() => onToggle?.(tarefa)}
           ms={isAninhado ? "6" : "1"}
           variant={"subtle"}
         ></Checkbox>

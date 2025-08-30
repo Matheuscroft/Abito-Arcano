@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from "react";
-import {
-  resetPontuacao,
-  getPontuacoes,
-  updatePontuacoes,
-} from "../auth/firebasePontuacoes.js";
+import { getPontuacoes, updatePontuacoes } from "../auth/firebasePontuacoes.js";
 import { Box, Button, ButtonGroup, Card, Flex, Text } from "@chakra-ui/react";
+import type { ScoreResponseDTO } from "@/types/score.js";
+import type { AreaResponseDTO } from "@/types/area.js";
+import type { UserResponseDTO } from "@/types/user.js";
 
-function BarraPontuacoes({
+interface BarraPontuacoesProps {
+  pontuacoes: ScoreResponseDTO[];
+  setPontuacoes: React.Dispatch<React.SetStateAction<ScoreResponseDTO[]>>;
+  areas: AreaResponseDTO[];
+  setAreas: React.Dispatch<React.SetStateAction<AreaResponseDTO[]>>;
+  user: UserResponseDTO;
+}
+
+const BarraPontuacoes: React.FC<BarraPontuacoesProps> = ({
   pontuacoes,
   setPontuacoes,
   areas,
   setAreas,
-  resetarListaPontuacoes,
   user,
-  resetarListaAreas,
-}) {
+}) => {
   const [mostrarSubareas, setMostrarSubareas] = useState(false);
 
   useEffect(() => {
@@ -25,7 +30,11 @@ function BarraPontuacoes({
     console.log("Pontuacoes received: ", pontuacoes);
   }, [pontuacoes]);
 
-  const calcularPontuacaoTotal = (pontuacoes, areaId, subareaId = null) => {
+  const calcularPontuacaoTotal = (
+    pontuacoes: ScoreResponseDTO[],
+    areaId: string,
+    subareaId?: string | null
+  ) => {
     if (!Array.isArray(pontuacoes)) return 0;
 
     return pontuacoes
@@ -37,7 +46,7 @@ function BarraPontuacoes({
   };
 
   const resetPontuacaoAreas = async () => {
-    let currentPontuacoes = await getPontuacoes(user.uid);
+    let currentPontuacoes = await getPontuacoes(user.id);
 
     const updatedPontuacoes = currentPontuacoes.map((pontuacao) => ({
       ...pontuacao,
@@ -47,12 +56,12 @@ function BarraPontuacoes({
       })),
     }));
 
-    await updatePontuacoes(user.uid, updatedPontuacoes);
+    await updatePontuacoes(user.id, updatedPontuacoes);
     setPontuacoes(updatedPontuacoes);
   };
 
   const resetPontuacaoSubareas = async () => {
-    let currentPontuacoes = await getPontuacoes(user.uid);
+    let currentPontuacoes = await getPontuacoes(user.id);
 
     const updatedPontuacoes = currentPontuacoes.map((pontuacao) => ({
       ...pontuacao,
@@ -65,24 +74,18 @@ function BarraPontuacoes({
       })),
     }));
 
-    await updatePontuacoes(user.uid, updatedPontuacoes);
+    await updatePontuacoes(user.id, updatedPontuacoes);
     setPontuacoes(updatedPontuacoes);
   };
 
   return (
     <Box>
       <ButtonGroup size="sm" variant="outline" mb={4}>
-        <Button size="xs" onClick={resetarListaPontuacoes}>
-          Resetar Lista de Pontuações
-        </Button>
         <Button size="xs" onClick={resetPontuacaoAreas}>
           Resetar Pontuação das Áreas
         </Button>
         <Button size="xs" onClick={resetPontuacaoSubareas}>
           Resetar Pontuação das Subáreas
-        </Button>
-        <Button size="xs" onClick={resetarListaAreas}>
-          Resetar Lista das Áreas
         </Button>
       </ButtonGroup>
 
@@ -133,7 +136,7 @@ function BarraPontuacoes({
               area.subareas.map((subarea) => (
                 <Card.Root
                   key={subarea.id}
-                  bg={area.cor}
+                  bg={area.color}
                   color="white"
                   flex="0 1 120px"
                   height="100px"
@@ -146,7 +149,7 @@ function BarraPontuacoes({
                     justifyContent="flex-start"
                     textAlign="center"
                   >
-                    <Text fontWeight="bold" fontSize="xs" isTruncated>
+                    <Text fontWeight="bold" fontSize="xs" truncate>
                       {subarea.name}
                     </Text>
                     <Text fontSize="sm">
@@ -163,6 +166,6 @@ function BarraPontuacoes({
       )}
     </Box>
   );
-}
+};
 
 export default BarraPontuacoes;

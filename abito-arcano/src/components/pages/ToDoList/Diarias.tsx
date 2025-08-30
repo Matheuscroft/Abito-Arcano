@@ -1,14 +1,34 @@
-import React, { useState, useEffect, useMemo } from "react";
-import ListaTarefas from "./ListaTarefas.jsx";
+import React, {
+  useState,
+  useEffect,
+  type SetStateAction,
+  type Dispatch,
+} from "react";
+import ListaTarefas from "./ListaTarefas";
 
-import { getDias, inserirDias } from "../../../auth/firebaseDiasHoras.js";
-import RelogioCron from "../../RelogioCron.jsx";
-import BarraDias from "./BarraDias.jsx";
-import { updatePontuacoes } from "../../../auth/firebasePontuacoes.js";
+import RelogioCron from "../../RelogioCron";
+import BarraDias from "./BarraDias";
 import { Heading } from "@chakra-ui/react";
-import { getDiaById } from "../../../services/diasService.ts";
+import { getDiaById } from "../../../services/diasService";
+import type { UserResponseDTO } from "@/types/user.js";
+import type { ScoreResponseDTO } from "@/types/score.js";
+import type { AreaResponseDTO } from "@/types/area.js";
+import type { DayResponseDTO } from "@/types/day.js";
+import type { CompletedTaskResponseDTO } from "@/types/task.js";
+import type { ItemResponse } from "@/types/item.js";
 
-const Diarias = ({
+interface DiariasProps {
+  user: UserResponseDTO;
+  setPontuacoes: Dispatch<SetStateAction<ScoreResponseDTO[]>>;
+  pontuacoes: ScoreResponseDTO[];
+  areas: AreaResponseDTO[];
+  diaVisualizado: DayResponseDTO | null;
+  setDiaVisualizado: Dispatch<SetStateAction<DayResponseDTO | null>>;
+  dias: DayResponseDTO[];
+  setDias: Dispatch<SetStateAction<DayResponseDTO[]>>;
+}
+
+const Diarias: React.FC<DiariasProps> = ({
   user,
   setPontuacoes,
   pontuacoes,
@@ -18,9 +38,11 @@ const Diarias = ({
   dias,
   setDias,
 }) => {
-  const [tarefasGerais, setTarefasGerais] = useState([]);
-  const [tarefasDoDia, setTarefasDoDia] = useState([]);
-  const [completedTasks, setCompletedTasks] = useState([]);
+  const [tarefasGerais] = useState<ItemResponse[]>([]);
+  const [tarefasDoDia, setTarefasDoDia] = useState<ItemResponse[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<
+    CompletedTaskResponseDTO[]
+  >([]);
 
   useEffect(() => {
     const fetchTarefasDoDia = async () => {
@@ -44,9 +66,6 @@ const Diarias = ({
 
     fetchTarefasDoDia();
   }, [diaVisualizado, dias, user]);
-
-  
-
 
   /*useEffect(() => {
     const fetchData = async () => {
@@ -90,33 +109,32 @@ const Diarias = ({
 
   const resetarListaDeDias = async () => {
     try {
-      const novosDias = [];
-      const options = { weekday: "long", timeZone: "UTC" };
+      /*const novosDias: DayResponseDTO[] = [];
+      const options: Intl.DateTimeFormatOptions = { weekday: "long", timeZone: "UTC" };
       for (let i = 0; i <= 6; i++) {
         const data = new Date();
         data.setDate(data.getDate() + i);
         const dataStr = data.toLocaleDateString("pt-BR");
         const diaSemana = data.toLocaleDateString("pt-BR", options);
 
-        const dia = {
-          data: dataStr,
-          dataAtual: i === 0,
-          diaSemana: diaSemana,
-          tarefas: tarefasGerais.map((tarefa) => ({
-            ...tarefa,
-            finalizada: false,
-          })),
-        };
-        novosDias.push(dia);
+        const dia: DayResponseDTO = {
+        date: dataStr,
+        dataAtual: i === 0,
+        dayOfWeek: diaSemana,
+        tarefas: tarefasGerais.map((tarefa) => ({
+          ...tarefa,
+          finalizada: false,
+        })),
+      };
+
+      novosDias.push(dia);
       }
 
       console.log("novosDias");
       console.log(novosDias);
-
+*/
       //atualizarDiasLocalmenteENoFirebase(user.uid, novosDias, setDias);
-
       //setDataAtual(novosDias[0].data);
-
       /*const novasPontuacoes = pontuacoes.filter(pontuacao =>
                 novosDias.some(dia => dia.data === pontuacao.data)
             );
@@ -125,21 +143,30 @@ const Diarias = ({
             console.log(novasPontuacoes);
 
             await updatePontuacoes(user.uid, novasPontuacoes);*/
-
-      return novosDias;
+      // return novosDias;
     } catch (error) {
       console.error("Erro ao resetar a lista de dias:", error);
+      throw error;
     }
   };
 
-  const converterParaDate = (dataStr) => {
-    const [dia, mes, ano] = dataStr.split("/").map(Number);
+  /* const converterParaDate = (dataStr: string): Date => {
+    const [diaStr, mesStr, anoStr] = dataStr.split("/");
+
+    const dia = Number(diaStr);
+    const mes = Number(mesStr);
+    const ano = Number(anoStr);
+
+    if (isNaN(dia) || isNaN(mes) || isNaN(ano)) {
+      throw new Error(`Data inválida: ${dataStr}`);
+    }
+
     return new Date(ano, mes - 1, dia);
-  };
+  };*/
 
   const trocarDia = async () => {
     try {
-      console.log("Trocar dia");
+      /*console.log("Trocar dia");
 
       const dataAtualDate = converterParaDate(diaVisualizado.date);
       dataAtualDate.setDate(dataAtualDate.getDate() + 1);
@@ -161,9 +188,9 @@ const Diarias = ({
       const ultimoDiaDate = converterParaDate(ultimoDia.data);
       ultimoDiaDate.setDate(ultimoDiaDate.getDate() + 1);
       const novoUltimoDiaStr = ultimoDiaDate.toLocaleDateString("pt-BR");
-
-      const options = { weekday: "long", timeZone: "UTC" };
-      const diaSemana = ultimoDiaDate.toLocaleDateString("pt-BR", options);
+*/
+      //const options = { weekday: "long", timeZone: "UTC" };
+      /*const diaSemana = ultimoDiaDate.toLocaleDateString("pt-BR", options);
 
       const novoDia = {
         data: novoUltimoDiaStr,
@@ -175,8 +202,8 @@ const Diarias = ({
         })),
       };
 
-      diasSalvos.push(novoDia);
-
+      diasSalvos.push(novoDia);*/
+      /*
       await inserirDias(user.uid, diasSalvos);
 
       setDiaVisualizado(novaDataStr);
@@ -195,7 +222,7 @@ const Diarias = ({
       const novasPontuacoes = [...pontuacoes, novaPontuacao];
       setPontuacoes(novasPontuacoes);
       await updatePontuacoes(user.uid, novasPontuacoes);
-
+*/
       console.log("Dia trocado com sucesso");
     } catch (error) {
       console.error("Erro ao trocar dia:", error);
@@ -231,6 +258,7 @@ const Diarias = ({
           dias={dias}
           setDias={setDias}
           resetarListaDeDias={resetarListaDeDias}
+          setTarefasDoDia={setTarefasDoDia}
         />
       </div>
       <ListaTarefas
