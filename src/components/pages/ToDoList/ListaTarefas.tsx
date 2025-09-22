@@ -4,7 +4,6 @@ import React, {
   type SetStateAction,
   type Dispatch,
 } from "react";
-import EditorItem from "../../EditorItem";
 import {
   atualizarDiasLocalmenteENoFirebase,
   atualizarDias,
@@ -37,6 +36,7 @@ import {
 import type { AreaResponseDTO } from "@/types/area.js";
 import type { UserResponseDTO } from "@/types/user.js";
 import type { ScoreResponseDTO } from "@/types/score.js";
+import EditorItem from "../../../components/EditorItem";
 
 const hStackProps = {
   spacing: 4,
