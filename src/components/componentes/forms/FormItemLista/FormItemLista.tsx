@@ -34,7 +34,7 @@ const FormItemLista: React.FC<FormItemListaProps> = ({
             onDelete={onDelete}
             index={index}
           />
-          <FormSetasOrdenar onMove={onMove} item={item} lista={lista} />
+          {/* <FormSetasOrdenar onMove={onMove} item={item} lista={lista} /> */}
         </>
       )}
     </Flex>

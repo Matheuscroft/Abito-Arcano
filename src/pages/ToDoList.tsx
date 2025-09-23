@@ -7,7 +7,7 @@ import BarraPontuacoes from "../components/BarraPontuacoes";
 import ListaAtividades from "../components/ListaAtividades";
 import Diarias from "../components/pages/ToDoList/Diarias";
 
-import { Box, Heading, SimpleGrid } from "@chakra-ui/react";
+import { Box, Container, Heading, SegmentGroup, SimpleGrid } from "@chakra-ui/react";
 import { getDias } from "../services/diasService";
 import { getAreas } from "../services/areasService";
 import { getPontuacoes } from "../services/scoreService";
@@ -19,8 +19,8 @@ import type { AreaResponseDTO } from "@/types/area.ts";
 
 const simpleGridProps = {
   columns: { base: 1, md: 2 },
-  spacingX: 60, // horizontal spacing
-  spacingY: 4,  // vertical spacing
+  spacingX: 60,
+  spacingY: 4,
   mt: 4,
 } as const;
 
@@ -33,7 +33,10 @@ function ToDoList({ user }: ToDoListProps) {
   const [pontuacoes, setPontuacoes] = useState<ScoreResponseDTO[]>([]);
   const [dias, setDias] = useState<DayResponseDTO[]>([]);
   const [areas, setAreas] = useState<AreaResponseDTO[]>([]);
-  const [diaVisualizado, setDiaVisualizado] = useState<DayResponseDTO | null>(null);
+  const [diaVisualizado, setDiaVisualizado] = useState<DayResponseDTO | null>(
+    null
+  );
+  const [activeTab, setActiveTab] = useState("diarias");
   //const navigate = useNavigate();
 
   /*useEffect(() => {
@@ -106,8 +109,18 @@ function ToDoList({ user }: ToDoListProps) {
   };
 
   return (
-    <div>
-      <Heading mt={4}>To-Do List</Heading>
+    <Container 
+      maxW={{ base: "100%", md: "container.xl" }} 
+      px={{ base: 4, md: 6 }}
+      py={{ base: 4, md: 6 }}
+    >
+      <Heading 
+        size={{ base: "lg", md: "xl" }}
+        mb={{ base: 4, md: 6 }}
+        textAlign={{ base: "center", md: "left" }}
+      >
+        To-Do List
+      </Heading>
 
       <BarraPontuacoes
         pontuacoes={pontuacoes}
@@ -117,44 +130,64 @@ function ToDoList({ user }: ToDoListProps) {
         user={user}
       />
 
-      <SimpleGrid {...simpleGridProps}>
-        <Box>
-          <Diarias
-            user={user}
-            pontuacoes={pontuacoes}
-            setPontuacoes={setPontuacoes}
-            areas={areas}
-            diaVisualizado={diaVisualizado}
-            setDiaVisualizado={setDiaVisualizado}
-            dias={dias}
-            setDias={setDias}
-          />
-        </Box>
+      <Box mt={{ base: 4, md: 6 }}>
+        <SegmentGroup.Root
+          value={activeTab}
+          onValueChange={(e) => setActiveTab(e.value ?? "diarias")}
+          size={{ base: "sm", md: "md" }}
+        >
+          <SegmentGroup.Indicator />
+          <SegmentGroup.Item value="diarias">
+            <SegmentGroup.ItemText 
+              fontSize={{ base: "sm", md: "md" }}
+            >
+              Atividades Diárias
+            </SegmentGroup.ItemText>
+            <SegmentGroup.ItemHiddenInput />
+          </SegmentGroup.Item>
+          <SegmentGroup.Item value="lista">
+            <SegmentGroup.ItemText 
+              fontSize={{ base: "sm", md: "md" }}
+            >
+              Lista de Atividades
+            </SegmentGroup.ItemText>
+            <SegmentGroup.ItemHiddenInput />
+          </SegmentGroup.Item>
+        </SegmentGroup.Root>
 
-        <Box position="relative" ml="10">
-          <Box
-            position="absolute"
-            left="-5"
-            top="0"
-            bottom="0"
-            width="2px"
-            bg="gray.300"
-            display={{ base: "none", md: "block" }}
-          />
-          <ListaAtividades
-            user={user}
-            atividades={atividades}
-            setAtividades={setAtividades}
-            setPontuacoes={setPontuacoes}
-            areas={areas}
-            dias={dias}
-            setDias={setDias}
-            resetarListaAtividades={resetarListaAtividades}
-            dataAtual={""}
-          />
+        <Box 
+          mt={{ base: 4, md: 6 }}
+          px={{ base: 0, md: 2 }}
+        >
+          {activeTab === "diarias" && (
+            <Diarias
+              user={user}
+              pontuacoes={pontuacoes}
+              setPontuacoes={setPontuacoes}
+              areas={areas}
+              diaVisualizado={diaVisualizado}
+              setDiaVisualizado={setDiaVisualizado}
+              dias={dias}
+              setDias={setDias}
+            />
+          )}
+
+          {activeTab === "lista" && (
+            <ListaAtividades
+              user={user}
+              atividades={atividades}
+              setAtividades={setAtividades}
+              setPontuacoes={setPontuacoes}
+              areas={areas}
+              dias={dias}
+              setDias={setDias}
+              resetarListaAtividades={resetarListaAtividades}
+              dataAtual={""}
+            />
+          )}
         </Box>
-      </SimpleGrid>
-    </div>
+      </Box>
+    </Container>
   );
 }
 

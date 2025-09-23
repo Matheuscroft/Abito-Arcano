@@ -14,7 +14,15 @@ import {
 } from "../../../auth/firebaseTarefas.js";
 import { getDias } from "../../../auth/firebaseDiasHoras.js";
 import ItemLista from "../../Listas/ItemLista";
-import { Box, Button, Heading, HStack, Input, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Heading,
+  HStack,
+  Input,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import {
   addTarefa,
   deleteTarefa,
@@ -37,11 +45,14 @@ import type { AreaResponseDTO } from "@/types/area.js";
 import type { UserResponseDTO } from "@/types/user.js";
 import type { ScoreResponseDTO } from "@/types/score.js";
 import EditorItem from "../../../components/EditorItem";
+import { arrayMove } from "@dnd-kit/sortable";
+import DraggableTaskList from "./DraggableTaskList";
 
 const hStackProps = {
-  spacing: 4,
-  align: "center",
+  spacing: { base: 2, md: 4 },
+  align: "center" as const,
   mb: 4,
+  direction: { base: "column" as const, md: "row" as const },
 } as const;
 
 interface ListaTarefasProps {
@@ -343,20 +354,52 @@ function ListaTarefas({
     (tarefa) => !completedTasks.some((ct) => ct.tarefaId === tarefa.id)
   );
 
+  const handleReorder = (activeId: string, overId: string) => {
+    const oldIndex = tarefasNaoConcluidas.findIndex(
+      (item) => item.id === activeId
+    );
+    const newIndex = tarefasNaoConcluidas.findIndex(
+      (item) => item.id === overId
+    );
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const reorderedTasks = arrayMove(
+        tarefasNaoConcluidas,
+        oldIndex,
+        newIndex
+      );
+
+      // Atualizar a lista completa mantendo as tarefas concluídas
+      const completedTaskIds = completedTasks.map((ct) => ct.tarefaId);
+      const allTasks = [
+        ...reorderedTasks,
+        ...tarefas.filter((t) => completedTaskIds.includes(t.id)),
+      ];
+
+      setTarefasDoDia(allTasks);
+    }
+  };
+
   return (
     <Box pb={20}>
       <Text fontSize="2xl" fontWeight="bold" mb={4}>
         Tarefas
       </Text>
-      <HStack {...hStackProps}>
+      {/* Botão de resetar em linha separada */}
+      <Box mb={4}>
         <Button
-          size="xs"
+          size={{ base: "sm", md: "xs" }}
           variant="outline"
           onClick={() => resetarListaDeTarefasGerais(user.id)}
           colorPalette="red"
+          w={{ base: "100%", md: "auto" }}
         >
           Resetar Lista de Tarefas Gerais
         </Button>
+      </Box>
+
+      {/* Input e botão de adicionar */}
+      <Stack {...hStackProps}>
         <Input
           type="text"
           value={nomeNovaTarefa}
@@ -367,63 +410,73 @@ function ListaTarefas({
             }
           }}
           placeholder="Digite o nome da tarefa"
-          width="200px"
+          width={{ base: "100%", md: "200px" }}
         />
-        <Button size="xs" onClick={handleAddItem}>
+        <Button
+          size={{ base: "sm", md: "xs" }}
+          onClick={handleAddItem}
+          w={{ base: "100%", md: "auto" }}
+        >
           Adicionar Tarefa
         </Button>
-      </HStack>
+      </Stack>
       {tarefasNaoConcluidas.length === 0 ? (
         <EmptyStateTasks
           tipo={tarefas.length === 0 ? "nenhumaCriada" : "todasConcluidas"}
         />
       ) : (
-        <ul>
-          {tarefasNaoConcluidas.map((tarefa, index) => (
-            <li key={tarefa.id}>
-              {tarefa && (
-                <ItemLista<ItemResponse>
-                  listas={[]}
-                  user={user}
-                  item={tarefa}
-                  index={index}
-                  lista={tarefas}
-                  onEdit={() => setItemEditando(tarefa)}
-                  onDelete={() => handleDeleteItem(tarefa)}
-                  onToggle={() => handleToggleCheckTarefa(tarefa)}
-                  onMove={(item, direction) =>
-                    moveItem(
-                      item,
-                      direction,
-                      user.id,
-                      tarefas,
-                      setDias,
-                      dias,
-                      diaVisualizado
-                    )
-                  }
-                  onSave={handleSave}
-                  areas={areas}
-                  isTarefas={true}
-                  setItems={setTarefasDoDia}
-                  dias={dias}
-                  setDias={setDias}
-                  diaVisualizado={diaVisualizado}
-                  setPontuacoes={setPontuacoes}
-                />
-              )}
+        <DraggableTaskList
+          items={tarefasNaoConcluidas}
+          onReorder={handleReorder}
+        >
+          <ul>
+            {tarefasNaoConcluidas.map((tarefa, index) => (
+              <li key={tarefa.id}>
+                {tarefa && (
+                  <ItemLista<ItemResponse>
+                    listas={[]}
+                    user={user}
+                    item={tarefa}
+                    index={index}
+                    lista={tarefas}
+                    onEdit={() => setItemEditando(tarefa)}
+                    onDelete={() => handleDeleteItem(tarefa)}
+                    onToggle={() => handleToggleCheckTarefa(tarefa)}
+                    onMove={(item, direction) =>
+                      moveItem(
+                        item,
+                        direction,
+                        user.id,
+                        tarefas,
+                        setDias,
+                        dias,
+                        diaVisualizado
+                      )
+                    }
+                    onSave={handleSave}
+                    areas={areas}
+                    isTarefas={true}
+                    setItems={setTarefasDoDia}
+                    dias={dias}
+                    setDias={setDias}
+                    diaVisualizado={diaVisualizado}
+                    setPontuacoes={setPontuacoes}
+                    enableDrag={true}
+                  />
+                )}
 
-              {itemEditando && itemEditando === tarefa && (
-                <EditorItem
-                  item={itemEditando}
-                  setItemEditando={setItemEditando}
-                  onSave={handleSave}
-                  areas={areas}
-                />
-              )}
-            </li>
-          ))}
-        </ul>
+                {itemEditando && itemEditando === tarefa && (
+                  <EditorItem
+                    item={itemEditando}
+                    setItemEditando={setItemEditando}
+                    onSave={handleSave}
+                    areas={areas}
+                  />
+                )}
+              </li>
+            ))}
+          </ul>
+        </DraggableTaskList>
       )}
       <Heading mt="6" mb="3">
         Finalizadas
@@ -459,7 +512,7 @@ function ListaTarefas({
                 isTarefas={true}
                 setItems={
                   setCompletedTasks as Dispatch<
-                    SetStateAction<(CompletedTaskResponseDTO)[]>
+                    SetStateAction<CompletedTaskResponseDTO[]>
                   >
                 }
                 dias={dias}

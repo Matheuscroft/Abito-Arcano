@@ -35,7 +35,7 @@ function Tarefa({ tarefa, onToggle, areas, isAninhado = false }: Props) {
       );
     }
 
-    console.log("Tarefa atualizada:", tarefa);
+    //console.log("Tarefa atualizada:", tarefa);
   }, [tarefa, areas]);
 
   return (
@@ -44,39 +44,55 @@ function Tarefa({ tarefa, onToggle, areas, isAninhado = false }: Props) {
       justify="space-between"
       width="100%"
       textDecoration={isCompleted ? "line-through" : "none"}
+      direction={{ base: "column", md: "row" }}
+      gap={{ base: 2, md: 0 }}
     >
-      <Flex align="center" gap={3} flex="1">
-        <Checkbox
-          checked={isCompleted}
-          onCheckedChange={() => onToggle?.(tarefa)}
-          ms={isAninhado ? "6" : "1"}
-          variant={"subtle"}
-        ></Checkbox>
+      <Flex 
+        align="center" 
+        gap={{ base: 2, md: 3 }} 
+        flex="1"
+        width={{ base: "100%", md: "auto" }}
+        justify={{ base: "space-between", md: "flex-start" }}
+      >
+        <Flex align="center" gap={{ base: 2, md: 3 }} flex="1">
+          <Checkbox
+            checked={isCompleted}
+            onCheckedChange={() => onToggle?.(tarefa)}
+            ms={isAninhado ? "6" : "1"}
+            variant={"subtle"}
+          />
 
-        <Text
-          as="button"
-          fontWeight="bold"
-          fontSize="md"
-          color="blue.200"
-          _hover={{ textDecoration: "underline", cursor: "pointer" }}
-        >
-          {tarefa.title}
-        </Text>
+          <Text
+            as="button"
+            fontWeight="bold"
+            fontSize={{ base: "sm", md: "md" }}
+            color="blue.200"
+            _hover={{ textDecoration: "underline", cursor: "pointer" }}
+            flex="1"
+            textAlign="left"
+          >
+            {tarefa.title}
+          </Text>
+        </Flex>
 
         <Badge
           bg={corArea}
           color={corTexto}
-          px={2}
+          px={{ base: 1, md: 2 }}
           py={1}
           borderRadius="md"
-          fontSize="sm"
+          fontSize={{ base: "xs", md: "sm" }}
+          flexShrink={0}
         >
-          +{tarefa.score} {nomeArea.toUpperCase()}
+          +{tarefa.score} {/* Mostra só pontuação no mobile */}
+          <Box as="span" display={{ base: "none", md: "inline" }}>
+            {" "}{nomeArea.toUpperCase()}
+          </Box>
         </Badge>
       </Flex>
 
       {nomeSubarea && (
-        <Box>
+        <Box display={{ base: "none", md: "block" }}>
           <Text fontSize="sm" color="gray.500" mr={5}>
             {nomeSubarea}
           </Text>
